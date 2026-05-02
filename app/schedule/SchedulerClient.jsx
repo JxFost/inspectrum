@@ -1,67 +1,39 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
-
-const SERVICES = [
-  { id: 'full', name: 'Full Home Inspection', desc: 'Top-to-bottom inspection of every major system. 3–4 hrs.', price: 'From $450', duration: 4 },
-  { id: 'radon', name: 'Radon Testing Only', desc: '48-hour continuous monitor test. EPA-certified equipment.', price: 'From $150', duration: 1 },
-  { id: 'mold', name: 'Mold Assessment', desc: 'Visual inspection with moisture mapping & thermal imaging.', price: 'From $250', duration: 2 },
-  { id: 'pre-listing', name: 'Pre-Listing Inspection', desc: 'For sellers — find issues before buyers do.', price: 'From $400', duration: 3 },
-]
-
-const ALL_TIME_SLOTS = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM']
-
-// Mock availability — replace with backend call when wiring scheduling system.
-function getAvailableSlots(date) {
-  if (!date) return []
-  const day = date.getDay()
-  if (day === 0) return [] // Sunday closed
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  if (date < today) return []
-  const pool = day === 6 ? ALL_TIME_SLOTS.slice(0, 4) : ALL_TIME_SLOTS // Saturday half-day
-  const seed = date.getDate() + date.getMonth() * 31
-  return pool.filter((_, i) => ((seed + i * 3) % 5) !== 0)
-}
+import { SERVICES } from '@/lib/services'
 
 function formatDateLong(date) {
   return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-function parseDateTime(date, timeStr) {
-  const [time, ampm] = timeStr.split(' ')
-  let [h, m] = time.split(':').map(Number)
-  if (ampm === 'PM' && h !== 12) h += 12
-  if (ampm === 'AM' && h === 12) h = 0
-  const d = new Date(date)
-  d.setHours(h, m, 0, 0)
-  return d
+function toDateStr(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
-function buildGCalUrl({ service, date, time, durationHours, address }) {
-  const startDate = parseDateTime(date, time)
-  const endDate = new Date(startDate.getTime() + durationHours * 60 * 60 * 1000)
-  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+function buildGCalUrl({ service, startISO, endISO, address }) {
+  const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: `Inspectrum Inspection — ${service}`,
-    dates: `${fmt(startDate)}/${fmt(endDate)}`,
+    dates: `${fmt(startISO)}/${fmt(endISO)}`,
     details: `${service} with Inspectrum Inspections.\n\nAddress: ${address || 'TBD'}\n\nQuestions: (303) 697-0990`,
     location: address || 'Evergreen, CO',
   })
   return `https://calendar.google.com/calendar/render?${params}`
 }
 
-function buildICS({ service, date, time, durationHours, address }) {
-  const start = parseDateTime(date, time)
-  const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000)
-  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+function buildICS({ service, startISO, endISO, address }) {
+  const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Inspectrum//Inspections//EN',
-    'BEGIN:VEVENT', `UID:${Date.now()}@inspectrum.com`, `DTSTAMP:${fmt(new Date())}`,
-    `DTSTART:${fmt(start)}`, `DTEND:${fmt(end)}`,
+    'BEGIN:VEVENT', `UID:${Date.now()}@inspectrum.com`, `DTSTAMP:${fmt(new Date().toISOString())}`,
+    `DTSTART:${fmt(startISO)}`, `DTEND:${fmt(endISO)}`,
     `SUMMARY:Inspectrum Inspection — ${service}`,
     `DESCRIPTION:${service} with Inspectrum Inspections.\\n\\nAddress: ${address || 'TBD'}\\n\\nQuestions: (303) 697-0990`,
     `LOCATION:${address || 'Evergreen, CO'}`, 'END:VEVENT', 'END:VCALENDAR',
@@ -69,7 +41,7 @@ function buildICS({ service, date, time, durationHours, address }) {
   return URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
 }
 
-function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth }) {
+function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const year = viewMonth.getFullYear()
@@ -99,18 +71,18 @@ function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth }) {
       <div className="grid grid-cols-7 gap-1">
         {cells.map((date, i) => {
           if (!date) return <div key={i} />
-          const slots = getAvailableSlots(date)
-          const isAvailable = slots.length > 0
-          const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString()
           const isPast = date < today
+          const isSunday = date.getDay() === 0
+          const isDisabled = isPast || isSunday
+          const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString()
           return (
             <button
-              key={i} type="button" disabled={!isAvailable} onClick={() => onSelectDate(date)}
+              key={i} type="button" disabled={isDisabled} onClick={() => onSelectDate(date)}
               className={[
                 'aspect-square flex items-center justify-center text-sm rounded-sm transition-all',
                 isSelected && 'bg-teal text-white font-semibold',
-                !isSelected && isAvailable && 'bg-paper hover:bg-amber hover:text-white cursor-pointer',
-                !isAvailable && !isPast && 'text-charcoal/30 line-through cursor-not-allowed',
+                !isSelected && !isDisabled && 'bg-paper hover:bg-amber hover:text-white cursor-pointer',
+                !isSelected && isSunday && !isPast && 'text-charcoal/30 line-through cursor-not-allowed',
                 isPast && 'text-charcoal/20 cursor-not-allowed',
               ].filter(Boolean).join(' ')}
             >
@@ -151,28 +123,113 @@ export default function SchedulerClient() {
   const [step, setStep] = useState(1)
   const [service, setService] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
-  const [selectedTime, setSelectedTime] = useState(null)
+  const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
   const [details, setDetails] = useState({ name: '', email: '', phone: '', address: '' })
-  const [confirmed, setConfirmed] = useState(false)
 
-  const availableSlots = useMemo(() => getAvailableSlots(selectedDate), [selectedDate])
+  // API state
+  const [slots, setSlots] = useState([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [slotsError, setSlotsError] = useState(null)
+  const [booking, setBooking] = useState(null)
+  const [bookingError, setBookingError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  // Fetch slots when date or service changes.
+  useEffect(() => {
+    if (!selectedDate || !service) {
+      setSlots([])
+      return
+    }
+
+    const controller = new AbortController()
+    setLoadingSlots(true)
+    setSlotsError(null)
+    setSlots([])
+    setSelectedSlot(null)
+
+    const dateStr = toDateStr(selectedDate)
+    fetch(`/api/availability?date=${dateStr}&service=${service.id}`, {
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (!res.ok) return res.json().then((d) => Promise.reject(d.error || 'Failed to load availability.'))
+        return res.json()
+      })
+      .then((data) => {
+        setSlots(data.slots || [])
+        setLoadingSlots(false)
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        setSlotsError(typeof err === 'string' ? err : 'Could not load availability. Please try again or call (303) 697-0990.')
+        setLoadingSlots(false)
+      })
+
+    return () => controller.abort()
+  }, [selectedDate, service])
+
+  const handleSubmit = useCallback(async () => {
+    if (!service || !selectedSlot) return
+    setSubmitting(true)
+    setBookingError(null)
+
+    try {
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service: service.id,
+          startISO: selectedSlot.startISO,
+          name: details.name.trim(),
+          email: details.email.trim(),
+          phone: details.phone.trim(),
+          address: details.address.trim(),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.status === 409) {
+        // Slot was taken — bounce back to date/time picker.
+        setBookingError(data.error || 'That slot was just taken. Please choose another time.')
+        setSelectedSlot(null)
+        setStep(2)
+        setSubmitting(false)
+        return
+      }
+
+      if (!res.ok) {
+        setBookingError(data.error || 'Something went wrong. Please try again or call (303) 697-0990.')
+        setSubmitting(false)
+        return
+      }
+
+      setBooking(data)
+    } catch {
+      setBookingError('Network error. Please check your connection and try again, or call (303) 697-0990.')
+    } finally {
+      setSubmitting(false)
+    }
+  }, [service, selectedSlot, details])
+
+  const confirmed = !!booking
 
   const canProceedFromStep1 = !!service
-  const canProceedFromStep2 = !!selectedDate && !!selectedTime
+  const canProceedFromStep2 = !!selectedDate && !!selectedSlot
   const canSubmit = details.name && details.email && details.phone && details.address
 
-  const gcalUrl = confirmed && service && selectedDate && selectedTime
-    ? buildGCalUrl({ service: service.name, date: selectedDate, time: selectedTime, durationHours: service.duration, address: details.address })
+  const gcalUrl = confirmed && selectedSlot
+    ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: details.address })
     : '#'
-  const icsUrl = confirmed && service && selectedDate && selectedTime
-    ? buildICS({ service: service.name, date: selectedDate, time: selectedTime, durationHours: service.duration, address: details.address })
+  const icsUrl = confirmed && selectedSlot
+    ? buildICS({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: details.address })
     : '#'
 
-  const handleSubmit = (e) => { e.preventDefault(); setConfirmed(true) }
   const reset = () => {
-    setStep(1); setService(null); setSelectedDate(null); setSelectedTime(null)
-    setDetails({ name: '', email: '', phone: '', address: '' }); setConfirmed(false)
+    setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
+    setDetails({ name: '', email: '', phone: '', address: '' })
+    setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
 
   return (
@@ -221,14 +278,17 @@ export default function SchedulerClient() {
             <div className="text-center bg-paper p-12 rounded-sm border border-line">
               <div className="w-16 h-16 rounded-full bg-amber text-white flex items-center justify-center mx-auto mb-6 text-3xl">✓</div>
               <h2 className="text-3xl mb-3 text-ink">Request <em className="italic text-teal">received.</em></h2>
-              <p className="text-charcoal mb-8 max-w-md mx-auto">
-                Thanks, {details.name.split(' ')[0]}. We'll call you at {details.phone} within a few hours to confirm. In the meantime, add it to your calendar:
+              <p className="text-charcoal mb-2 max-w-md mx-auto">
+                Thanks, {details.name.split(' ')[0]}. We'll call you at {details.phone} within a few hours to confirm.
+              </p>
+              <p className="text-sm text-charcoal/60 mb-8">
+                Confirmation code: <span className="font-mono font-semibold text-ink">{booking.confirmationCode}</span>
               </p>
               <div className="bg-cream p-6 rounded-sm border border-line max-w-md mx-auto mb-8 text-left">
                 <div className="text-xs uppercase tracking-wider text-amber mb-2 font-semibold">Your Booking</div>
                 <div className="font-serif text-lg mb-1">{service.name}</div>
                 <div className="text-sm text-charcoal">{formatDateLong(selectedDate)}</div>
-                <div className="text-sm text-charcoal">{selectedTime} · {service.duration} hr{service.duration > 1 ? 's' : ''}</div>
+                <div className="text-sm text-charcoal">{selectedSlot.label} · {service.durationHours} hr{service.durationHours > 1 ? 's' : ''}</div>
                 <div className="text-sm text-charcoal mt-1">{details.address}</div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
@@ -248,7 +308,7 @@ export default function SchedulerClient() {
               <h2 className="text-2xl mb-6 text-ink">Which service?</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 {SERVICES.map((s) => (
-                  <button key={s.id} type="button" onClick={() => setService(s)}
+                  <button key={s.id} type="button" onClick={() => { setService(s); setSelectedSlot(null) }}
                     className={[
                       'text-left p-6 rounded-sm border-2 bg-cream cursor-pointer transition-all',
                       service?.id === s.id ? 'border-teal bg-paper shadow-[0_4px_12px_rgba(43,126,140,0.15)]' : 'border-line hover:border-teal/50',
@@ -270,24 +330,44 @@ export default function SchedulerClient() {
           {!confirmed && step === 2 && (
             <div>
               <h2 className="text-2xl mb-6 text-ink">When works for you?</h2>
+
+              {bookingError && (
+                <div className="bg-amber/10 border border-amber text-ink rounded-sm p-4 mb-6 text-sm">
+                  {bookingError}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Calendar selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null) }} viewMonth={viewMonth} setViewMonth={setViewMonth} />
+                <Calendar selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); setSelectedSlot(null) }} viewMonth={viewMonth} setViewMonth={setViewMonth} service={service} />
                 <div>
                   <h3 className="font-serif text-lg mb-4">{selectedDate ? formatDateLong(selectedDate) : 'Pick a date first'}</h3>
-                  {selectedDate && availableSlots.length > 0 && (
+
+                  {loadingSlots && (
+                    <div className="flex items-center gap-2 text-charcoal/60 text-sm">
+                      <div className="w-4 h-4 border-2 border-teal/30 border-t-teal rounded-full animate-spin" />
+                      Loading availability...
+                    </div>
+                  )}
+
+                  {slotsError && (
+                    <p className="text-sm text-amber-deep">{slotsError}</p>
+                  )}
+
+                  {!loadingSlots && !slotsError && selectedDate && slots.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
-                      {availableSlots.map((slot) => (
-                        <button key={slot} type="button" onClick={() => setSelectedTime(slot)}
+                      {slots.map((slot) => (
+                        <button key={slot.startISO} type="button" onClick={() => setSelectedSlot(slot)}
                           className={[
                             'p-3 rounded-sm border text-sm font-medium transition-all',
-                            selectedTime === slot ? 'bg-teal text-white border-teal' : 'bg-cream border-line hover:border-teal/50 text-ink',
+                            selectedSlot?.startISO === slot.startISO ? 'bg-teal text-white border-teal' : 'bg-cream border-line hover:border-teal/50 text-ink',
                           ].join(' ')}>
-                          {slot}
+                          {slot.label}
                         </button>
                       ))}
                     </div>
                   )}
-                  {selectedDate && availableSlots.length === 0 && (
+
+                  {!loadingSlots && !slotsError && selectedDate && slots.length === 0 && (
                     <p className="text-charcoal/60 text-sm">No availability that day. Try another date.</p>
                   )}
                 </div>
@@ -323,18 +403,27 @@ export default function SchedulerClient() {
               <div className="bg-paper p-8 rounded-sm border border-line space-y-4">
                 <SummaryRow label="Service" value={service.name} />
                 <SummaryRow label="Date" value={formatDateLong(selectedDate)} />
-                <SummaryRow label="Time" value={`${selectedTime} (${service.duration} hr${service.duration > 1 ? 's' : ''})`} />
+                <SummaryRow label="Time" value={`${selectedSlot.label} (${service.durationHours} hr${service.durationHours > 1 ? 's' : ''})`} />
                 <SummaryRow label="Name" value={details.name} />
                 <SummaryRow label="Email" value={details.email} />
                 <SummaryRow label="Phone" value={details.phone} />
                 <SummaryRow label="Address" value={details.address} />
               </div>
+
+              {bookingError && (
+                <div className="bg-amber/10 border border-amber text-ink rounded-sm p-4 mt-4 text-sm">
+                  {bookingError}
+                </div>
+              )}
+
               <p className="text-sm text-charcoal/70 mt-6 text-center">
                 We'll call you within a few hours to confirm and answer any questions.
               </p>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="primary" onClick={handleSubmit} withArrow>Confirm Booking</Button>
+                <Button variant="primary" onClick={handleSubmit} withArrow disabled={submitting}>
+                  {submitting ? 'Booking...' : 'Confirm Booking'}
+                </Button>
               </div>
             </div>
           )}
