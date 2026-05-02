@@ -25,14 +25,14 @@ export default function ServiceHero({
       />
       <div className="max-w-[1400px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16 items-center">
         <div>
-          {eyebrow && <div className="hero-eyebrow">{eyebrow}</div>}
-          <h1 className="text-[clamp(2.5rem,6.5vw,5.5rem)] font-medium leading-[1.05] tracking-tight mb-6">
+          {eyebrow && <div className="hero-reveal hero-reveal-1 hero-eyebrow">{eyebrow}</div>}
+          <h1 className="hero-reveal hero-reveal-2 text-[clamp(2.5rem,6.5vw,5.5rem)] font-medium leading-[1.05] tracking-tight mb-6">
             {title}
           </h1>
-          <p className="text-lg opacity-90 max-w-xl leading-relaxed mb-8">
+          <p className="hero-reveal hero-reveal-3 text-lg opacity-90 max-w-xl leading-relaxed mb-8">
             {description}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+          <div className="hero-reveal hero-reveal-4 flex flex-col sm:flex-row gap-3 flex-wrap">
             {primaryCTA && (
               <Button variant="primary" href={primaryCTA.href} withArrow>
                 {primaryCTA.label}
@@ -47,7 +47,7 @@ export default function ServiceHero({
         </div>
 
         {stats.length > 0 && (
-          <div className="bg-white/[0.06] border border-white/[0.18] rounded-sm p-8 backdrop-blur-md">
+          <div className="hero-reveal hero-reveal-5 bg-white/[0.06] border border-white/[0.18] rounded-sm p-8 backdrop-blur-md">
             {stats.map((stat, i) => (
               <div
                 key={i}

@@ -1,0 +1,11 @@
+---
+description: Keep README documentation current with project changes
+alwaysApply: true
+---
+
+# README Updates
+
+- When making meaningful implementation, navigation, route, service, content-structure, or developer workflow changes, check whether `README.md` should be updated in the same change.
+- Update `README.md` when behavior, available pages, routes, commands, setup steps, dependencies, or project conventions change.
+- For service/navigation changes, document new or changed service pages and any important menu structure so future contributors can understand the site map.
+- Keep README edits concise and scoped to the change. Do not rewrite unrelated sections unless the user asks.

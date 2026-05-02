@@ -45,7 +45,8 @@ app/
   services/
     full-inspection/page.js
     radon/page.js
-    mold/page.js          # Each: server component with metadata export
+    mold/page.js
+    commercial/page.js    # Each: server component with metadata export
 
   contact/
     page.js               # server: metadata
@@ -56,8 +57,7 @@ app/
     SchedulerClient.jsx   # client: multi-step booking flow
 
 components/                # All shared components
-  LogoSvgDefs.jsx         # SVG <symbol> defs (server)
-  BrandLogo.jsx           # Logo lockup (server)
+  BrandLogo.jsx           # Logo SVG image lockup (server)
   Nav.jsx                 # Top nav (client — uses usePathname/useState)
   Footer.jsx              # Footer (server)
   Button.jsx              # Universal button (server)
@@ -66,9 +66,18 @@ components/                # All shared components
   Deliverables.jsx        # Numbered list on dark teal (server)
   FAQ.jsx                 # Accordion + auto-generated FAQPage JSON-LD (server)
   CTABanner.jsx           # Closing CTA band (server)
+
+public/
+  InspectrumLogo.svg      # Primary Inspectrum logo asset
 ```
 
 Server vs client components: anything that doesn't need browser-only APIs or interactivity is a server component (no `'use client'` directive). This keeps the JavaScript bundle small — only the Nav (because of mobile menu state) and the form pages ship interactive code.
+
+## Animation patterns
+
+Hero content uses the shared `hero-reveal` utility in `app/globals.css` to fade in and move up slightly on page load. Add `hero-reveal-1` through `hero-reveal-5` to create a stepped reveal for eyebrow, headline, body/stats, CTAs, and secondary panels.
+
+The homepage service strip uses `animate-marquee` with a duplicated item track for a seamless horizontal slide. Site animations respect `prefers-reduced-motion`.
 
 ## Routing
 
@@ -78,10 +87,24 @@ Server vs client components: anything that doesn't need browser-only APIs or int
 | `/services/full-inspection` | Full Inspection | Full Home Inspection — Same-Day Reports |
 | `/services/radon` | Radon | Radon Testing in Colorado — 48-Hour Continuous Monitor |
 | `/services/mold` | Mold | Mold Assessment & Moisture Mapping in Denver Metro |
+| `/services/commercial` | Commercial | Commercial Property Inspections in Colorado |
 | `/contact` | Contact | Contact Inspectrum Inspections |
 | `/schedule` | Scheduler | Schedule a Home Inspection Online |
 
 Each page exports its own `metadata` object — Next.js merges it with the defaults from `app/layout.js`.
+
+## Navigation
+
+`components/Nav.jsx` includes a responsive Services dropdown. Desktop users get a hover/focus mega menu, while mobile users see the service links inside the expanded nav. The menu links to the available service pages plus included/quote-based service categories:
+
+- Full Home Inspection: `/services/full-inspection`
+- Radon Testing: `/services/radon`
+- Mold & Meth Testing: `/services/mold`
+- Commercial Inspections: `/services/commercial`
+- Roof & Exterior and Plumbing & Electrical: `/services/full-inspection`
+- À La Carte Inspections: `/contact`
+
+The nav logo renders larger in a badge at the top of the page, extending below the fixed nav. As the user scrolls, `components/Nav.jsx` interpolates the logo badge down until it fits within the nav height. The nav keeps its standard gray border after scrolling, with an amber left-to-right sweep animation only when the page is at the top.
 
 ## SEO checklist (already done)
 
@@ -133,3 +156,5 @@ Brand tokens live in `app/globals.css` under `@theme`. Edit once, everything upd
 ```
 
 These auto-generate `bg-teal`, `text-amber`, `border-teal-deep`, etc. throughout the project.
+
+Fraunces is loaded in `app/layout.js` with the `opsz`, `SOFT`, and `WONK` variable axes enabled through `next/font/google`.

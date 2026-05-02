@@ -31,6 +31,12 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
+      url: `${BASE}/services/commercial`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${BASE}/contact`,
       lastModified,
       changeFrequency: 'yearly',

@@ -17,7 +17,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 lg:gap-12 mb-16">
           <div className="md:col-span-2 lg:col-span-1 max-w-[340px]">
             <div className="mb-6">
-              <BrandLogo tone="light" />
+              <BrandLogo />
             </div>
             <p className="text-[0.95rem] opacity-75 leading-relaxed">
               NACHI-certified home inspections rooted in 20+ years of Colorado construction

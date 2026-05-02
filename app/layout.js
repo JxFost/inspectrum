@@ -1,16 +1,19 @@
 import { Fraunces, Inter_Tight } from 'next/font/google'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
-import LogoSvgDefs from '@/components/LogoSvgDefs'
 import './globals.css'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
+  weight: 'variable',
+  style: ['normal', 'italic'],
+  axes: ['opsz', 'SOFT', 'WONK'],
   display: 'swap',
   variable: '--font-fraunces',
 })
 const interTight = Inter_Tight({
   subsets: ['latin'],
+  weight: 'variable',
   display: 'swap',
   variable: '--font-inter-tight',
 })
@@ -114,6 +117,7 @@ const localBusinessJsonLd = {
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Full Home Inspection' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Radon Testing' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Mold Assessment' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Commercial Property Inspection' } },
     ],
   },
 }
@@ -128,7 +132,6 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <LogoSvgDefs />
         <Nav />
         <main>{children}</main>
         <Footer />
