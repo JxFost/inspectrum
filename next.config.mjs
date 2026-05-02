@@ -9,6 +9,9 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  watchOptions: {
+    pollIntervalMs: 1000,
+  },
 }
 
 export default nextConfig
