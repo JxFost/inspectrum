@@ -33,9 +33,9 @@ function FormField({ label, id, type = 'text', required, placeholder, children, 
         {label}
       </label>
       {as === 'textarea' ? (
-        <textarea id={id} name={id} placeholder={placeholder} className={`${inputClass} resize-y min-h-[120px]`} />
+        <textarea id={id} name={id} placeholder={placeholder} required={required} className={`${inputClass} resize-y min-h-[120px]`} />
       ) : as === 'select' ? (
-        <select id={id} name={id} className={inputClass}>{children}</select>
+        <select id={id} name={id} required={required} className={inputClass}>{children}</select>
       ) : (
         <input id={id} name={id} type={type} placeholder={placeholder} required={required} className={inputClass} />
       )}
@@ -44,15 +44,40 @@ function FormField({ label, id, type = 'text', required, placeholder, children, 
 }
 
 export default function ContactClient() {
-  const [submitted, setSubmitted] = useState(false)
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => {
-      e.target.reset()
-      setSubmitted(false)
-    }, 4000)
+    setStatus('sending')
+    setError('')
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const payload = Object.fromEntries(formData.entries())
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(result.message || 'We could not send your message. Please call or email us directly.')
+      }
+
+      form.reset()
+      setStatus('sent')
+      setTimeout(() => {
+        setStatus('idle')
+      }, 5000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'We could not send your message. Please call or email us directly.')
+      setStatus('error')
+    }
   }
 
   return (
@@ -110,6 +135,7 @@ export default function ContactClient() {
             <h3 className="text-[2rem] mb-8 text-ink">Tell us about <em className="italic text-teal">your home.</em></h3>
 
             <form onSubmit={handleSubmit}>
+              <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
                 <FormField label="First Name" id="firstName" required />
                 <FormField label="Last Name" id="lastName" required />
@@ -138,8 +164,18 @@ export default function ContactClient() {
               </div>
               <FormField label="Anything we should know?" id="message" as="textarea" placeholder="Square footage, age of home, specific concerns…" />
 
-              <Button type="submit" variant="teal" fullWidth withArrow={!submitted} className={submitted ? '!bg-amber' : ''}>
-                {submitted ? '✓ Request Sent — We\'ll be in touch soon' : 'Send Request'}
+              {error && (
+                <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3 mb-4 rounded-sm">
+                  {error}
+                </p>
+              )}
+
+              <Button type="submit" variant="teal" fullWidth disabled={status === 'sending'} withArrow={status === 'idle' || status === 'error'} className={status === 'sent' ? '!bg-amber' : ''}>
+                {status === 'sending'
+                  ? 'Sending request...'
+                  : status === 'sent'
+                    ? '✓ Request Sent — We\'ll be in touch soon'
+                    : 'Send Request'}
               </Button>
 
               <p className="text-xs text-charcoal/70 mt-4 text-center">

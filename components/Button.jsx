@@ -30,10 +30,12 @@ export default function Button({
   // Pass through for client-component overrides (when used inside 'use client' files)
   onClick,
   type,
+  disabled = false,
 }) {
   const base = 'inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-sm font-semibold text-[0.95rem] transition-all duration-200 cursor-pointer border-0 no-underline'
   const widthCls = fullWidth ? 'w-full' : ''
-  const finalCls = `${base} ${VARIANTS[variant]} ${widthCls} ${className}`
+  const disabledCls = disabled ? 'opacity-70 cursor-not-allowed hover:translate-y-0' : ''
+  const finalCls = `${base} ${VARIANTS[variant]} ${widthCls} ${disabledCls} ${className}`
 
   const content = (
     <>
@@ -53,7 +55,7 @@ export default function Button({
   }
   // Plain button (e.g., scheduler step controls)
   return (
-    <button type={type || 'button'} onClick={onClick} className={finalCls}>
+    <button type={type || 'button'} onClick={onClick} disabled={disabled} className={finalCls}>
       {content}
     </button>
   )

@@ -2,7 +2,7 @@
 
 Server-rendered marketing site for Inspectrum Inspections, built with Next.js 16 App Router, Tailwind CSS v4, and React 19.
 
-## Why Next.js (vs the previous Vite version)
+## Next.js
 
 This is a local home-inspection business — its livelihood depends on Google rankings for searches like *"home inspector evergreen co"* and *"radon testing denver."* That makes server-rendered HTML and structured data important enough to justify the extra setup over a pure SPA.
 
@@ -11,7 +11,7 @@ What you get out of the box now:
 - **Server-rendered pages** — Google sees the full HTML on every page, not an empty `<div id="root">`
 - **Per-page metadata** — each page has its own `<title>`, `<meta description>`, OpenGraph tags, and canonical URL
 - **JSON-LD structured data** — `LocalBusiness` schema in the root layout (helps with "near me" results and Google Knowledge Panel) and `FAQPage` schema auto-generated from each FAQ
-- **Auto-generated `/sitemap.xml`** at `app/sitemap.js`
+- **Auto-generated `/sitemap.xml*`* at `app/sitemap.js`
 - **Auto-generated `/robots.txt`** at `app/robots.js`
 - **Optimized fonts** via `next/font/google` (no FOUT, no extra requests)
 - **Static generation** — pages are pre-rendered at build time, so they serve as fast static HTML and *also* hydrate into a React app
@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000)
 
 ## Build for production
 
@@ -41,6 +41,8 @@ app/
   globals.css             # Tailwind v4 import + brand theme tokens
   sitemap.js              # auto-generates /sitemap.xml
   robots.js               # auto-generates /robots.txt
+
+  api/contact/route.js    # POST /api/contact forwards contact form submissions to Web3Forms
 
   services/
     full-inspection/page.js
@@ -73,6 +75,16 @@ public/
 
 Server vs client components: anything that doesn't need browser-only APIs or interactivity is a server component (no `'use client'` directive). This keeps the JavaScript bundle small — only the Nav (because of mobile menu state) and the form pages ship interactive code.
 
+## Contact form
+
+The `/contact` form posts to `app/api/contact/route.js`, which forwards submissions to Web3Forms. Create a free Web3Forms access key for the destination email address, then add it as a server-side environment variable:
+
+```bash
+WEB3FORMS_ACCESS_KEY=your_access_key_here
+```
+
+On Vercel, add the same variable under Project Settings → Environment Variables. Keep this as `WEB3FORMS_ACCESS_KEY` rather than `NEXT_PUBLIC_...` so the key is not exposed in browser source.
+
 ## Animation patterns
 
 Hero content uses the shared `hero-reveal` utility in `app/globals.css` to fade in and move up slightly on page load. Add `hero-reveal-1` through `hero-reveal-5` to create a stepped reveal for eyebrow, headline, body/stats, CTAs, and secondary panels.
@@ -81,21 +93,23 @@ The homepage service strip uses `animate-marquee` with a duplicated item track f
 
 ## Routing
 
-| Path | Page | Title |
-|------|------|-------|
-| `/` | Home | Home Inspections in Evergreen, CO & Denver Metro |
-| `/services/full-inspection` | Full Inspection | Full Home Inspection — Same-Day Reports |
-| `/services/radon` | Radon | Radon Testing in Colorado — 48-Hour Continuous Monitor |
-| `/services/mold` | Mold | Mold Assessment & Moisture Mapping in Denver Metro |
-| `/services/commercial` | Commercial | Commercial Property Inspections in Colorado |
-| `/contact` | Contact | Contact Inspectrum Inspections |
-| `/schedule` | Scheduler | Schedule a Home Inspection Online |
+
+| Path                        | Page            | Title                                                  |
+| --------------------------- | --------------- | ------------------------------------------------------ |
+| `/`                         | Home            | Home Inspections in Evergreen, CO & Denver Metro       |
+| `/services/full-inspection` | Full Inspection | Full Home Inspection — Same-Day Reports                |
+| `/services/radon`           | Radon           | Radon Testing in Colorado — 48-Hour Continuous Monitor |
+| `/services/mold`            | Mold            | Mold Assessment & Moisture Mapping in Denver Metro     |
+| `/services/commercial`      | Commercial      | Commercial Property Inspections in Colorado            |
+| `/contact`                  | Contact         | Contact Inspectrum Inspections                         |
+| `/schedule`                 | Scheduler       | Schedule a Home Inspection Online                      |
+
 
 Each page exports its own `metadata` object — Next.js merges it with the defaults from `app/layout.js`.
 
 ## Navigation
 
-`components/Nav.jsx` includes a responsive Services dropdown. Desktop users get a hover/focus mega menu, while mobile users see the service links inside the expanded nav. The menu links to the available service pages plus included/quote-based service categories:
+`components/Nav.jsx` includes a responsive Services dropdown. Desktop users get a hover/focus mega menu, while mobile users get a drawer-style menu with larger tap targets, a backdrop, and a collapsible Services section that groups service links inside a scrollable card. The menu links to the available service pages plus included/quote-based service categories:
 
 - Full Home Inspection: `/services/full-inspection`
 - Radon Testing: `/services/radon`
@@ -108,17 +122,17 @@ The nav logo renders larger in a badge at the top of the page, extending below t
 
 ## SEO checklist (already done)
 
-- [x] Server-rendered HTML on every page
-- [x] Unique `<title>` and `<meta description>` per page
-- [x] Canonical URLs
-- [x] OpenGraph + Twitter card tags
-- [x] LocalBusiness JSON-LD with hours, geo, service area
-- [x] FAQPage JSON-LD on every page with FAQs (rich results in Google)
-- [x] sitemap.xml
-- [x] robots.txt
-- [x] Optimized Google Fonts via `next/font`
-- [x] `lang="en"` on `<html>`
-- [x] Semantic landmarks (`<header>`, `<main>`, `<footer>`, `<nav>`)
+- Server-rendered HTML on every page
+- Unique `<title>` and `<meta description>` per page
+- Canonical URLs
+- OpenGraph + Twitter card tags
+- LocalBusiness JSON-LD with hours, geo, service area
+- FAQPage JSON-LD on every page with FAQs (rich results in Google)
+- sitemap.xml
+- robots.txt
+- Optimized Google Fonts via `next/font`
+- `lang="en"` on `<html>`
+- Semantic landmarks (`<header>`, `<main>`, `<footer>`, `<nav>`)
 
 ## Still TODO when going live
 
@@ -127,8 +141,7 @@ The nav logo renders larger in a badge at the top of the page, extending below t
 3. **Add Google Business Profile** — local SEO for "near me" searches lives here, not on the site
 4. **Get reviews** — embed review snippets and add `aggregateRating` to the LocalBusiness JSON-LD once you have them
 5. **Add real OG images** — drop a 1200x630px `og-image.png` in `public/` and reference it in the metadata
-6. **Wire up the contact form** — replace `handleSubmit` in `ContactClient.jsx` with a fetch to your form endpoint (Formspree, Resend, your backend, etc.)
-7. **Wire up the scheduler** — replace the mock `getAvailableSlots` in `SchedulerClient.jsx` with a real availability API
+6. **Wire up the scheduler** — replace the mock `getAvailableSlots` in `SchedulerClient.jsx` with a real availability API
 
 ## Deployment
 
@@ -139,6 +152,7 @@ npx vercel
 ```
 
 Other options that work:
+
 - **Netlify** — supports Next.js with their Next.js Runtime
 - **Cloudflare Pages** — supports Next.js via `@cloudflare/next-on-pages`
 - Self-hosted Node — `npm run build && npm start`
