@@ -243,11 +243,10 @@ export default function Nav() {
         </Link>
       </div>
       {showTopBorderSweep && (
-        <span
-          key={`nav-border-${pathname}`}
-          aria-hidden="true"
-          className="absolute bottom-[-1px] left-0 h-px w-full bg-amber animate-nav-border-sweep"
-        />
+        <span key={`nav-border-${pathname}`} aria-hidden="true" className="absolute bottom-[-1px] left-0 h-px w-full">
+          <span className="block h-px w-full bg-amber animate-nav-border-sweep" />
+          <span className="absolute left-0 top-[3px] h-1 w-1 -translate-y-1/2 rounded-full bg-amber animate-nav-border-dot" />
+        </span>
       )}
     </nav>
   )
