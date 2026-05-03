@@ -4,6 +4,7 @@ import SectionIntro from '@/components/SectionIntro'
 import Deliverables from '@/components/Deliverables'
 import FAQ from '@/components/FAQ'
 import CTABanner from '@/components/CTABanner'
+import { serviceJsonLd, faqJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 
 export const metadata = {
   title: 'Mold Assessment & Moisture Mapping in Denver Metro',
@@ -94,8 +95,17 @@ function MoldHotZonesDiagram() {
 }
 
 export default function MoldPage() {
+  const schemas = [
+    serviceJsonLd({ name: 'Mold Assessment', description: metadata.description, url: '/services/mold', price: '250' }),
+    faqJsonLd(FAQ_ITEMS),
+    breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Mold Assessment', url: '/services/mold' }]),
+  ].filter(Boolean)
+
   return (
     <>
+      {schemas.map((schema, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      ))}
       <ServiceHero
         variant="amber"
         eyebrow="Service · Health & Safety"

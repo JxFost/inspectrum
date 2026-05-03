@@ -4,6 +4,7 @@ import SectionIntro from '@/components/SectionIntro'
 import Deliverables from '@/components/Deliverables'
 import FAQ from '@/components/FAQ'
 import CTABanner from '@/components/CTABanner'
+import { serviceJsonLd, faqJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 
 export const metadata = {
   title: 'Commercial Property Inspections in Colorado',
@@ -84,8 +85,17 @@ function ScopeCard({ iconPath, iconElement, title, items }) {
 }
 
 export default function CommercialInspectionsPage() {
+  const schemas = [
+    serviceJsonLd({ name: 'Commercial Property Inspection', description: metadata.description, url: '/services/commercial' }),
+    faqJsonLd(FAQ_ITEMS),
+    breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Commercial', url: '/services/commercial' }]),
+  ].filter(Boolean)
+
   return (
     <>
+      {schemas.map((schema, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      ))}
       <ServiceHero
         variant="dark"
         eyebrow="Service · Commercial"

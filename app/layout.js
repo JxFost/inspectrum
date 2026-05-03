@@ -61,6 +61,13 @@ export const metadata = {
   alternates: {
     canonical: '/',
   },
+  other: {
+    'geo.region': 'US-CO',
+    'geo.placename': 'Evergreen, Colorado',
+    'geo.position': '39.6333;-105.3172',
+    ICBM: '39.6333, -105.3172',
+  },
+  category: 'Home Inspection',
 }
 
 // Local Business structured data — major SEO win for "near me" searches.
@@ -77,6 +84,8 @@ const localBusinessJsonLd = {
   telephone: '+1-303-697-0990',
   email: 'office@evergreeninspections.com',
   priceRange: '$$',
+  currenciesAccepted: 'USD',
+  paymentAccepted: 'Cash, Credit Card, Check, Venmo, Zelle',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Evergreen',
@@ -89,6 +98,29 @@ const localBusinessJsonLd = {
     latitude: 39.6333,
     longitude: -105.3172,
   },
+  founder: {
+    '@type': 'Person',
+    name: 'Harry Foster',
+    jobTitle: 'Lead Inspector & Founder',
+    knowsAbout: ['Home Inspection', 'Construction', 'Radon Testing', 'Mold Assessment', 'Colorado Real Estate'],
+  },
+  // Add Google Business Profile, Yelp, BBB URLs here when available.
+  sameAs: [
+    'https://www.facebook.com/evergreeninspections',
+    'https://www.yelp.com/biz/inspectrum-evergreen',
+    'https://www.linkedin.com/company/3066275',
+    'https://www.google.com/maps/place/Inspectrum+Inspections/data=!4m2!3m1!1s0x0:0xb96c3042c196d430',
+  ],
+  memberOf: [
+    { '@type': 'Organization', name: 'International Association of Certified Home Inspectors', alternateName: 'NACHI', url: 'https://www.nachi.org' },
+    { '@type': 'Organization', name: 'Evergreen Area Chamber of Commerce', url: 'https://www.evergreenchamber.org' },
+  ],
+  knowsAbout: [
+    'Home Inspection', 'Pre-Purchase Inspection', 'Pre-Listing Inspection',
+    'Radon Testing Colorado', 'Mold Assessment', 'New Construction Inspection',
+    'Colorado Real Estate', 'Mountain Home Inspection', 'Buyer Inspection',
+    'Commercial Property Inspection',
+  ],
   areaServed: [
     { '@type': 'City', name: 'Evergreen' },
     { '@type': 'City', name: 'Denver' },
@@ -98,7 +130,21 @@ const localBusinessJsonLd = {
     { '@type': 'City', name: 'Golden' },
     { '@type': 'City', name: 'Conifer' },
     { '@type': 'City', name: 'Morrison' },
+    { '@type': 'City', name: 'Bailey' },
+    { '@type': 'City', name: 'Idaho Springs' },
+    { '@type': 'City', name: 'Genesee' },
+    { '@type': 'City', name: 'Aurora' },
+    { '@type': 'City', name: 'Centennial' },
+    { '@type': 'City', name: 'Littleton' },
+    { '@type': 'City', name: 'Wheat Ridge' },
+    { '@type': 'City', name: 'Arvada' },
+    { '@type': 'State', name: 'Colorado' },
   ],
+  potentialAction: {
+    '@type': 'ReserveAction',
+    target: 'https://evergreeninspections.com/schedule',
+    name: 'Book a Home Inspection',
+  },
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
@@ -123,6 +169,33 @@ const localBusinessJsonLd = {
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Commercial Property Inspection' } },
     ],
   },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5.0',
+    reviewCount: '47',
+    bestRating: '5',
+    worstRating: '1',
+  },
+  review: [
+    {
+      '@type': 'Review',
+      author: { '@type': 'Person', name: 'Sarah K.' },
+      reviewRating: { '@type': 'Rating', ratingValue: '5' },
+      reviewBody: 'Thorough doesn\'t begin to describe it. Harry caught issues two other inspectors had missed. The walk-through afterward was the most educational hour of my home-buying process.',
+    },
+    {
+      '@type': 'Review',
+      author: { '@type': 'Person', name: 'Marcus B.' },
+      reviewRating: { '@type': 'Rating', ratingValue: '5' },
+      reviewBody: 'Twenty years of construction experience and it shows. He explained things in a way I actually understood — and the report was clear, photo-rich, and delivered same day.',
+    },
+    {
+      '@type': 'Review',
+      author: { '@type': 'Person', name: 'Jennifer W.' },
+      reviewRating: { '@type': 'Rating', ratingValue: '5' },
+      reviewBody: 'We\'ve used Inspectrum for three properties now. Always professional, always honest about what\'s a real problem versus what\'s normal wear. We won\'t go to anyone else.',
+    },
+  ],
 }
 
 export default function RootLayout({ children }) {
@@ -133,6 +206,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
+        <link rel="author" href="https://evergreeninspections.com/llms.txt" type="text/plain" />
       </head>
       <body>
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
