@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
 import { SERVICES } from '@/lib/services'
+import { trackBookingStep, trackBookingSubmit, trackBookingFormStart, trackBookingFormAbandon } from '@/lib/analytics'
 
 function formatDateLong(date) {
   return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
@@ -14,6 +15,14 @@ function toDateStr(date) {
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)
+}
+
+function isValidPhone(phone) {
+  return phone.replace(/\D/g, '').length >= 10
 }
 
 function buildGCalUrl({ service, startISO, endISO, address }) {
@@ -100,12 +109,14 @@ function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service
   )
 }
 
-function SchedField({ label, value, onChange, type = 'text', placeholder, required, className = '' }) {
+function SchedField({ label, value, onChange, type = 'text', placeholder, required, className = '', error }) {
+  const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required}
-        className="bg-cream border border-line px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:border-teal focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]" />
+        className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`} />
+      {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>
   )
 }
@@ -134,6 +145,10 @@ export default function SchedulerClient() {
   const [booking, setBooking] = useState(null)
   const [bookingError, setBookingError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const funnelStarted = useRef(false)
+  const funnelCompleted = useRef(false)
+  const currentStepRef = useRef(1)
 
   // Fetch slots when date or service changes.
   useEffect(() => {
@@ -168,6 +183,15 @@ export default function SchedulerClient() {
 
     return () => controller.abort()
   }, [selectedDate, service])
+
+  // Track abandonment when user leaves mid-funnel.
+  useEffect(() => {
+    return () => {
+      if (funnelStarted.current && !funnelCompleted.current) {
+        trackBookingFormAbandon(currentStepRef.current)
+      }
+    }
+  }, [])
 
   const handleSubmit = useCallback(async () => {
     if (!service || !selectedSlot) return
@@ -205,6 +229,8 @@ export default function SchedulerClient() {
         return
       }
 
+      funnelCompleted.current = true
+      trackBookingSubmit(service.name)
       setBooking(data)
     } catch {
       setBookingError('Network error. Please check your connection and try again, or call (303) 697-0990.')
@@ -217,7 +243,7 @@ export default function SchedulerClient() {
 
   const canProceedFromStep1 = !!service
   const canProceedFromStep2 = !!selectedDate && !!selectedSlot
-  const canSubmit = details.name && details.email && details.phone && details.address
+  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.address.trim()
 
   const gcalUrl = confirmed && selectedSlot
     ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: details.address })
@@ -291,12 +317,23 @@ export default function SchedulerClient() {
                 <div className="text-sm text-charcoal">{selectedSlot.label} · {service.durationHours} hr{service.durationHours > 1 ? 's' : ''}</div>
                 <div className="text-sm text-charcoal mt-1">{details.address}</div>
               </div>
+              <p className="text-sm text-charcoal/70 mb-6">
+                We sent a confirmation to <span className="font-medium text-ink">{details.email}</span> — check your spam folder if you don't see it.
+              </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
                 <a href={gcalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-teal">Add to Google Calendar</a>
                 <a href={icsUrl} download="inspection.ics" className="btn" style={{ background: 'transparent', color: 'var(--color-ink)', border: '1px solid var(--color-line)' }}>
                   Download .ics file
                 </a>
               </div>
+              {booking.token && (
+                <p className="text-sm text-charcoal/70 mb-4">
+                  Need to change something?{' '}
+                  <a href={`/manage?token=${booking.token}`} className="text-teal font-semibold hover:text-amber no-underline">
+                    Manage your booking →
+                  </a>
+                </p>
+              )}
               <button type="button" onClick={reset} className="text-sm text-teal underline hover:text-amber">
                 Schedule another inspection
               </button>
@@ -320,7 +357,7 @@ export default function SchedulerClient() {
                 ))}
               </div>
               <div className="flex justify-end">
-                <Button variant="teal" onClick={() => setStep(2)} withArrow className={!canProceedFromStep1 ? 'opacity-50 pointer-events-none' : ''}>
+                <Button variant="teal" onClick={() => { if (!funnelStarted.current) { funnelStarted.current = true; trackBookingFormStart() } currentStepRef.current = 2; trackBookingStep(2); setStep(2) }} withArrow className={!canProceedFromStep1 ? 'opacity-50 pointer-events-none' : ''}>
                   Choose Date & Time
                 </Button>
               </div>
@@ -374,7 +411,7 @@ export default function SchedulerClient() {
               </div>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(1)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="teal" onClick={() => setStep(3)} withArrow className={!canProceedFromStep2 ? 'opacity-50 pointer-events-none' : ''}>
+                <Button variant="teal" onClick={() => { currentStepRef.current = 3; trackBookingStep(3); setStep(3) }} withArrow className={!canProceedFromStep2 ? 'opacity-50 pointer-events-none' : ''}>
                   Continue
                 </Button>
               </div>
@@ -382,13 +419,24 @@ export default function SchedulerClient() {
           )}
 
           {!confirmed && step === 3 && (
-            <form onSubmit={(e) => { e.preventDefault(); setStep(4) }}>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const errors = {}
+              if (!details.name.trim()) errors.name = 'Name is required.'
+              if (!details.email.trim()) errors.email = 'Email is required.'
+              else if (!isValidEmail(details.email.trim())) errors.email = 'Please enter a valid email address.'
+              if (!details.phone.trim()) errors.phone = 'Phone number is required.'
+              else if (!isValidPhone(details.phone)) errors.phone = 'Please enter a valid phone number (10+ digits).'
+              if (!details.address.trim()) errors.address = 'Property address is required.'
+              setFieldErrors(errors)
+              if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); setStep(4) }
+            }}>
               <h2 className="text-2xl mb-6 text-ink">Tell us about you & the property</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <SchedField label="Your Name" value={details.name} onChange={(v) => setDetails({ ...details, name: v })} required />
-                <SchedField label="Phone" value={details.phone} onChange={(v) => setDetails({ ...details, phone: v })} type="tel" required />
-                <SchedField label="Email" value={details.email} onChange={(v) => setDetails({ ...details, email: v })} type="email" required className="sm:col-span-2" />
-                <SchedField label="Property Address" value={details.address} onChange={(v) => setDetails({ ...details, address: v })} placeholder="Street, City, ZIP" required className="sm:col-span-2" />
+                <SchedField label="Your Name" value={details.name} onChange={(v) => { setDetails({ ...details, name: v }); setFieldErrors((p) => ({ ...p, name: undefined })) }} required error={fieldErrors.name} />
+                <SchedField label="Phone" value={details.phone} onChange={(v) => { setDetails({ ...details, phone: v }); setFieldErrors((p) => ({ ...p, phone: undefined })) }} type="tel" required error={fieldErrors.phone} />
+                <SchedField label="Email" value={details.email} onChange={(v) => { setDetails({ ...details, email: v }); setFieldErrors((p) => ({ ...p, email: undefined })) }} type="email" required className="sm:col-span-2" error={fieldErrors.email} />
+                <SchedField label="Property Address" value={details.address} onChange={(v) => { setDetails({ ...details, address: v }); setFieldErrors((p) => ({ ...p, address: undefined })) }} placeholder="Street, City, ZIP" required className="sm:col-span-2" error={fieldErrors.address} />
               </div>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>

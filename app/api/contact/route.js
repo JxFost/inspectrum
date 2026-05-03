@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server'
+import { Resend } from 'resend'
 
-const REQUIRED_FIELDS = ['firstName', 'lastName', 'email', 'phone']
+const REQUIRED_FIELDS = ['name', 'email', 'phone']
+const MAX_FIELD_LENGTH = 500
 
 function normalize(value) {
-  return typeof value === 'string' ? value.trim() : ''
+  return typeof value === 'string' ? value.trim().slice(0, MAX_FIELD_LENGTH) : ''
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)
+}
+
+function isValidPhone(phone) {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 10
 }
 
 export async function POST(request) {
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY
+  const apiKey = process.env.RESEND_API_KEY
+  const contactEmail = process.env.CONTACT_EMAIL
 
-  if (!accessKey) {
+  if (!apiKey || !contactEmail) {
     return NextResponse.json(
       { message: 'Contact form is not configured yet.' },
       { status: 500 },
@@ -31,12 +43,12 @@ export async function POST(request) {
   }
 
   const formData = {
-    firstName: normalize(body.firstName),
-    lastName: normalize(body.lastName),
+    name: normalize(body.name),
     email: normalize(body.email),
     phone: normalize(body.phone),
     address: normalize(body.address),
     serviceType: normalize(body.serviceType),
+    timeline: normalize(body.timeline),
     referral: normalize(body.referral),
     message: normalize(body.message),
   }
@@ -49,39 +61,44 @@ export async function POST(request) {
     )
   }
 
-  let response
-  try {
-    response = await fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        access_key: accessKey,
-        subject: 'New inspection request from Inspectrum website',
-        from_name: `${formData.firstName} ${formData.lastName}`,
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone,
-        property_address: formData.address,
-        service_needed: formData.serviceType,
-        referral_source: formData.referral,
-        message: formData.message || 'No message provided.',
-      }),
-    })
-  } catch {
+  if (!isValidEmail(formData.email)) {
     return NextResponse.json(
-      { message: 'We could not reach the contact form service. Please call or email us directly.' },
-      { status: 502 },
+      { message: 'Please enter a valid email address.' },
+      { status: 400 },
     )
   }
 
-  const result = await response.json().catch(() => ({}))
-
-  if (!response.ok || result.success === false) {
+  if (!isValidPhone(formData.phone)) {
     return NextResponse.json(
-      { message: result.message || 'We could not send your message. Please call or email us directly.' },
+      { message: 'Please enter a valid phone number (at least 10 digits).' },
+      { status: 400 },
+    )
+  }
+
+  const resend = new Resend(apiKey)
+
+  const { data, error: sendError } = await resend.emails.send({
+    from: 'Inspectrum Website <onboarding@resend.dev>',
+    to: ['jeff@evergreeninspections.com'],
+    replyTo: formData.email,
+    subject: `New inspection request from ${formData.name}`,
+    html: `
+      <h2>New Inspection Request</h2>
+      <p><strong>Name:</strong> ${formData.name}</p>
+      <p><strong>Email:</strong> ${formData.email}</p>
+      <p><strong>Phone:</strong> ${formData.phone}</p>
+      <p><strong>Property Address:</strong> ${formData.address || 'Not provided'}</p>
+      <p><strong>Service Needed:</strong> ${formData.serviceType || 'Not specified'}</p>
+      <p><strong>Timeline:</strong> ${formData.timeline || 'Not specified'}</p>
+      <p><strong>Referral Source:</strong> ${formData.referral || 'Not specified'}</p>
+      <p><strong>Message:</strong> ${formData.message || 'No message provided.'}</p>
+    `,
+  })
+
+  if (sendError) {
+    console.error('Resend error:', sendError)
+    return NextResponse.json(
+      { message: sendError.message || 'We could not send your message. Please call or email us directly.' },
       { status: 502 },
     )
   }

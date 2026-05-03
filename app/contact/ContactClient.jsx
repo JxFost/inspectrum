@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
+import { trackContactFormStart, trackContactFormSubmit, trackContactFormAbandon } from '@/lib/analytics'
 
 const CONTACT_METHODS = [
   {
@@ -25,8 +26,10 @@ const CONTACT_METHODS = [
 
 const SERVICE_AREAS = ['Evergreen', 'Denver', 'Boulder', 'Fort Collins', 'Lakewood', 'Golden', 'Conifer', 'Morrison', 'Bailey', 'Idaho Springs', 'Genesee', 'Aurora', 'Centennial', 'Littleton', 'Wheat Ridge', 'Arvada']
 
-function FormField({ label, id, type = 'text', required, placeholder, children, as = 'input' }) {
-  const inputClass = 'bg-cream border border-line px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:border-teal focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] font-sans w-full'
+function FormField({ label, id, type = 'text', required, placeholder, children, as = 'input', error }) {
+  const baseClass = 'bg-cream border px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] font-sans w-full'
+  const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
+  const inputClass = `${baseClass} ${borderClass}`
   return (
     <div className="flex flex-col gap-1.5 mb-4">
       <label htmlFor={id} className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">
@@ -39,22 +42,67 @@ function FormField({ label, id, type = 'text', required, placeholder, children, 
       ) : (
         <input id={id} name={id} type={type} placeholder={placeholder} required={required} className={inputClass} />
       )}
+      {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>
   )
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)
+}
+
+function isValidPhone(phone) {
+  return phone.replace(/\D/g, '').length >= 10
 }
 
 export default function ContactClient() {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const formStarted = useRef(false)
+  const formSubmitted = useRef(false)
+  const lastFieldRef = useRef('')
+
+  const handleFormInteraction = useCallback((fieldName) => {
+    lastFieldRef.current = fieldName
+    if (!formStarted.current) {
+      formStarted.current = true
+      trackContactFormStart()
+    }
+  }, [])
+
+  // Track abandonment when user navigates away after starting the form.
+  useEffect(() => {
+    return () => {
+      if (formStarted.current && !formSubmitted.current) {
+        trackContactFormAbandon(lastFieldRef.current)
+      }
+    }
+  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setStatus('sending')
     setError('')
 
     const form = e.currentTarget
     const formData = new FormData(form)
     const payload = Object.fromEntries(formData.entries())
+
+    // Client-side validation.
+    const errors = {}
+    if (!payload.name?.trim()) errors.name = 'Name is required.'
+    if (!payload.email?.trim()) errors.email = 'Email is required.'
+    else if (!isValidEmail(payload.email.trim())) errors.email = 'Please enter a valid email address.'
+    if (!payload.phone?.trim()) errors.phone = 'Phone number is required.'
+    else if (!isValidPhone(payload.phone)) errors.phone = 'Please enter a valid phone number (10+ digits).'
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+
+    setFieldErrors({})
+    setStatus('sending')
 
     try {
       const response = await fetch('/api/contact', {
@@ -70,6 +118,8 @@ export default function ContactClient() {
       }
 
       form.reset()
+      formSubmitted.current = true
+      trackContactFormSubmit()
       setStatus('sent')
       setTimeout(() => {
         setStatus('idle')
@@ -134,15 +184,12 @@ export default function ContactClient() {
             <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-3">Send Us a Note</div>
             <h3 className="text-[2rem] mb-8 text-ink">Tell us about <em className="italic text-teal">your home.</em></h3>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} onFocus={(e) => handleFormInteraction(e.target.name || e.target.id)}>
               <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
+              <FormField label="Name" id="name" required error={fieldErrors.name} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-                <FormField label="First Name" id="firstName" required />
-                <FormField label="Last Name" id="lastName" required />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-                <FormField label="Email" id="email" type="email" required />
-                <FormField label="Phone" id="phone" type="tel" required />
+                <FormField label="Email" id="email" type="email" required error={fieldErrors.email} />
+                <FormField label="Phone" id="phone" type="tel" required error={fieldErrors.phone} />
               </div>
               <FormField label="Property Address" id="address" placeholder="Street, City, ZIP" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
@@ -154,6 +201,15 @@ export default function ContactClient() {
                   <option>Mold Assessment</option>
                   <option>À la carte / Other</option>
                 </FormField>
+                <FormField label="Timeline" id="timeline" as="select">
+                  <option value="">Select timeline</option>
+                  <option>ASAP</option>
+                  <option>This Week</option>
+                  <option>1–2 Weeks</option>
+                  <option>Not Sure Yet</option>
+                </FormField>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
                 <FormField label="How did you hear about us?" id="referral" as="select">
                   <option>Online search</option>
                   <option>My realtor</option>
