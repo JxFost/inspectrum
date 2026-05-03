@@ -144,6 +144,7 @@ export default function ManageClient() {
                 <DetailRow label="Date" value={formatDateLong(booking.startISO)} />
                 <DetailRow label="Time" value={`${formatTime(booking.startISO)} – ${formatTime(booking.endISO)}`} />
                 <DetailRow label="Address" value={booking.address} />
+                {booking.phone && <DetailRow label="Phone on file" value={booking.phone} />}
               </div>
 
               {cancelError && (

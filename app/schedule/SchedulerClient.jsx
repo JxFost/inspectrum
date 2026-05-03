@@ -25,6 +25,14 @@ function isValidPhone(phone) {
   return phone.replace(/\D/g, '').length >= 10
 }
 
+// Colorado ZIP codes range from 80001–81658.
+function isColoradoZip(zip) {
+  const digits = zip.replace(/\s/g, '').slice(0, 5)
+  if (!/^\d{5}$/.test(digits)) return false
+  const num = parseInt(digits, 10)
+  return num >= 80001 && num <= 81658
+}
+
 function buildGCalUrl({ service, startISO, endISO, address }) {
   const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
   const params = new URLSearchParams({
@@ -109,13 +117,13 @@ function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service
   )
 }
 
-function SchedField({ label, value, onChange, type = 'text', placeholder, required, className = '', error }) {
+function SchedField({ label, value, onChange, type = 'text', placeholder, required, className = '', error, readOnly }) {
   const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required}
-        className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`} />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} readOnly={readOnly}
+        className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] ${readOnly ? 'cursor-default' : ''}`} />
       {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>
   )
@@ -136,7 +144,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', address: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '' })
 
   // API state
   const [slots, setSlots] = useState([])
@@ -208,7 +216,7 @@ export default function SchedulerClient() {
           name: details.name.trim(),
           email: details.email.trim(),
           phone: details.phone.trim(),
-          address: details.address.trim(),
+          address: fullAddress,
         }),
       })
 
@@ -243,18 +251,19 @@ export default function SchedulerClient() {
 
   const canProceedFromStep1 = !!service
   const canProceedFromStep2 = !!selectedDate && !!selectedSlot
-  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.address.trim()
+  const fullAddress = [details.street.trim(), details.city.trim(), details.zip.trim() ? `CO ${details.zip.trim()}` : ''].filter(Boolean).join(', ')
+  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.street.trim() && details.city.trim() && isColoradoZip(details.zip)
 
   const gcalUrl = confirmed && selectedSlot
-    ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: details.address })
+    ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: fullAddress })
     : '#'
   const icsUrl = confirmed && selectedSlot
-    ? buildICS({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: details.address })
+    ? buildICS({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: fullAddress })
     : '#'
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', address: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '' })
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
 
@@ -315,7 +324,7 @@ export default function SchedulerClient() {
                 <div className="font-serif text-lg mb-1">{service.name}</div>
                 <div className="text-sm text-charcoal">{formatDateLong(selectedDate)}</div>
                 <div className="text-sm text-charcoal">{selectedSlot.label} · {service.durationHours} hr{service.durationHours > 1 ? 's' : ''}</div>
-                <div className="text-sm text-charcoal mt-1">{details.address}</div>
+                <div className="text-sm text-charcoal mt-1">{fullAddress}</div>
               </div>
               <p className="text-sm text-charcoal/70 mb-6">
                 We sent a confirmation to <span className="font-medium text-ink">{details.email}</span> — check your spam folder if you don't see it.
@@ -427,7 +436,10 @@ export default function SchedulerClient() {
               else if (!isValidEmail(details.email.trim())) errors.email = 'Please enter a valid email address.'
               if (!details.phone.trim()) errors.phone = 'Phone number is required.'
               else if (!isValidPhone(details.phone)) errors.phone = 'Please enter a valid phone number (10+ digits).'
-              if (!details.address.trim()) errors.address = 'Property address is required.'
+              if (!details.street.trim()) errors.street = 'Street address is required.'
+              if (!details.city.trim()) errors.city = 'City is required.'
+              if (!details.zip.trim()) errors.zip = 'ZIP code is required.'
+              else if (!isColoradoZip(details.zip)) errors.zip = 'Please enter a valid Colorado ZIP code.'
               setFieldErrors(errors)
               if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); setStep(4) }
             }}>
@@ -436,7 +448,12 @@ export default function SchedulerClient() {
                 <SchedField label="Your Name" value={details.name} onChange={(v) => { setDetails({ ...details, name: v }); setFieldErrors((p) => ({ ...p, name: undefined })) }} required error={fieldErrors.name} />
                 <SchedField label="Phone" value={details.phone} onChange={(v) => { setDetails({ ...details, phone: v }); setFieldErrors((p) => ({ ...p, phone: undefined })) }} type="tel" required error={fieldErrors.phone} />
                 <SchedField label="Email" value={details.email} onChange={(v) => { setDetails({ ...details, email: v }); setFieldErrors((p) => ({ ...p, email: undefined })) }} type="email" required className="sm:col-span-2" error={fieldErrors.email} />
-                <SchedField label="Property Address" value={details.address} onChange={(v) => { setDetails({ ...details, address: v }); setFieldErrors((p) => ({ ...p, address: undefined })) }} placeholder="Street, City, ZIP" required className="sm:col-span-2" error={fieldErrors.address} />
+                <SchedField label="Street Address" value={details.street} onChange={(v) => { setDetails({ ...details, street: v }); setFieldErrors((p) => ({ ...p, street: undefined })) }} placeholder="123 Main St" required className="sm:col-span-2" error={fieldErrors.street} />
+                <SchedField label="City" value={details.city} onChange={(v) => { setDetails({ ...details, city: v }); setFieldErrors((p) => ({ ...p, city: undefined })) }} placeholder="Evergreen" required error={fieldErrors.city} />
+                <div className="flex gap-4">
+                  <SchedField label="State" value="CO" onChange={() => {}} className="w-20 opacity-70" readOnly />
+                  <SchedField label="ZIP Code" value={details.zip} onChange={(v) => { setDetails({ ...details, zip: v.replace(/\D/g, '').slice(0, 5) }); setFieldErrors((p) => ({ ...p, zip: undefined })) }} placeholder="80439" required className="flex-1" error={fieldErrors.zip} />
+                </div>
               </div>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
@@ -455,7 +472,7 @@ export default function SchedulerClient() {
                 <SummaryRow label="Name" value={details.name} />
                 <SummaryRow label="Email" value={details.email} />
                 <SummaryRow label="Phone" value={details.phone} />
-                <SummaryRow label="Address" value={details.address} />
+                <SummaryRow label="Address" value={fullAddress} />
               </div>
 
               {bookingError && (

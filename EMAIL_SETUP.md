@@ -2,6 +2,17 @@
 
 Transactional emails for booking confirmations and reminders, powered by [Resend](https://resend.com/).
 
+> **⚠️ CURRENT STATUS: TEST MODE**
+>
+> All emails are currently hardcoded to send from `onboarding@resend.dev` and deliver only to `jeff@evergreeninspections.com`. This is because the `evergreeninspections.com` domain has **not yet been verified** in Resend.
+>
+> **Once the domain is verified**, update `lib/email/send.js`:
+> 1. Change `from` back to `process.env.EMAIL_FROM`
+> 2. Change `to` back to the actual recipient (remove the hardcoded override)
+> 3. Also update `app/api/contact/route.js` — the `from` and `to` are hardcoded there too
+>
+> Search for `TODO` in both files to find the exact lines.
+
 ## 1. Create a Resend account
 
 1. Sign up at [resend.com](https://resend.com/)

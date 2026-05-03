@@ -32,6 +32,13 @@ function isValidPhone(phone) {
   return digits.length >= 10
 }
 
+function hasColoradoZip(address) {
+  const match = address.match(/\b(\d{5})\b/)
+  if (!match) return false
+  const num = parseInt(match[1], 10)
+  return num >= 80001 && num <= 81658
+}
+
 function buildGCalUrl({ service, startISO, endISO, address }) {
   const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
   const params = new URLSearchParams({
@@ -83,6 +90,9 @@ export async function POST(request) {
   }
   if (!address) {
     return NextResponse.json({ error: 'Property address is required.' }, { status: 400 })
+  }
+  if (!hasColoradoZip(address)) {
+    return NextResponse.json({ error: 'Please provide a valid Colorado address with ZIP code.' }, { status: 400 })
   }
 
   // Compute the end time from service duration.
