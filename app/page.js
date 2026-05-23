@@ -121,24 +121,45 @@ const PROCESS_STEPS = [
 ]
 
 // ---- Testimonials ----
+const GOOGLE_REVIEWS_URL =
+  'https://www.google.com/maps/place/?q=place_id:ChIJXa9tHz2ea4cRMNSWwUIwbLk'
+
 const TESTIMONIALS = [
   {
     quote:
-      "Thorough doesn't begin to describe it. Harry caught issues two other inspectors had missed. The walk-through afterward was the most educational hour of my home-buying process.",
-    author: 'Sarah K.',
-    role: 'First-time buyer · Evergreen, CO',
+      "We first worked with Harry for the inspection on a mountain home we were under contract with and were so impressed by his thoroughness, knowledge, and professionalism.",
+    author: 'Chanelle Nelson',
+    stars: 5,
   },
   {
     quote:
-      'Twenty years of construction experience and it shows. He explained things in a way I actually understood — and the report was clear, photo-rich, and delivered same day.',
-    author: 'Marcus B.',
-    role: 'Investor · Lakewood, CO',
+      "Very knowledgeable, kind, and professional. Harry was thorough, and had great judgement on the significance of each item found during the inspection.",
+    author: 'Patrick Milito',
+    stars: 5,
   },
   {
     quote:
-      "We've used Inspectrum for three properties now. Always professional, always honest about what's a real problem versus what's normal wear. We won't go to anyone else.",
-    author: 'Jennifer & Tom W.',
-    role: 'Repeat clients · Golden, CO',
+      "If I were to sum up my experience with Harry the one word I would choose is \"Wow\". Quality, thoroughness, and professionalism at every step.",
+    author: 'Charles Guttilla',
+    stars: 5,
+  },
+  {
+    quote:
+      "I'm buying a home and Harry did the home and radon inspections. He was thorough, efficient, quick with the results, and a really nice guy. A pleasure to work with — would recommend highly to anyone.",
+    author: 'Kate Dougherty',
+    stars: 5,
+  },
+  {
+    quote:
+      "Quality service requires quality people and Harry delivers on all counts. Careful inspection with thorough explanation and an excellent follow up report. Inspectrum should be your go-to for a quality home inspection.",
+    author: 'Nick',
+    stars: 5,
+  },
+  {
+    quote:
+      "I am a Real Estate agent at RE/MAX of Boulder and Harry is my go-to-guy. We've worked together all along the Front Range and he is always thorough, professional, and knowledgeable.",
+    author: 'John Hampshire',
+    stars: 5,
   },
 ]
 
@@ -396,20 +417,36 @@ export default function HomePage() {
                 Trusted across<br /><em className="italic text-teal">Denver Metro.</em>
               </h2>
             </div>
+            <a
+              href={GOOGLE_REVIEWS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-teal font-semibold text-[0.95rem] hover:underline"
+            >
+              See all reviews on Google
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path d="M7 17L17 7M17 7H7M17 7v10" />
+              </svg>
+            </a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {TESTIMONIALS.map((t, i) => (
-              <div
+              <a
                 key={i}
-                className="relative bg-paper p-10 rounded-sm border-l-[3px] border-amber"
+                href={GOOGLE_REVIEWS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative bg-paper p-10 rounded-sm border-l-[3px] border-amber no-underline hover:-translate-y-1 transition-transform"
               >
-                <div className="text-amber text-base mb-4 tracking-[0.15em]">★★★★★</div>
+                <div className="text-amber text-base mb-4 tracking-[0.15em]">
+                  {'★'.repeat(t.stars)}{'☆'.repeat(5 - t.stars)}
+                </div>
                 <div className="font-serif italic text-[1.15rem] text-ink leading-[1.5] mb-6">
-                  "{t.quote}"
+                  &ldquo;{t.quote}&rdquo;
                 </div>
                 <div className="font-semibold text-[0.95rem] text-ink">{t.author}</div>
-                <div className="text-[0.85rem] text-charcoal opacity-80">{t.role}</div>
-              </div>
+                <div className="text-[0.85rem] text-charcoal opacity-80">via Google Reviews</div>
+              </a>
             ))}
           </div>
         </div>
