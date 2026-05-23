@@ -140,11 +140,13 @@ export default function ManageClient() {
             <div className="bg-paper p-8 sm:p-10 rounded-sm border border-line">
               <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-3">Appointment Details</div>
               <div className="space-y-4 mb-8">
+                <DetailRow label="Name" value={booking.name} />
                 <DetailRow label="Service" value={booking.service} />
                 <DetailRow label="Date" value={formatDateLong(booking.startISO)} />
                 <DetailRow label="Time" value={`${formatTime(booking.startISO)} – ${formatTime(booking.endISO)}`} />
                 <DetailRow label="Address" value={booking.address} />
-                {booking.phone && <DetailRow label="Phone on file" value={booking.phone} />}
+                {booking.email && <DetailRow label="Email" value={booking.email} />}
+                {booking.phone && <DetailRow label="Phone" value={booking.phone} />}
               </div>
 
               {cancelError && (

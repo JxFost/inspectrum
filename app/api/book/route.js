@@ -65,6 +65,11 @@ export async function POST(request) {
   const email = trim(body.email)
   const phone = trim(body.phone)
   const address = trim(body.address)
+  const sqft = trim(body.sqft, 50)
+  // Honeypot — bots that fill hidden fields get silently rejected.
+  if (trim(body.botcheck)) {
+    return NextResponse.json({ ok: true })
+  }
 
   // Validate service.
   const service = SERVICES.find((s) => s.id === serviceId)
@@ -136,10 +141,11 @@ export async function POST(request) {
         `Phone: ${phone}`,
         `Email: ${email}`,
         `Address: ${address}`,
+        sqft ? `Square Footage: ${sqft}` : null,
         '',
         'Booked via inspectrum.com',
         buildTokenBlock(token),
-      ].join('\n'),
+      ].filter(v => v !== null).join('\n'),
       location: address,
       startISO,
       endISO,

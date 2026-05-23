@@ -4,8 +4,8 @@ import { Resend } from 'resend'
 const REQUIRED_FIELDS = ['name', 'email', 'phone']
 const MAX_FIELD_LENGTH = 500
 
-function normalize(value) {
-  return typeof value === 'string' ? value.trim().slice(0, MAX_FIELD_LENGTH) : ''
+function normalize(value, maxLen = MAX_FIELD_LENGTH) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLen) : ''
 }
 
 function isValidEmail(email) {

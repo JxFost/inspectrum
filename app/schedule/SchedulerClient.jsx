@@ -144,7 +144,8 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '' })
+  const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
   const [slots, setSlots] = useState([])
@@ -159,9 +160,9 @@ export default function SchedulerClient() {
   const currentStepRef = useRef(1)
 
   // Fetch slots when date or service changes.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!selectedDate || !service) {
-      setSlots([])
       return
     }
 
@@ -191,6 +192,7 @@ export default function SchedulerClient() {
 
     return () => controller.abort()
   }, [selectedDate, service])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Track abandonment when user leaves mid-funnel.
   useEffect(() => {
@@ -200,6 +202,13 @@ export default function SchedulerClient() {
       }
     }
   }, [])
+
+  const confirmed = !!booking
+
+  const canProceedFromStep1 = !!service
+  const canProceedFromStep2 = !!selectedDate && !!selectedSlot
+  const fullAddress = [details.street.trim(), details.city.trim(), details.zip.trim() ? `CO ${details.zip.trim()}` : ''].filter(Boolean).join(', ')
+  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.street.trim() && details.city.trim() && isColoradoZip(details.zip)
 
   const handleSubmit = useCallback(async () => {
     if (!service || !selectedSlot) return
@@ -217,6 +226,7 @@ export default function SchedulerClient() {
           email: details.email.trim(),
           phone: details.phone.trim(),
           address: fullAddress,
+          sqft: knowsExactSqft ? details.sqftExact : details.sqftRange,
         }),
       })
 
@@ -245,14 +255,7 @@ export default function SchedulerClient() {
     } finally {
       setSubmitting(false)
     }
-  }, [service, selectedSlot, details])
-
-  const confirmed = !!booking
-
-  const canProceedFromStep1 = !!service
-  const canProceedFromStep2 = !!selectedDate && !!selectedSlot
-  const fullAddress = [details.street.trim(), details.city.trim(), details.zip.trim() ? `CO ${details.zip.trim()}` : ''].filter(Boolean).join(', ')
-  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.street.trim() && details.city.trim() && isColoradoZip(details.zip)
+  }, [service, selectedSlot, details, fullAddress])
 
   const gcalUrl = confirmed && selectedSlot
     ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: fullAddress })
@@ -263,7 +266,8 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '' })
+    setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
 
@@ -454,6 +458,43 @@ export default function SchedulerClient() {
                   <SchedField label="State" value="CO" onChange={() => {}} className="w-20 opacity-70" readOnly />
                   <SchedField label="ZIP Code" value={details.zip} onChange={(v) => { setDetails({ ...details, zip: v.replace(/\D/g, '').slice(0, 5) }); setFieldErrors((p) => ({ ...p, zip: undefined })) }} placeholder="80439" required className="flex-1" error={fieldErrors.zip} />
                 </div>
+
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Square Footage</label>
+                  {!knowsExactSqft && (
+                    <select
+                      value={details.sqftRange}
+                      onChange={(e) => setDetails({ ...details, sqftRange: e.target.value })}
+                      className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]"
+                    >
+                      <option value="">Select a range</option>
+                      <option value="Under 2,000 sq ft">Under 2,000 sq ft</option>
+                      <option value="2,000 – 3,000 sq ft">2,000 – 3,000 sq ft</option>
+                      <option value="3,000 – 4,000 sq ft">3,000 – 4,000 sq ft</option>
+                      <option value="4,000 – 5,000 sq ft">4,000 – 5,000 sq ft</option>
+                      <option value="5,000+ sq ft">5,000+ sq ft</option>
+                    </select>
+                  )}
+                  {knowsExactSqft && (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={details.sqftExact}
+                      onChange={(e) => setDetails({ ...details, sqftExact: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                      placeholder="e.g. 2500"
+                      className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]"
+                    />
+                  )}
+                  <label className="flex items-center gap-2 mt-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={knowsExactSqft}
+                      onChange={(e) => setKnowsExactSqft(e.target.checked)}
+                      className="accent-teal"
+                    />
+                    <span className="text-xs text-charcoal/70">I know the exact square footage</span>
+                  </label>
+                </div>
               </div>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
@@ -473,6 +514,9 @@ export default function SchedulerClient() {
                 <SummaryRow label="Email" value={details.email} />
                 <SummaryRow label="Phone" value={details.phone} />
                 <SummaryRow label="Address" value={fullAddress} />
+                {(knowsExactSqft ? details.sqftExact : details.sqftRange) && (
+                  <SummaryRow label="Square Footage" value={knowsExactSqft ? `${details.sqftExact} sq ft` : details.sqftRange} />
+                )}
               </div>
 
               {bookingError && (

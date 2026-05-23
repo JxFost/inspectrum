@@ -56,6 +56,7 @@ export async function GET(_request, { params }) {
   return NextResponse.json({
     service: parseCustomerField(description, 'Service'),
     name: parseCustomerField(description, 'Customer'),
+    email: parseCustomerField(description, 'Email'),
     phone: parseCustomerField(description, 'Phone'),
     address: event.location || parseCustomerField(description, 'Address'),
     startISO,

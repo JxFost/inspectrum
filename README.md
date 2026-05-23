@@ -60,6 +60,7 @@ app/
 
 components/                # All shared components
   BrandLogo.jsx           # Logo SVG image lockup (server)
+  GoogleAnalytics.jsx     # GA4 script loader, enabled by NEXT_PUBLIC_GA_MEASUREMENT_ID
   Nav.jsx                 # Top nav (client — uses usePathname/useState)
   Footer.jsx              # Footer (server)
   Button.jsx              # Universal button (server)
@@ -77,13 +78,33 @@ Server vs client components: anything that doesn't need browser-only APIs or int
 
 ## Contact form
 
-The `/contact` form posts to `app/api/contact/route.js`, which forwards submissions to Web3Forms. Create a free Web3Forms access key for the destination email address, then add it as a server-side environment variable:
+The `/contact` form posts to `app/api/contact/route.js`, which forwards submissions through Resend. Booking receipts and reminders also use Resend; see `EMAIL_SETUP.md` for full setup.
 
 ```bash
-WEB3FORMS_ACCESS_KEY=your_access_key_here
+RESEND_API_KEY=re_your_key_here
+EMAIL_FROM="Inspectrum Inspections <office@evergreeninspections.com>"
+PUBLIC_SITE_URL=https://evergreeninspections.com
 ```
 
-On Vercel, add the same variable under Project Settings → Environment Variables. Keep this as `WEB3FORMS_ACCESS_KEY` rather than `NEXT_PUBLIC_...` so the key is not exposed in browser source.
+On Vercel, add the same variables under Project Settings → Environment Variables. Keep server-side keys out of `NEXT_PUBLIC_...` variables so they are not exposed in browser source.
+
+## Analytics and bot protection
+
+Google Analytics loads from `components/GoogleAnalytics.jsx` only when this public env var is configured:
+
+```bash
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+Contact and booking submissions are protected by reCAPTCHA v3. The client requests action-specific tokens before POSTing, and the API routes verify those tokens before sending email or creating calendar bookings.
+
+```bash
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_public_site_key
+RECAPTCHA_SECRET_KEY=your_private_secret_key
+RECAPTCHA_MIN_SCORE=0.5
+```
+
+Locally, missing reCAPTCHA server config is skipped so development forms keep working. In production, `RECAPTCHA_SECRET_KEY` must be configured or protected submissions are rejected.
 
 ## Animation patterns
 
