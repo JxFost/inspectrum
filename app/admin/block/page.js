@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function AdminBlockPage() {
   return (
-    <div className="min-h-screen bg-cream py-12 px-5">
+    <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
       <div className="max-w-lg mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-serif text-ink">Block Time / Manual Booking</h1>
