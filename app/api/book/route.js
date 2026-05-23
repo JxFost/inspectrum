@@ -143,7 +143,7 @@ export async function POST(request) {
         `Address: ${address}`,
         sqft ? `Square Footage: ${sqft}` : null,
         '',
-        'Booked via inspectrum.com',
+        'Booked via ' + process.env.PUBLIC_SITE_URL,
         buildTokenBlock(token),
       ].filter(v => v !== null).join('\n'),
       location: address,
