@@ -126,9 +126,20 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ----- TEMP: log full body for Gmail forwarding verification -----
+  // Remove this block once forwarding verification is complete.
+  let rawBody
+  try {
+    rawBody = await request.text()
+    console.log('[acc-inbound-debug] raw body:', rawBody)
+  } catch (err) {
+    console.log('[acc-inbound-debug] failed to read body:', err.message)
+  }
+  // ----- END TEMP -----
+
   let body
   try {
-    body = await request.json()
+    body = JSON.parse(rawBody)
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
