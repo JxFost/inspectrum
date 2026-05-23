@@ -158,6 +158,15 @@ export default function SchedulerClient() {
   const funnelStarted = useRef(false)
   const funnelCompleted = useRef(false)
   const currentStepRef = useRef(1)
+  const stepBarRef = useRef(null)
+
+  function goToStep(num) {
+    setStep(num)
+    // Scroll step bar to just below the fixed nav after React renders
+    setTimeout(() => {
+      stepBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }
 
   // Fetch slots when date or service changes.
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -247,7 +256,7 @@ export default function SchedulerClient() {
         // Slot was taken — bounce back to date/time picker.
         setBookingError(data.error || 'That slot was just taken. Please choose another time.')
         setSelectedSlot(null)
-        setStep(2)
+        goToStep(2)
         setSubmitting(false)
         return
       }
@@ -295,7 +304,7 @@ export default function SchedulerClient() {
       </header>
 
       {!confirmed && (
-        <div className="bg-paper py-6 px-5 lg:px-8 border-b border-line">
+        <div ref={stepBarRef} className="bg-paper py-6 px-5 lg:px-8 border-b border-line scroll-mt-20">
           <div className="max-w-[900px] mx-auto flex items-center justify-between text-xs sm:text-sm">
             {['Service', 'Date & Time', 'You', 'Property', 'Access', 'Confirm'].map((label, i) => {
               const num = i + 1
@@ -381,7 +390,7 @@ export default function SchedulerClient() {
                 ))}
               </div>
               <div className="flex justify-end">
-                <Button variant="teal" onClick={() => { if (!funnelStarted.current) { funnelStarted.current = true; trackBookingFormStart() } currentStepRef.current = 2; trackBookingStep(2); setStep(2) }} withArrow className={!canProceedFromStep1 ? 'opacity-50 pointer-events-none' : ''}>
+                <Button variant="teal" onClick={() => { if (!funnelStarted.current) { funnelStarted.current = true; trackBookingFormStart() } currentStepRef.current = 2; trackBookingStep(2); goToStep(2) }} withArrow className={!canProceedFromStep1 ? 'opacity-50 pointer-events-none' : ''}>
                   Choose Date & Time
                 </Button>
               </div>
@@ -434,8 +443,8 @@ export default function SchedulerClient() {
                 </div>
               </div>
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(1)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="teal" onClick={() => { currentStepRef.current = 3; trackBookingStep(3); setStep(3) }} withArrow className={!canProceedFromStep2 ? 'opacity-50 pointer-events-none' : ''}>
+                <button type="button" onClick={() => goToStep(1)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <Button variant="teal" onClick={() => { currentStepRef.current = 3; trackBookingStep(3); goToStep(3) }} withArrow className={!canProceedFromStep2 ? 'opacity-50 pointer-events-none' : ''}>
                   Continue
                 </Button>
               </div>
@@ -453,7 +462,7 @@ export default function SchedulerClient() {
               if (!details.phone.trim()) errors.phone = 'Phone number is required.'
               else if (!isValidPhone(details.phone)) errors.phone = 'Please enter a valid phone number (10+ digits).'
               setFieldErrors(errors)
-              if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); setStep(4) }
+              if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); goToStep(4) }
             }}>
               <h2 className="text-2xl mb-2 text-ink">About you</h2>
               <p className="text-sm text-charcoal/70 mb-6">Who should we contact about this inspection?</p>
@@ -485,7 +494,7 @@ export default function SchedulerClient() {
                 </div>
               </div>
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <button type="button" onClick={() => goToStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="teal" type="submit" withArrow>Property Details</Button>
               </div>
             </form>
@@ -501,7 +510,7 @@ export default function SchedulerClient() {
               if (!details.zip.trim()) errors.zip = 'ZIP code is required.'
               else if (!isColoradoZip(details.zip)) errors.zip = 'Please enter a valid Colorado ZIP code.'
               setFieldErrors(errors)
-              if (Object.keys(errors).length === 0) { currentStepRef.current = 5; trackBookingStep(5); setStep(5) }
+              if (Object.keys(errors).length === 0) { currentStepRef.current = 5; trackBookingStep(5); goToStep(5) }
             }}>
               <h2 className="text-2xl mb-2 text-ink">Property details</h2>
               <p className="text-sm text-charcoal/70 mb-6">Tell us about the property being inspected.</p>
@@ -600,7 +609,7 @@ export default function SchedulerClient() {
                 </div>
               </div>
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <button type="button" onClick={() => goToStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="teal" type="submit" withArrow>Access & Add-Ons</Button>
               </div>
             </form>
@@ -670,8 +679,8 @@ export default function SchedulerClient() {
               )}
 
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(4)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="teal" onClick={() => { currentStepRef.current = 6; trackBookingStep(6); setStep(6) }} withArrow>Review</Button>
+                <button type="button" onClick={() => goToStep(4)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <Button variant="teal" onClick={() => { currentStepRef.current = 6; trackBookingStep(6); goToStep(6) }} withArrow>Review</Button>
               </div>
             </div>
           )}
@@ -712,10 +721,10 @@ export default function SchedulerClient() {
               )}
 
               <p className="text-sm text-charcoal/70 mt-6 text-center">
-                We'll call you within a few hours to confirm and answer any questions.
+                We'll call you at {details.phone} within a few hours to confirm and answer any questions.
               </p>
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(5)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <button type="button" onClick={() => goToStep(5)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="primary" onClick={handleSubmit} withArrow disabled={submitting}>
                   {submitting ? 'Booking...' : 'Confirm Booking'}
                 </Button>
