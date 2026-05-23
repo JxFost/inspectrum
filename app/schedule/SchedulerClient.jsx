@@ -208,7 +208,6 @@ export default function SchedulerClient() {
   const canProceedFromStep1 = !!service
   const canProceedFromStep2 = !!selectedDate && !!selectedSlot
   const fullAddress = [details.street.trim(), details.city.trim(), details.zip.trim() ? `CO ${details.zip.trim()}` : ''].filter(Boolean).join(', ')
-  const canSubmit = details.name.trim() && isValidEmail(details.email.trim()) && isValidPhone(details.phone) && details.street.trim() && details.city.trim() && isColoradoZip(details.zip)
 
   const handleSubmit = useCallback(async () => {
     if (!service || !selectedSlot) return
@@ -298,24 +297,24 @@ export default function SchedulerClient() {
       {!confirmed && (
         <div className="bg-paper py-6 px-5 lg:px-8 border-b border-line">
           <div className="max-w-[900px] mx-auto flex items-center justify-between text-xs sm:text-sm">
-            {['Service', 'Date & Time', 'Your Details', 'Confirm'].map((label, i) => {
+            {['Service', 'Date & Time', 'You', 'Property', 'Access', 'Confirm'].map((label, i) => {
               const num = i + 1
               const isActive = step === num
               const isDone = step > num
               return (
                 <div key={label} className="flex items-center gap-2 flex-1">
                   <div className={[
-                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0',
+                    'w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-semibold shrink-0',
                     isActive && 'bg-teal text-white',
                     isDone && 'bg-amber text-white',
                     !isActive && !isDone && 'bg-cream border border-line text-charcoal/50',
                   ].filter(Boolean).join(' ')}>
                     {isDone ? '✓' : num}
                   </div>
-                  <span className={`hidden sm:inline ${isActive ? 'text-ink font-semibold' : 'text-charcoal/60'}`}>
+                  <span className={`hidden md:inline text-xs ${isActive ? 'text-ink font-semibold' : 'text-charcoal/60'}`}>
                     {label}
                   </span>
-                  {i < 3 && <div className="flex-1 h-px bg-line mx-2" />}
+                  {i < 5 && <div className="flex-1 h-px bg-line mx-1 sm:mx-2" />}
                 </div>
               )
             })}
@@ -443,6 +442,7 @@ export default function SchedulerClient() {
             </div>
           )}
 
+          {/* ---- Step 3: Your Details ---- */}
           {!confirmed && step === 3 && (
             <form onSubmit={(e) => {
               e.preventDefault()
@@ -452,31 +452,27 @@ export default function SchedulerClient() {
               else if (!isValidEmail(details.email.trim())) errors.email = 'Please enter a valid email address.'
               if (!details.phone.trim()) errors.phone = 'Phone number is required.'
               else if (!isValidPhone(details.phone)) errors.phone = 'Please enter a valid phone number (10+ digits).'
-              if (!details.street.trim()) errors.street = 'Street address is required.'
-              if (!details.city.trim()) errors.city = 'City is required.'
-              if (!details.zip.trim()) errors.zip = 'ZIP code is required.'
-              else if (!isColoradoZip(details.zip)) errors.zip = 'Please enter a valid Colorado ZIP code.'
               setFieldErrors(errors)
               if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); setStep(4) }
             }}>
-              {/* ---- Personal Details ---- */}
-              <h2 className="text-2xl mb-6 text-ink">Your details</h2>
+              <h2 className="text-2xl mb-2 text-ink">About you</h2>
+              <p className="text-sm text-charcoal/70 mb-6">Who should we contact about this inspection?</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SchedField label="Your Name" value={details.name} onChange={(v) => { setDetails({ ...details, name: v }); setFieldErrors((p) => ({ ...p, name: undefined })) }} required error={fieldErrors.name} />
                 <SchedField label="Phone" value={details.phone} onChange={(v) => { setDetails({ ...details, phone: v }); setFieldErrors((p) => ({ ...p, phone: undefined })) }} type="tel" required error={fieldErrors.phone} />
                 <SchedField label="Email" value={details.email} onChange={(v) => { setDetails({ ...details, email: v }); setFieldErrors((p) => ({ ...p, email: undefined })) }} type="email" required className="sm:col-span-2" error={fieldErrors.email} />
-                <div className="sm:col-span-2 flex flex-col gap-1.5">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <div className="sm:col-span-2 bg-cream/50 border border-line rounded-sm p-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={details.isAgent}
                       onChange={(e) => setDetails({ ...details, isAgent: e.target.checked, agentType: e.target.checked ? details.agentType : '' })}
-                      className="accent-teal w-4 h-4"
+                      className="accent-teal w-5 h-5"
                     />
-                    <span className="text-sm text-ink">I am a real estate agent representing a client</span>
+                    <span className="text-sm font-semibold text-ink">I am a real estate agent representing a client</span>
                   </label>
                   {details.isAgent && (
-                    <div className="ml-6 mt-2 flex flex-col gap-1.5">
+                    <div className="ml-8 mt-3 flex flex-col gap-1.5">
                       <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Agent Type</label>
                       <select value={details.agentType} onChange={(e) => setDetails({ ...details, agentType: e.target.value })}
                         className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
@@ -488,9 +484,27 @@ export default function SchedulerClient() {
                   )}
                 </div>
               </div>
+              <div className="flex justify-between mt-8">
+                <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <Button variant="teal" type="submit" withArrow>Property Details</Button>
+              </div>
+            </form>
+          )}
 
-              {/* ---- Property Details ---- */}
-              <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Property Details</h3>
+          {/* ---- Step 4: Property Details ---- */}
+          {!confirmed && step === 4 && (
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const errors = {}
+              if (!details.street.trim()) errors.street = 'Street address is required.'
+              if (!details.city.trim()) errors.city = 'City is required.'
+              if (!details.zip.trim()) errors.zip = 'ZIP code is required.'
+              else if (!isColoradoZip(details.zip)) errors.zip = 'Please enter a valid Colorado ZIP code.'
+              setFieldErrors(errors)
+              if (Object.keys(errors).length === 0) { currentStepRef.current = 5; trackBookingStep(5); setStep(5) }
+            }}>
+              <h2 className="text-2xl mb-2 text-ink">Property details</h2>
+              <p className="text-sm text-charcoal/70 mb-6">Tell us about the property being inspected.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SchedField label="Street Address" value={details.street} onChange={(v) => { setDetails({ ...details, street: v }); setFieldErrors((p) => ({ ...p, street: undefined })) }} placeholder="123 Main St" required className="sm:col-span-2" error={fieldErrors.street} />
                 <SchedField label="City" value={details.city} onChange={(v) => { setDetails({ ...details, city: v }); setFieldErrors((p) => ({ ...p, city: undefined })) }} placeholder="Evergreen" required error={fieldErrors.city} />
@@ -585,9 +599,18 @@ export default function SchedulerClient() {
                   </label>
                 </div>
               </div>
+              <div className="flex justify-between mt-8">
+                <button type="button" onClick={() => setStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <Button variant="teal" type="submit" withArrow>Access & Add-Ons</Button>
+              </div>
+            </form>
+          )}
 
-              {/* ---- Access ---- */}
-              <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Access</h3>
+          {/* ---- Step 5: Access & Add-Ons ---- */}
+          {!confirmed && step === 5 && (
+            <div>
+              <h2 className="text-2xl mb-2 text-ink">Access & add-ons</h2>
+              <p className="text-sm text-charcoal/70 mb-6">How will the inspector get in, and any extras?</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Will client be attending?</label>
@@ -621,7 +644,6 @@ export default function SchedulerClient() {
                 )}
               </div>
 
-              {/* ---- Add-Ons ---- */}
               {service?.id === 'full' && (
                 <>
                   <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Add-Ons</h3>
@@ -646,14 +668,15 @@ export default function SchedulerClient() {
                   </div>
                 </>
               )}
+
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="teal" type="submit" withArrow className={!canSubmit ? 'opacity-50 pointer-events-none' : ''}>Review</Button>
+                <button type="button" onClick={() => setStep(4)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <Button variant="teal" onClick={() => { currentStepRef.current = 6; trackBookingStep(6); setStep(6) }} withArrow>Review</Button>
               </div>
-            </form>
+            </div>
           )}
 
-          {!confirmed && step === 4 && (
+          {!confirmed && step === 6 && (
             <div>
               <h2 className="text-2xl mb-6 text-ink">One last look.</h2>
               <div className="bg-paper p-8 rounded-sm border border-line space-y-4">
@@ -692,7 +715,7 @@ export default function SchedulerClient() {
                 We'll call you within a few hours to confirm and answer any questions.
               </p>
               <div className="flex justify-between mt-8">
-                <button type="button" onClick={() => setStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
+                <button type="button" onClick={() => setStep(5)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="primary" onClick={handleSubmit} withArrow disabled={submitting}>
                   {submitting ? 'Booking...' : 'Confirm Booking'}
                 </Button>
