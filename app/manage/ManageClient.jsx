@@ -166,7 +166,7 @@ export default function ManageClient() {
                     Cancel this appointment
                   </button>
                   <p className="text-xs text-charcoal/50 text-center mt-3">
-                    Wrong dat, phone, or address? Please cancel and rebook your appointment.
+                    Wrong date, phone, or address? Please cancel and rebook your appointment.
                   </p>
                 </div>
               )}
