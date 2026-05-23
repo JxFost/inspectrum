@@ -1,0 +1,107 @@
+/*
+ * POST /api/admin/block
+ *
+ * Creates a calendar event from the admin block form.
+ * Supports vacation blocks (no customer info) and manual bookings.
+ * Optionally sends a confirmation email.
+ */
+
+import { NextResponse } from 'next/server'
+import { SERVICES } from '@/lib/services'
+import { insertEvent } from '@/lib/google-calendar'
+import { buildEventDescription, extractConfirmationCode } from '@/lib/booking'
+import { buildManageUrl } from '@/lib/booking-tokens'
+import { sendEmail } from '@/lib/email/send'
+import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
+
+export async function POST(request) {
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 })
+  }
+
+  const serviceId = body.service || 'full'
+  const service = SERVICES.find((s) => s.id === serviceId)
+  if (!service) {
+    return NextResponse.json({ error: 'Unknown service.' }, { status: 400 })
+  }
+
+  const startISO = body.startISO
+  if (!startISO || isNaN(new Date(startISO).getTime())) {
+    return NextResponse.json({ error: 'Valid start time required.' }, { status: 400 })
+  }
+
+  const name = (body.name || '').trim() || 'Blocked'
+  const phone = (body.phone || '').trim()
+  const email = (body.email || '').trim()
+  const address = (body.address || '').trim()
+  const notes = (body.notes || '').trim()
+  const sendConfirmation = body.sendEmail === true && email
+
+  const endDate = new Date(new Date(startISO).getTime() + service.durationHours * 60 * 60 * 1000)
+  const endISO = endDate.toISOString()
+
+  const isVacation = name === 'Blocked' && !email && !phone
+
+  const { description, token } = buildEventDescription({
+    serviceName: isVacation ? 'Blocked Time' : service.name,
+    customerName: name,
+    phone,
+    email,
+    address,
+    source: 'admin',
+    extra: notes ? `Notes: ${notes}` : null,
+  })
+
+  try {
+    const summary = isVacation
+      ? `Inspectrum: BLOCKED — ${notes || 'Vacation/Personal'}`
+      : `Inspectrum: ${service.name} — ${name}`
+
+    const event = await insertEvent({
+      summary,
+      description,
+      location: address || undefined,
+      startISO,
+      endISO,
+    })
+
+    const confirmationCode = extractConfirmationCode(event.id)
+
+    console.log(`[admin-block] created: ${name.split(' ')[0]}, ${isVacation ? 'block' : service.name}, event ${event.id}`)
+
+    // Optionally send confirmation email
+    if (sendConfirmation) {
+      const manageUrl = buildManageUrl(token)
+      sendEmail({
+        to: email,
+        subject: `Your inspection is booked — ${service.name}`,
+        html: bookingReceiptHtml({
+          customerName: name,
+          service: service.name,
+          startISO,
+          endISO,
+          durationHours: service.durationHours,
+          address,
+          confirmationCode,
+          manageUrl,
+          gcalUrl: '#',
+        }),
+      }).catch((err) => {
+        console.error('[admin-block] email failed:', err)
+      })
+    }
+
+    return NextResponse.json({
+      ok: true,
+      confirmationCode,
+      eventId: event.id,
+      token,
+    })
+  } catch (err) {
+    console.error('[admin-block] error:', err)
+    return NextResponse.json({ error: 'Failed to create event.' }, { status: 500 })
+  }
+}

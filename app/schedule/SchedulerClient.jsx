@@ -144,7 +144,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -227,6 +227,18 @@ export default function SchedulerClient() {
           phone: details.phone.trim(),
           address: fullAddress,
           sqft: knowsExactSqft ? details.sqftExact : details.sqftRange,
+          yearBuilt: details.yearBuilt,
+          waterType: details.waterType,
+          garageType: details.garageType,
+          occupied: details.occupied,
+          radonAddOn: details.radonAddOn,
+          pets: details.pets,
+          isAgent: details.isAgent,
+          agentType: details.agentType,
+          clientAttending: details.clientAttending,
+          accessProvidedBy: (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
+            ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
+            : details.accessProvidedBy,
         }),
       })
 
@@ -266,7 +278,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -447,11 +459,39 @@ export default function SchedulerClient() {
               setFieldErrors(errors)
               if (Object.keys(errors).length === 0) { currentStepRef.current = 4; trackBookingStep(4); setStep(4) }
             }}>
-              <h2 className="text-2xl mb-6 text-ink">Tell us about you & the property</h2>
+              {/* ---- Personal Details ---- */}
+              <h2 className="text-2xl mb-6 text-ink">Your details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SchedField label="Your Name" value={details.name} onChange={(v) => { setDetails({ ...details, name: v }); setFieldErrors((p) => ({ ...p, name: undefined })) }} required error={fieldErrors.name} />
                 <SchedField label="Phone" value={details.phone} onChange={(v) => { setDetails({ ...details, phone: v }); setFieldErrors((p) => ({ ...p, phone: undefined })) }} type="tel" required error={fieldErrors.phone} />
                 <SchedField label="Email" value={details.email} onChange={(v) => { setDetails({ ...details, email: v }); setFieldErrors((p) => ({ ...p, email: undefined })) }} type="email" required className="sm:col-span-2" error={fieldErrors.email} />
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={details.isAgent}
+                      onChange={(e) => setDetails({ ...details, isAgent: e.target.checked, agentType: e.target.checked ? details.agentType : '' })}
+                      className="accent-teal w-4 h-4"
+                    />
+                    <span className="text-sm text-ink">I am a real estate agent representing a client</span>
+                  </label>
+                  {details.isAgent && (
+                    <div className="ml-6 mt-2 flex flex-col gap-1.5">
+                      <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Agent Type</label>
+                      <select value={details.agentType} onChange={(e) => setDetails({ ...details, agentType: e.target.value })}
+                        className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                        <option value="">Select</option>
+                        <option value="Buyer's Agent">Buyer&apos;s Agent</option>
+                        <option value="Seller's Agent">Seller&apos;s Agent</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ---- Property Details ---- */}
+              <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Property Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SchedField label="Street Address" value={details.street} onChange={(v) => { setDetails({ ...details, street: v }); setFieldErrors((p) => ({ ...p, street: undefined })) }} placeholder="123 Main St" required className="sm:col-span-2" error={fieldErrors.street} />
                 <SchedField label="City" value={details.city} onChange={(v) => { setDetails({ ...details, city: v }); setFieldErrors((p) => ({ ...p, city: undefined })) }} placeholder="Evergreen" required error={fieldErrors.city} />
                 <div className="flex gap-4">
@@ -495,7 +535,117 @@ export default function SchedulerClient() {
                     <span className="text-xs text-charcoal/70">I know the exact square footage</span>
                   </label>
                 </div>
+
+                <SchedField label="Year Built" value={details.yearBuilt} onChange={(v) => setDetails({ ...details, yearBuilt: v.replace(/\D/g, '').slice(0, 4) })} placeholder="e.g. 1985" type="text" inputMode="numeric" />
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Water Type</label>
+                  <select value={details.waterType} onChange={(e) => setDetails({ ...details, waterType: e.target.value })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">Not sure</option>
+                    <option value="Public Water">Public Water</option>
+                    <option value="Well Water">Well Water</option>
+                    <option value="Shared Well">Shared Well</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Garage</label>
+                  <select value={details.garageType} onChange={(e) => setDetails({ ...details, garageType: e.target.value })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">Not sure</option>
+                    <option value="Attached">Attached</option>
+                    <option value="Detached">Detached</option>
+                    <option value="None">None</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Is the property occupied?</label>
+                  <select value={details.occupied} onChange={(e) => setDetails({ ...details, occupied: e.target.value })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">Not sure</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2 bg-cream/50 border border-line rounded-sm p-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={details.pets}
+                      onChange={(e) => setDetails({ ...details, pets: e.target.checked })}
+                      className="accent-teal w-5 h-5"
+                    />
+                    <div>
+                      <span className="text-sm font-semibold text-ink">Pets on property</span>
+                      <span className="text-xs text-charcoal/70 block">Let us know so our inspector can be prepared</span>
+                    </div>
+                  </label>
+                </div>
               </div>
+
+              {/* ---- Access ---- */}
+              <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Access</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Will client be attending?</label>
+                  <select value={details.clientAttending} onChange={(e) => setDetails({ ...details, clientAttending: e.target.value })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">Not sure</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Who will provide entry?</label>
+                  <select value={details.accessProvidedBy} onChange={(e) => setDetails({ ...details, accessProvidedBy: e.target.value, accessNotes: '' })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">Select</option>
+                    <option value="Client will let you in">Client will let you in</option>
+                    <option value="Buyer's Agent will let you in">Buyer&apos;s Agent will let you in</option>
+                    <option value="Seller's Agent will let you in">Seller&apos;s Agent will let you in</option>
+                    <option value="Lockbox">Lockbox</option>
+                    <option value="Property is unlocked">Property is unlocked</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {details.accessProvidedBy === 'Lockbox' && (
+                  <SchedField label="Lockbox Code" value={details.accessNotes} onChange={(v) => setDetails({ ...details, accessNotes: v })} placeholder="Enter code" className="sm:col-span-2" />
+                )}
+                {details.accessProvidedBy === 'Other' && (
+                  <SchedField label="Access Details" value={details.accessNotes} onChange={(v) => setDetails({ ...details, accessNotes: v })} placeholder="Please describe how to access the property" className="sm:col-span-2" />
+                )}
+              </div>
+
+              {/* ---- Add-Ons ---- */}
+              {service?.id === 'full' && (
+                <>
+                  <h3 className="text-lg font-serif text-ink mt-10 mb-4 pb-2 border-b border-line">Add-Ons</h3>
+                  <div className="bg-cream/50 border border-line rounded-sm p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={details.radonAddOn}
+                        onChange={(e) => setDetails({ ...details, radonAddOn: e.target.checked })}
+                        className="accent-teal w-5 h-5"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-semibold text-ink">Add Radon Testing</span>
+                        <span className="ml-2 inline-flex items-center gap-1 bg-amber/15 text-amber text-[0.65rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full align-middle">Recommended</span>
+                        <span className="text-xs text-charcoal/70 block mt-1">48-hour continuous monitor — drop off day of inspection, pickup 2 days later</span>
+                      </div>
+                    </label>
+                    <div className="flex items-start gap-2 mt-3 ml-8 bg-paper/80 rounded-sm px-3 py-2">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-teal shrink-0 mt-0.5"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" /></svg>
+                      <span className="text-xs text-charcoal/80 leading-relaxed">Nearly 1 in 2 Colorado homes have radon levels above the EPA action level of 4 pCi/L, with mountain and foothills communities at even higher risk.</span>
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => setStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="teal" type="submit" withArrow className={!canSubmit ? 'opacity-50 pointer-events-none' : ''}>Review</Button>
@@ -517,6 +667,19 @@ export default function SchedulerClient() {
                 {(knowsExactSqft ? details.sqftExact : details.sqftRange) && (
                   <SummaryRow label="Square Footage" value={knowsExactSqft ? `${details.sqftExact} sq ft` : details.sqftRange} />
                 )}
+                {details.yearBuilt && <SummaryRow label="Year Built" value={`${details.yearBuilt} (${new Date().getFullYear() - parseInt(details.yearBuilt)} yrs old)`} />}
+                {details.waterType && <SummaryRow label="Water Type" value={details.waterType} />}
+                {details.garageType && <SummaryRow label="Garage" value={details.garageType} />}
+                {details.occupied && <SummaryRow label="Occupied" value={details.occupied} />}
+                {details.isAgent && <SummaryRow label="Ordered By" value={details.agentType || 'Agent'} />}
+                {details.clientAttending && <SummaryRow label="Client Attending" value={details.clientAttending} />}
+                {details.accessProvidedBy && <SummaryRow label="Access" value={
+                  (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
+                    ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
+                    : details.accessProvidedBy
+                } />}
+                {details.pets && <SummaryRow label="Pets on Property" value="Yes" />}
+                {details.radonAddOn && <SummaryRow label="Radon Add-On" value="Yes — 48hr continuous monitor" />}
               </div>
 
               {bookingError && (

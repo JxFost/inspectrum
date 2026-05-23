@@ -13,7 +13,8 @@ import { NextResponse } from 'next/server'
 import { SERVICES } from '@/lib/services'
 import { getBusyRanges, insertEvent } from '@/lib/google-calendar'
 import { computeSlots } from '@/lib/slots'
-import { generateToken, buildTokenBlock, buildManageUrl } from '@/lib/booking-tokens'
+import { buildManageUrl } from '@/lib/booking-tokens'
+import { buildEventDescription, extractConfirmationCode } from '@/lib/booking'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 
@@ -66,6 +67,16 @@ export async function POST(request) {
   const phone = trim(body.phone)
   const address = trim(body.address)
   const sqft = trim(body.sqft, 50)
+  const yearBuilt = trim(body.yearBuilt, 4)
+  const waterType = trim(body.waterType, 50)
+  const garageType = trim(body.garageType, 50)
+  const occupied = trim(body.occupied, 10)
+  const radonAddOn = body.radonAddOn === true
+  const pets = body.pets === true
+  const isAgent = body.isAgent === true
+  const agentType = trim(body.agentType, 50)
+  const clientAttending = trim(body.clientAttending, 10)
+  const accessProvidedBy = trim(body.accessProvidedBy, 200)
   // Honeypot — bots that fill hidden fields get silently rejected.
   if (trim(body.botcheck)) {
     return NextResponse.json({ ok: true })
@@ -128,33 +139,50 @@ export async function POST(request) {
     )
   }
 
-  // Generate a booking token for self-serve management.
-  const token = generateToken()
+  // Compute radon dates if radon add-on was selected
+  let radonDropDate = null
+  let radonPickupDate = null
+  if (radonAddOn) {
+    const start = new Date(startISO)
+    const drop = new Date(start)
+    const pickup = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000)
+    radonDropDate = `${drop.getMonth() + 1}/${drop.getDate()}`
+    radonPickupDate = `${pickup.getMonth() + 1}/${pickup.getDate()}`
+  }
+
+  // Build event description using shared helpers.
+  const { description, token } = buildEventDescription({
+    serviceName: service.name,
+    customerName: name,
+    phone,
+    email,
+    address,
+    sqft,
+    yearBuilt,
+    waterType,
+    garageType,
+    occupied,
+    radonAddOn,
+    radonDropDate,
+    radonPickupDate,
+    pets,
+    orderedBy: isAgent ? agentType : null,
+    clientAttending,
+    accessProvidedBy,
+    source: 'website',
+  })
 
   // Insert the event.
   try {
     const event = await insertEvent({
       summary: `Inspectrum: ${service.name} — ${name}`,
-      description: [
-        `Service: ${service.name}`,
-        `Customer: ${name}`,
-        `Phone: ${phone}`,
-        `Email: ${email}`,
-        `Address: ${address}`,
-        sqft ? `Square Footage: ${sqft}` : null,
-        '',
-        'Booked via ' + process.env.PUBLIC_SITE_URL,
-        buildTokenBlock(token),
-      ].filter(v => v !== null).join('\n'),
+      description,
       location: address,
       startISO,
       endISO,
     })
 
-    // Derive a short confirmation code from the event ID.
-    const confirmationCode = event.id
-      ? event.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()
-      : 'CONFIRMED'
+    const confirmationCode = extractConfirmationCode(event.id)
 
     // Send booking receipt email (non-blocking — don't fail the booking if email fails).
     const manageUrl = buildManageUrl(token)
