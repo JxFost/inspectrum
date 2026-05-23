@@ -168,11 +168,11 @@ export default function ContactClient() {
                     {m.label}
                   </h4>
                   {m.href ? (
-                    <a href={m.href} className="font-serif text-[1.3rem] text-ink no-underline font-medium hover:text-teal">
+                    <a href={m.href} className="font-serif text-[1rem] sm:text-[1.3rem] text-ink no-underline font-medium hover:text-teal break-all sm:break-normal">
                       {m.value}
                     </a>
                   ) : (
-                    <p className="font-serif text-[1.3rem] text-ink font-medium">{m.value}</p>
+                    <p className="font-serif text-[1rem] sm:text-[1.3rem] text-ink font-medium">{m.value}</p>
                   )}
                 </div>
               </div>

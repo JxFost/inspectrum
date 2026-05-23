@@ -383,7 +383,10 @@ export default function SchedulerClient() {
                       'text-left p-6 rounded-sm border-2 bg-cream cursor-pointer transition-all',
                       service?.id === s.id ? 'border-teal bg-paper shadow-[0_4px_12px_rgba(43,126,140,0.15)]' : 'border-line hover:border-teal/50',
                     ].join(' ')}>
-                    <div className="font-serif text-lg font-medium text-ink mb-1">{s.name}</div>
+                    <div className="font-serif text-lg font-medium text-ink mb-1">
+                      {s.name}
+                      {s.id === 'full' && <span className="ml-2 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full align-middle">Most Booked</span>}
+                    </div>
                     <div className="text-sm text-charcoal mb-3">{s.desc}</div>
                     <div className="text-xs uppercase tracking-wider text-amber font-semibold">{s.price}</div>
                   </button>
