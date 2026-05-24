@@ -134,10 +134,32 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
           className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`}
         />
       ) : (
-        <div
-          ref={containerRef}
-          className={`bg-cream border ${borderClass} rounded-sm overflow-hidden transition-all focus-within:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] focus-within:border-teal [&_input]:bg-transparent [&_input]:border-0 [&_input]:outline-none [&_input]:px-4 [&_input]:py-3 [&_input]:text-base [&_input]:text-ink [&_input]:w-full`}
-        />
+        <div ref={containerRef} />
+        <style>{`
+          gmp-place-autocomplete {
+            width: 100%;
+            --gmp-mat-color-surface: var(--color-cream, #FAF7F1);
+            --gmp-mat-color-on-surface: var(--color-ink, #1F2426);
+            --gmp-mat-color-outline: var(--color-line, #E2DDD5);
+            --gmp-mat-color-primary: var(--color-teal, #2B7E8C);
+          }
+          gmp-place-autocomplete::part(input) {
+            background: var(--color-cream, #FAF7F1);
+            border: 1px solid ${error ? '#f87171' : 'var(--color-line, #E2DDD5)'};
+            border-radius: 2px;
+            padding: 12px 16px;
+            font-size: 16px;
+            color: var(--color-ink, #1F2426);
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.15s, box-shadow 0.15s;
+          }
+          gmp-place-autocomplete::part(input):focus {
+            border-color: var(--color-teal, #2B7E8C);
+            box-shadow: 0 0 0 3px rgba(43,126,140,0.15);
+          }
+        `}</style>
       )}
 
       {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
