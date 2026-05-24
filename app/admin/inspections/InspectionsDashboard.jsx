@@ -70,6 +70,9 @@ function SendInvoiceIcon() {
 function InvoiceIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
 }
+function CalendarIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+}
 function ManageIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
 }
@@ -324,6 +327,11 @@ export default function InspectionsDashboard({
                         {item.squareInvoiceUrl && (
                           <a href={item.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" title="View Invoice" className="text-charcoal/40 hover:text-amber transition-colors">
                             <InvoiceIcon />
+                          </a>
+                        )}
+                        {item.htmlLink && (
+                          <a href={item.htmlLink} target="_blank" rel="noopener noreferrer" title="Open in Google Calendar" className="text-charcoal/40 hover:text-teal transition-colors">
+                            <CalendarIcon />
                           </a>
                         )}
                         {item.token && (
