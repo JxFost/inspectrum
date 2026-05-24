@@ -20,8 +20,17 @@ const RANGE_OPTIONS = {
 }
 
 function windowFromRange(range) {
-  const days = RANGE_OPTIONS[range] || 14
   const now = new Date()
+  const year = now.getFullYear()
+
+  if (range === 'year') {
+    return { from: `${year}-01-01`, to: `${year}-12-31` }
+  }
+  if (range === 'lastyear') {
+    return { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` }
+  }
+
+  const days = RANGE_OPTIONS[range] || 14
   return {
     from: new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
     to: new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -29,8 +38,17 @@ function windowFromRange(range) {
 }
 
 function prevWindowFromRange(range) {
-  const days = RANGE_OPTIONS[range] || 14
   const now = new Date()
+  const year = now.getFullYear()
+
+  if (range === 'year') {
+    return { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` }
+  }
+  if (range === 'lastyear') {
+    return { from: `${year - 2}-01-01`, to: `${year - 2}-12-31` }
+  }
+
+  const days = RANGE_OPTIONS[range] || 14
   return {
     from: new Date(now.getTime() - days * 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
     to: new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
