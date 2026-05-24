@@ -28,7 +28,7 @@ export default function AdminLoginClient() {
         return
       }
 
-      router.push('/admin/block')
+      router.push('/admin/inspections')
     } catch {
       setError('Network error. Please try again.')
       setLoading(false)
