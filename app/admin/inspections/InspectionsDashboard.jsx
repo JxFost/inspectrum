@@ -36,6 +36,11 @@ const SOURCE_COLORS = {
   unknown: 'bg-cream text-charcoal/40',
 }
 
+function shortServiceName(name) {
+  const map = { 'Full Home Inspection': 'Full', 'Radon Testing Only': 'Radon', 'Mold Assessment': 'Mold', 'Pre-Listing Inspection': 'Pre-List', 'Commercial Inspection': 'Commercial' }
+  return map[name] || name
+}
+
 const STATUS_COLORS = { past: 'text-charcoal/50', today: 'text-amber font-semibold', upcoming: 'text-teal font-semibold' }
 const STATUS_LABELS = { past: 'Past', today: 'Today', upcoming: 'Upcoming' }
 const TIMEZONE = 'America/Denver'
@@ -138,8 +143,9 @@ export default function InspectionsDashboard({
     (Date.now() - new Date(i.invoicedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
   ).length
 
-  // Today's agenda
+  // Today's agenda — sorted earliest first
   const todayItems = inspections.filter((i) => i.status === 'today')
+    .sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
 
   // Reset page when filter/search changes
   const updateSearch = (v) => { setSearch(v); setPage(1) }
@@ -166,7 +172,7 @@ export default function InspectionsDashboard({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               CSV
             </a>
-            <a href="/admin/block" className="text-sm text-charcoal/60 hover:text-teal">+ New</a>
+            <a href="/admin/block" className="hidden md:inline-flex text-sm text-charcoal/60 hover:text-teal">+ New</a>
           </div>
         </div>
 
@@ -177,12 +183,15 @@ export default function InspectionsDashboard({
             <div className="space-y-2">
               {todayItems.map((item) => (
                 <div key={item.eventId} className="flex items-center gap-4 text-sm">
-                  <span className="text-ink font-medium w-20">{formatTime(item.startISO)}</span>
+                  <span className="text-ink font-medium w-20 shrink-0">{formatTime(item.startISO)}</span>
                   <span className="text-ink">{item.customerName || '—'}</span>
-                  <span className="text-charcoal/50 hidden sm:inline">·</span>
-                  <span className="text-charcoal/60 hidden sm:inline truncate max-w-[200px]">{item.address || ''}</span>
-                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}</span>
-                  {item.inspectionNumber && <span className="text-charcoal/40 text-xs font-mono">{item.inspectionNumber}</span>}
+                  <span className="text-charcoal/50">·</span>
+                  {item.address ? (
+                    <a href={`https://maps.apple.com/?q=${encodeURIComponent(item.address)}`} className="text-teal/70 hover:text-teal truncate max-w-[250px] no-underline hover:underline">{item.address}</a>
+                  ) : (
+                    <span className="text-charcoal/40">Address TBD</span>
+                  )}
+                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : ''}</span>
                 </div>
               ))}
             </div>
@@ -248,7 +257,7 @@ export default function InspectionsDashboard({
             <table className="w-full bg-paper border border-line rounded-sm text-sm">
               <thead>
                 <tr className="border-b border-line text-[0.65rem] uppercase tracking-wider text-charcoal/50">
-                  <th className="text-left px-3 py-2.5">#</th>
+                  <th className="text-left px-3 py-2.5 hidden md:table-cell">#</th>
                   <th className="text-left px-3 py-2.5">Date & Time</th>
                   <th className="text-left px-3 py-2.5">Customer</th>
                   <th className="text-left px-3 py-2.5 hidden md:table-cell">Address</th>
@@ -289,7 +298,7 @@ export default function InspectionsDashboard({
                       </tr>
                     )}
                     <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
-                    <td className="px-3 py-2 text-charcoal/40 text-xs font-mono">{item.inspectionNumber || '—'}</td>
+                    <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell">{item.inspectionNumber || '—'}</td>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
                       <div className="text-charcoal/60 text-[0.75rem]">{formatTime(item.startISO)}</div>
@@ -307,7 +316,8 @@ export default function InspectionsDashboard({
                     </td>
                     <td className="px-3 py-2">
                       <span className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${SERVICE_COLORS[item.service] || 'bg-cream text-charcoal'}`}>
-                        {item.service || '?'}
+                        <span className="md:hidden">{shortServiceName(item.service) || '?'}</span>
+                        <span className="hidden md:inline">{item.service || '?'}</span>
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right hidden sm:table-cell text-ink">
