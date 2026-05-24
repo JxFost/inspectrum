@@ -341,7 +341,7 @@ export default function Nav() {
             <span className="relative w-full lg:w-auto">
               <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
               {uninvoicedCount > 0 && (
-                <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-5 lg:bottom-auto bg-red-500 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center">{uninvoicedCount}</span>
+                <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-4 lg:bottom-4 bg-red-600 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center">{uninvoicedCount}</span>
               )}
             </span>
             <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
