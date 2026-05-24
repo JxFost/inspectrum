@@ -78,7 +78,7 @@ export async function POST(request) {
   const resend = new Resend(apiKey)
 
   const { data, error: sendError } = await resend.emails.send({
-    from: 'Inspectrum Website <onboarding@resend.dev>',
+    from: 'Inspectrum Inspections — Appointments <onboarding@resend.dev>',
     to: ['jeff@evergreeninspections.com'],
     replyTo: formData.email,
     subject: `New inspection request from ${formData.name}`,
