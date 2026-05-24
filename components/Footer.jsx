@@ -48,6 +48,7 @@ export default function Footer() {
               Company
             </h5>
             <FooterLink href="/#about">About</FooterLink>
+            <FooterLink href="/about/harry">Meet Harry</FooterLink>
             <FooterLink href="/#process">Process</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/schedule">Schedule</FooterLink>
