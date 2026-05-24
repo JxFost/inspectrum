@@ -84,33 +84,28 @@
   details summary::-webkit-details-marker { display: none; }
   details summary { list-style: none; }
 
-  /* Google Places Autocomplete — hidden input overlay pattern */
-  .address-autocomplete-wrapper {
-    position: relative;
-  }
-  .address-autocomplete-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-  }
-  .address-autocomplete-overlay gmp-place-autocomplete {
+  /* Google Places Autocomplete — search field that fills form below */
+  .address-autocomplete-search gmp-place-autocomplete {
     display: block;
     width: 100%;
-    pointer-events: auto;
   }
-  /* Make the autocomplete's input invisible — our styled input shows through */
   gmp-place-autocomplete::part(input) {
-    opacity: 0;
-    height: 0;
-    padding: 0;
-    border: none;
-    position: absolute;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  /* Style the dropdown predictions to match the site */
+  gmp-place-autocomplete::part(input):focus {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(43, 126, 140, 0.15);
+  }
   gmp-place-autocomplete::part(predictions) {
     border: 1px solid var(--color-line);
     border-radius: 2px;
@@ -128,12 +123,6 @@
   gmp-place-autocomplete::part(prediction-item):hover,
   gmp-place-autocomplete::part(prediction-item-selected) {
     background: var(--color-paper);
-  }
-  gmp-place-autocomplete::part(prefix) {
-    display: none;
-  }
-  gmp-place-autocomplete::part(suffix) {
-    display: none;
   }
 }
 

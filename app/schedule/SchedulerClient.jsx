@@ -523,21 +523,18 @@ export default function SchedulerClient() {
               <p className="text-sm text-charcoal/70 mb-6">Tell us about the property being inspected.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <AddressAutocomplete
-                  value={details.street}
-                  onChange={(v) => { setDetails({ ...details, street: v }); setFieldErrors((p) => ({ ...p, street: undefined })) }}
                   onPlaceSelect={(place) => {
                     setDetails((prev) => ({
                       ...prev,
-                      street: place.street,
+                      street: place.street || prev.street,
                       city: place.city || prev.city,
                       zip: place.zip || prev.zip,
                     }))
                     setFieldErrors((p) => ({ ...p, street: undefined, city: undefined, zip: undefined }))
                   }}
-                  required
                   className="sm:col-span-2"
-                  error={fieldErrors.street}
                 />
+                <SchedField label="Street Address" value={details.street} onChange={(v) => { setDetails({ ...details, street: v }); setFieldErrors((p) => ({ ...p, street: undefined })) }} placeholder="123 Main St" required className="sm:col-span-2" error={fieldErrors.street} />
                 <SchedField label="City" value={details.city} onChange={(v) => { setDetails({ ...details, city: v }); setFieldErrors((p) => ({ ...p, city: undefined })) }} placeholder="Evergreen" required error={fieldErrors.city} />
                 <div className="flex gap-4">
                   <SchedField label="State" value="CO" onChange={() => {}} className="w-20 opacity-70" readOnly />

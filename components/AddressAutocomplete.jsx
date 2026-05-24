@@ -29,23 +29,31 @@ function loadGoogleMaps() {
   return loadPromise
 }
 
-export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
+/**
+ * Google Places search field that populates separate form fields on selection.
+ *
+ * The autocomplete element is the visible search bar. When user selects a place,
+ * onPlaceSelect is called with { street, city, state, zip } to fill the form.
+ *
+ * If the API isn't available, this component renders nothing (the form's
+ * regular street/city/zip inputs still work for manual entry).
+ */
+export default function AddressAutocomplete({ onPlaceSelect, className = '' }) {
   const containerRef = useRef(null)
-  const visibleInputRef = useRef(null)
   const autocompleteElRef = useRef(null)
   const onPlaceSelectRef = useRef(onPlaceSelect)
-  const onChangeRef = useRef(onChange)
   const [apiLoaded, setApiLoaded] = useState(false)
-  const [street, setStreet] = useState(value || '')
+  const [apiAvailable, setApiAvailable] = useState(true)
 
   useEffect(() => { onPlaceSelectRef.current = onPlaceSelect }, [onPlaceSelect])
-  useEffect(() => { onChangeRef.current = onChange }, [onChange])
 
   useEffect(() => {
-    loadGoogleMaps().then(setApiLoaded)
+    loadGoogleMaps().then((loaded) => {
+      setApiLoaded(loaded)
+      if (!loaded) setApiAvailable(false)
+    })
   }, [])
 
-  // Mount the invisible autocomplete element
   useEffect(() => {
     if (!apiLoaded || !containerRef.current || autocompleteElRef.current) return
 
@@ -65,16 +73,11 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
       el.addEventListener('gmp-placeselect', async (event) => {
         const place = event.place
         if (!place) return
-        await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] })
+
+        await place.fetchFields({ fields: ['addressComponents'] })
         if (!place.addressComponents) return
 
         const parsed = parseAddressComponents(place.addressComponents)
-
-        // Update the visible input with just the street
-        setStreet(parsed.street)
-        if (visibleInputRef.current) visibleInputRef.current.value = parsed.street
-
-        // Populate all form fields
         onPlaceSelectRef.current?.(parsed)
       })
 
@@ -82,50 +85,18 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
       autocompleteElRef.current = el
     } catch (err) {
       console.warn('[AddressAutocomplete] failed:', err.message)
+      setApiAvailable(false)
     }
   }, [apiLoaded])
 
-  // Sync typing from visible input → hidden autocomplete
-  const handleInput = (e) => {
-    const val = e.target.value
-    setStreet(val)
-    onChangeRef.current?.(val)
-
-    // Mirror to the autocomplete's inner input so suggestions appear
-    const el = autocompleteElRef.current
-    if (!el) return
-    const inner = el.querySelector('input') || el.shadowRoot?.querySelector('input')
-    if (inner && inner.value !== val) {
-      // Set value and dispatch input event so Google picks it up
-      const nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
-      if (nativeSet) {
-        nativeSet.call(inner, val)
-        inner.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-    }
-  }
-
-  const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
+  // Don't render anything if API isn't available — form fields still work for manual entry
+  if (!apiAvailable) return null
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Street Address</label>
-      <div className="address-autocomplete-wrapper">
-        {/* Visible styled input — user types here */}
-        <input
-          ref={visibleInputRef}
-          type="text"
-          defaultValue={value}
-          onInput={handleInput}
-          placeholder={placeholder || '123 Main St'}
-          required={required}
-          autoComplete="off"
-          className={`bg-cream border ${borderClass} relative z-[100] px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] w-full`}
-        />
-        {/* Hidden autocomplete element — its input is invisible but dropdown is visible */}
-        <div ref={containerRef} className="address-autocomplete-overlay" />
-      </div>
-      {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
+      <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Search Address</label>
+      <div ref={containerRef} className="address-autocomplete-search" />
+      <p className="text-[0.65rem] text-charcoal/50 -mt-0.5">Search to auto-fill the fields below, or type manually.</p>
     </div>
   )
 }
