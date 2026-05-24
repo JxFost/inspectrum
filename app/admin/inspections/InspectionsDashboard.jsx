@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 
 const PAGE_SIZE = 20
@@ -262,7 +262,7 @@ export default function InspectionsDashboard({
                   const prev = idx > 0 ? pageItems[idx - 1] : null
                   const showDivider = prev && prev.status !== 'upcoming' && item.status === 'upcoming'
 
-                  return (<>
+                  return (<Fragment key={item.eventId}>
                     {showDivider && (
                       <tr key={`divider-${idx}`}>
                         <td colSpan="10" className="px-3 py-1">
@@ -334,7 +334,7 @@ export default function InspectionsDashboard({
                       </div>
                     </td>
                   </tr>
-                  </>)
+                  </Fragment>)
                 })}
               </tbody>
             </table>
