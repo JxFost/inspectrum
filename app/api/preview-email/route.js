@@ -22,9 +22,19 @@ const SAMPLE = {
   gcalUrl: '#',
 }
 
+function verifyAdmin(request) {
+  const cookie = request.cookies.get('admin_session')?.value
+  if (!cookie) return false
+  const parts = cookie.split('.')
+  if (parts.length !== 2) return false
+  const age = Date.now() - parseInt(parts[0], 10)
+  return !isNaN(age) && age < 30 * 24 * 60 * 60 * 1000
+}
+
 export async function GET(request) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  // Allow in dev, or in production with admin auth
+  if (process.env.NODE_ENV === 'production' && !verifyAdmin(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
