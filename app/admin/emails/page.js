@@ -28,6 +28,18 @@ const TEMPLATES = [
     description: "Sent to Harry each morning with today's schedule, addresses, access info, and distances.",
     trigger: 'Daily cron (12pm UTC / 6am MT)',
   },
+  {
+    id: 'cancel-alert',
+    name: 'Cancellation Alert',
+    description: 'Sent immediately to Harry when a customer cancels their booking. Includes warning if invoice was already paid.',
+    trigger: 'On cancellation',
+  },
+  {
+    id: 'monthly',
+    name: 'Monthly Report',
+    description: 'Summary of last month: inspection count, revenue collected, outstanding invoices, busiest days, top areas, service breakdown.',
+    trigger: '1st of each month (2pm UTC / 8am MT)',
+  },
 ]
 
 export default function EmailPreviewsPage() {

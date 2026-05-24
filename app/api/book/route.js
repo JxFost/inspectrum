@@ -78,6 +78,8 @@ export async function POST(request) {
   const agentType = trim(body.agentType, 50)
   const clientAttending = trim(body.clientAttending, 10)
   const accessProvidedBy = trim(body.accessProvidedBy, 200)
+  const referrer = trim(body.referrer, 200)
+  const utmSource = trim(body.utmSource, 100)
   // Honeypot — bots that fill hidden fields get silently rejected.
   if (trim(body.botcheck)) {
     return NextResponse.json({ ok: true })
@@ -179,6 +181,7 @@ export async function POST(request) {
     orderedBy: isAgent ? agentType : null,
     clientAttending,
     accessProvidedBy,
+    extra: [referrer ? `referrer: ${referrer}` : null, utmSource ? `utm_source: ${utmSource}` : null].filter(Boolean).join('\n') || null,
     source: 'website',
   })
 

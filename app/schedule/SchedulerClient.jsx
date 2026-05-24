@@ -254,6 +254,8 @@ export default function SchedulerClient() {
           accessProvidedBy: (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
             ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
             : details.accessProvidedBy,
+          referrer: typeof document !== 'undefined' ? document.referrer || 'direct' : 'direct',
+          utmSource: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
         }),
       })
 
