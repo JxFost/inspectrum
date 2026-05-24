@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { parseAddressComponents } from '@/lib/address-parser'
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+// ---- Script loader (singleton) ----
 
 let loadPromise = null
 function loadGoogleMaps() {
@@ -28,32 +31,30 @@ function loadGoogleMaps() {
   return loadPromise
 }
 
-function parsePlace(place) {
-  const result = { street: '', city: '', state: '', zip: '' }
-  const components = place.addressComponents || []
-  let streetNumber = ''
-  let route = ''
+// ---- Component ----
 
-  for (const c of components) {
-    const types = c.types || []
-    if (types.includes('street_number')) streetNumber = c.longText || ''
-    if (types.includes('route')) route = c.longText || ''
-    if (types.includes('locality')) result.city = c.longText || ''
-    if (types.includes('sublocality_level_1') && !result.city) result.city = c.longText || ''
-    if (types.includes('administrative_area_level_1')) result.state = c.shortText || ''
-    if (types.includes('postal_code')) result.zip = c.longText || ''
-  }
-
-  result.street = [streetNumber, route].filter(Boolean).join(' ')
-  return result
-}
-
+/**
+ * Street address input with Google Places Autocomplete (new PlaceAutocompleteElement API).
+ *
+ * Props:
+ * - value: current street value (used for initial/fallback render only)
+ * - onChange(streetStr): called on manual typing
+ * - onPlaceSelect({ street, city, state, zip }): called when user picks from dropdown
+ * - placeholder, required, error, className: standard form field props
+ */
 export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
   const containerRef = useRef(null)
-  const elementRef = useRef(null)
+  const autocompleteElRef = useRef(null)
+  const onPlaceSelectRef = useRef(onPlaceSelect)
+  const onChangeRef = useRef(onChange)
   const [apiLoaded, setApiLoaded] = useState(false)
   const [useFallback, setUseFallback] = useState(false)
 
+  // Keep refs current so event listener always calls latest callbacks
+  useEffect(() => { onPlaceSelectRef.current = onPlaceSelect }, [onPlaceSelect])
+  useEffect(() => { onChangeRef.current = onChange }, [onChange])
+
+  // Load the Google Maps script
   useEffect(() => {
     loadGoogleMaps().then((loaded) => {
       setApiLoaded(loaded)
@@ -61,43 +62,70 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
     })
   }, [])
 
+  // Create and mount the PlaceAutocompleteElement once the API is ready
   useEffect(() => {
-    if (!apiLoaded || !containerRef.current || elementRef.current) return
+    if (!apiLoaded || !containerRef.current || autocompleteElRef.current) return
 
     try {
       const el = new window.google.maps.places.PlaceAutocompleteElement({
-        componentRestrictions: { country: 'us' },
         types: ['address'],
+        componentRestrictions: { country: 'us' },
       })
 
-      el.addEventListener('gmp-placeselect', async (e) => {
-        const place = e.place
-        await place.fetchFields({ fields: ['addressComponents'] })
-        const parsed = parsePlace(place)
-        onPlaceSelect?.(parsed)
+      // Bias results toward the Colorado Front Range
+      try {
+        el.locationBias = {
+          center: { lat: 39.7392, lng: -104.9903 },
+          radius: 100000,
+        }
+      } catch { /* locationBias may not be supported in all versions */ }
 
-        // Reset input to street only after Google finishes
+      // Place selected from dropdown
+      const handlePlaceSelect = async (event) => {
+        const place = event.place
+        await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] })
+
+        if (!place.addressComponents) return
+
+        const parsed = parseAddressComponents(place.addressComponents)
+
+        // Update parent form state with parsed components
+        onPlaceSelectRef.current?.(parsed)
+
+        // Override the input to show just the street (Google sets it to the full address)
         requestAnimationFrame(() => {
           const inner = el.querySelector('input')
-          if (inner && parsed.street) inner.value = parsed.street
+          if (inner && parsed.street) {
+            inner.value = parsed.street
+          }
         })
-      })
+      }
 
-      el.addEventListener('input', () => {
+      // Manual typing — relay to parent so form validation works
+      const handleInput = () => {
         const inner = el.querySelector('input')
-        if (inner) onChange(inner.value)
-      })
+        if (inner) onChangeRef.current?.(inner.value)
+      }
+
+      el.addEventListener('gmp-placeselect', handlePlaceSelect)
+      el.addEventListener('input', handleInput)
 
       containerRef.current.appendChild(el)
-      elementRef.current = el
+      autocompleteElRef.current = el
+
+      return () => {
+        el.removeEventListener('gmp-placeselect', handlePlaceSelect)
+        el.removeEventListener('input', handleInput)
+      }
     } catch (err) {
       console.warn('[AddressAutocomplete] PlaceAutocompleteElement failed:', err.message)
       setUseFallback(true)
     }
-  }, [apiLoaded, onChange, onPlaceSelect])
+  }, [apiLoaded])
 
   const borderClass = error ? 'border-red-400' : 'border-line'
 
+  // Fallback: plain text input when API is unavailable
   if (useFallback) {
     return (
       <div className={`flex flex-col gap-1.5 ${className}`}>
