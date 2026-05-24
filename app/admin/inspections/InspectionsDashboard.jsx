@@ -161,7 +161,7 @@ export default function InspectionsDashboard({
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-serif text-ink">Inspections</h1>
-            <p className="text-sm text-charcoal/60 mt-1">{formatWindowDate(from)} – {formatWindowDate(to)}</p>
+            <p className="text-sm text-charcoal/60 mt-1">{formatWindowDate(from)} – {formatWindowDate(to)} <span className="text-charcoal/40"> — {inspections.length} Inspections</span></p>
           </div>
           <div className="flex items-center gap-3">
             <select
@@ -202,8 +202,8 @@ export default function InspectionsDashboard({
         )}
 
         {/* Summary strip */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible sm:pb-0">
-          <StatCard label="Inspections" value={inspections.length} trend={trendArrow(inspections.length, prevTotal)} />
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
+          {/* <StatCard label="Inspections" value={inspections.length} trend={trendArrow(inspections.length, prevTotal)} /> */}
           <StatCard label="Completed" value={completed} trend={trendArrow(completed, prevCompleted)} />
           <StatCard label="Upcoming" value={upcoming} />
           <StatCard label="Collected" value={collected ? `$${Math.round(collected / 100).toLocaleString()}` : '$0'} trend={trendArrow(collected, prevCollected)} />
@@ -411,7 +411,7 @@ export default function InspectionsDashboard({
 
 function StatCard({ label, value, trend, alert }) {
   return (
-    <div className={`border rounded-sm p-4 min-w-[130px] w-[130px] sm:w-auto shrink-0 sm:shrink ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
+    <div className={`border rounded-sm p-4 min-w-[130px] shrink-0 sm:grow sm:shrink ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
       <div className={`font-serif text-2xl ${alert ? 'text-red-700' : 'text-ink'}`}>{value}{trend}</div>
       <div className={`text-[0.65rem] uppercase tracking-wider mt-1 ${alert ? 'text-red-500' : 'text-charcoal/60'}`}>{label}</div>
     </div>

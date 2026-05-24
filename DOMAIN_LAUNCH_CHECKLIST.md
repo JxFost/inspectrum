@@ -58,8 +58,8 @@ Enable when ready to implement the mileage/trip charge system.
 
 Constants to configure in `lib/mileage.js`:
 - `HOME_ADDRESS` = 2525 Witter Gulch Rd, Evergreen, CO 80439
-- `BASE_RADIUS_MILES` = 25 (no surcharge within this)
-- `SURCHARGE_PER_MILE` = $2 per mile beyond base radius
+- `BASE_RADIUS_MILES` = 45 (no surcharge within this)
+- `SURCHARGE_PER_MILE` = $0.50 per mile beyond base radius
 - `MAX_SERVICE_RADIUS` = 75 miles (show "please call" beyond this)
 
 Touches these areas when implemented:
