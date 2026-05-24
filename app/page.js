@@ -306,6 +306,10 @@ export default function HomePage() {
               <p className="text-[1.05rem] text-charcoal leading-[1.7]">
                 Every inspection is a complete and thorough analysis of every major system in the home. You'll walk through with us at the end, see what we saw, and get a free phone consultation any time after.
               </p>
+              <Link href="/about/harry" className="inline-flex items-center gap-1.5 text-teal font-semibold text-[0.95rem] hover:text-amber no-underline transition-colors">
+                Learn more about Harry
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
             </div>
             {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
