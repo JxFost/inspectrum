@@ -1,20 +1,6 @@
-# Inspectrum Inspections — Website (Next.js)
+# Inspectrum Inspections — Next.js Site
 
-Server-rendered marketing site for Inspectrum Inspections, built with Next.js 16 App Router, Tailwind CSS v4, and React 19.
-
-## Next.js
-
-This is a local home-inspection business — its livelihood depends on Google rankings for searches like *"home inspector evergreen co"* and *"radon testing denver."* That makes server-rendered HTML and structured data important enough to justify the extra setup over a pure SPA.
-
-What you get out of the box now:
-
-- **Server-rendered pages** — Google sees the full HTML on every page, not an empty `<div id="root">`
-- **Per-page metadata** — each page has its own `<title>`, `<meta description>`, OpenGraph tags, and canonical URL
-- **JSON-LD structured data** — `LocalBusiness` schema in the root layout (helps with "near me" results and Google Knowledge Panel) and `FAQPage` schema auto-generated from each FAQ
-- **Auto-generated `/sitemap.xml*`* at `app/sitemap.js`
-- **Auto-generated `/robots.txt`** at `app/robots.js`
-- **Optimized fonts** via `next/font/google` (no FOUT, no extra requests)
-- **Static generation** — pages are pre-rendered at build time, so they serve as fast static HTML and *also* hydrate into a React app
+Full-stack booking, operations, and marketing site for Inspectrum Inspections, built with Next.js 16 App Router, Tailwind CSS v4, and React 19. Deployed on Vercel.
 
 ## Quick start
 
@@ -25,171 +11,193 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-## Build for production
+## Architecture overview
 
-```bash
-npm run build
-npm start   # serves the production build on :3000
-```
+| Layer | Stack |
+|-------|-------|
+| Frontend | Next.js 16 (App Router), React 19, Tailwind CSS v4 |
+| Calendar | Google Calendar API via service account |
+| Payments | Square Invoices API |
+| Email | Resend (transactional emails) |
+| Inbound email | CloudMailin → webhook |
+| Auth | Shared password + HMAC-signed session cookie |
+| Hosting | Vercel (SSG + serverless functions) |
 
 ## Project structure
 
 ```
 app/
-  layout.js               # Root layout: Nav, Footer, fonts, default metadata, LocalBusiness JSON-LD
-  page.js                 # / homepage (server component)
-  globals.css             # Tailwind v4 import + brand theme tokens
-  sitemap.js              # auto-generates /sitemap.xml
-  robots.js               # auto-generates /robots.txt
-
-  api/contact/route.js    # POST /api/contact forwards contact form submissions to Web3Forms
-
-  services/
-    full-inspection/page.js
-    radon/page.js
-    mold/page.js
-    commercial/page.js    # Each: server component with metadata export
-
-  contact/
-    page.js               # server: metadata
-    ContactClient.jsx     # client: form state
+  layout.js                     Root layout, nav, footer, LocalBusiness JSON-LD
+  page.js                       Homepage
+  about/harry/page.js           Harry Foster bio page
 
   schedule/
-    page.js               # server: metadata
-    SchedulerClient.jsx   # client: multi-step booking flow
+    SchedulerClient.jsx         6-step Typeform-style booking flow
 
-components/                # All shared components
-  BrandLogo.jsx           # Logo SVG image lockup (server)
-  GoogleAnalytics.jsx     # GA4 script loader, enabled by NEXT_PUBLIC_GA_MEASUREMENT_ID
-  Nav.jsx                 # Top nav (client — uses usePathname/useState)
-  Footer.jsx              # Footer (server)
-  Button.jsx              # Universal button (server)
-  ServiceHero.jsx         # Hero variants for service pages (server)
-  SectionIntro.jsx        # 2-col intro pattern (server)
-  Deliverables.jsx        # Numbered list on dark teal (server)
-  FAQ.jsx                 # Accordion + auto-generated FAQPage JSON-LD (server)
-  CTABanner.jsx           # Closing CTA band (server)
+  manage/
+    ManageClient.jsx             Self-serve booking management + payment status
 
-public/
-  InspectrumLogo.svg      # Primary Inspectrum logo asset
+  contact/
+    ContactClient.jsx            Contact form
+
+  services/
+    full-inspection/page.js      Service pages with FAQ schema
+    radon/page.js
+    mold/page.js
+    commercial/page.js
+
+  admin/
+    page.js                      Redirects to /admin/inspections
+    login/                       Admin login page
+    inspections/
+      page.js                    Server component — data fetching
+      InspectionsDashboard.jsx   Client component — search, filters, table, pagination
+      [eventId]/invoice/         Invoice creation form
+    block/                       Manual booking / vacation block form
+
+  api/
+    book/route.js                Website booking → Google Calendar
+    booking/[token]/route.js     Manage page data API
+    booking/cancel/route.js      Cancel booking
+    availability/route.js        Slot availability checker
+    contact/route.js             Contact form → Resend
+    inbound/acc/route.js         ACC email webhook → calendar events
+    inspection/finalize/route.js Square invoice creation
+    square/webhook/route.js      Square payment webhook handler
+    admin/login/route.js         Admin auth
+    admin/logout/route.js        Admin logout (clears cookie)
+    admin/block/route.js         Admin manual booking API
+    cron/reminders/route.js      48h reminder emails (daily cron)
+    cron/followup/route.js       72h follow-up + Google review ask (daily cron)
+    preview-email/route.js       Dev-only email template preview
+
+lib/
+  booking.js            Shared helpers: event description builder/parser,
+                        payment status, inspection numbering, mileage fields
+  booking-tokens.js     Token generation, extraction, markers
+  google-calendar.js    Google Calendar API wrapper
+  services.js           Service catalog (IDs, names, durations, prices)
+  working-hours.js      Business hours, buffer, timezone config
+  slots.js              Available slot computation
+  square.js             Square SDK wrapper (invoices, customers, orders)
+  mileage.js            Distance calculation + trip charge constants
+  acc-email-parser.js   ACC email parser (4 email types)
+  email/
+    send.js             Resend email wrapper
+    templates/
+      booking-receipt.js
+      reminder.js
+      followup.js       Post-inspection follow-up with Google review CTA
+      shared.js          Shared email layout (logo header, head styles)
+  jsonld.js             JSON-LD helpers (Service, FAQ, Breadcrumb)
+
+components/
+  Nav.jsx               Responsive nav with admin mode detection
+  Footer.jsx            Footer with social links
+  BrandLogo.jsx         Logo SVG lockup
+  Button.jsx            Universal button
+  FAQ.jsx               Accordion + FAQPage JSON-LD
+  CTABanner.jsx         Closing CTA band
+  GoogleAnalytics.jsx   GA4 loader
 ```
 
-Server vs client components: anything that doesn't need browser-only APIs or interactivity is a server component (no `'use client'` directive). This keeps the JavaScript bundle small — only the Nav (because of mobile menu state) and the form pages ship interactive code.
+## Key features
 
-## Contact form
+### Booking system
+- 6-step form: Service → Date & Time → You → Property → Access → Confirm
+- Real-time Google Calendar availability with 1-hour travel buffer
+- Multi-calendar conflict checking (`GOOGLE_BUSY_CALENDAR_IDS`)
+- Property details: sqft, year built, water type, garage, occupied, pets
+- Agent representation, client attending, access/lockbox
+- Radon add-on with RECOMMENDED badge
+- Inspection numbering (2026-001, 2026-002...)
+- Mileage computation + trip charge (TBD until Google Maps API key configured)
+- Honeypot bot protection
 
-The `/contact` form posts to `app/api/contact/route.js`, which forwards submissions through Resend. Booking receipts and reminders also use Resend; see `EMAIL_SETUP.md` for full setup.
+### ACC email pipeline
+- CloudMailin webhook receives forwarded ACC emails
+- Parser handles: Appointment, Reschedule, Cancelled, End of Day (ignored)
+- Auto-creates/updates/deletes Google Calendar events
+- 22 unit tests (`node --test lib/acc-email-parser.test.js`)
 
-```bash
-RESEND_API_KEY=re_your_key_here
-EMAIL_FROM="Inspectrum Inspections <office@evergreeninspections.com>"
-PUBLIC_SITE_URL=https://evergreeninspections.com
-```
+### Admin portal (`/admin/*`)
+- Password-based auth with HMAC-signed session cookie
+- **Inspections dashboard**: summary stats with trends, today's agenda, searchable/filterable table, paginated, CSV export
+- **Manual booking**: create events or vacation blocks
+- **Invoice creation**: enter final price, sends Square invoice to customer
+- Overdue invoice highlighting (7+ days past due)
+- Inspection numbering and distance tracking
+- Admin nav mode (replaces client nav on admin pages)
 
-On Vercel, add the same variables under Project Settings → Environment Variables. Keep server-side keys out of `NEXT_PUBLIC_...` variables so they are not exposed in browser source.
+### Square payments
+- Invoice-based (zero PCI scope — Square hosts payment page)
+- Admin sends invoice from dashboard → customer pays on Square
+- Webhook updates calendar event with payment status
+- Manage page shows payment status + Pay Now / View Receipt
+- See `SQUARE_SETUP.md` for full setup guide
 
-## Analytics and bot protection
+### Email system
+- **Booking receipt** — sent on booking confirmation
+- **48h reminder** — daily cron, idempotent via marker
+- **72h follow-up** — post-inspection with Google review CTA
+- All templates branded with centered logo
+- Preview endpoint: `/api/preview-email?template=followup|reminder|receipt` (dev only)
 
-Google Analytics loads from `components/GoogleAnalytics.jsx` only when this public env var is configured:
+### SEO / GEO
+- Server-rendered HTML, per-page metadata, canonical URLs
+- OG image + Twitter card
+- LocalBusiness JSON-LD with aggregateRating, services, service areas
+- Person schema on bio page with credentials
+- FAQPage + BreadcrumbList + Service schemas
+- AI crawler permissions (GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot)
+- llms.txt for AI discoverability
+- Google reviews (static, linked to Google Business profile)
+- GEO audit report: `GEO-AUDIT-REPORT.md`
 
-```bash
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-```
+## Environment variables
 
-Contact and booking submissions are protected by reCAPTCHA v3. The client requests action-specific tokens before POSTing, and the API routes verify those tokens before sending email or creating calendar bookings.
+See `.env.example` for the full list. Key groups:
 
-```bash
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_public_site_key
-RECAPTCHA_SECRET_KEY=your_private_secret_key
-RECAPTCHA_MIN_SCORE=0.5
-```
+| Group | Variables |
+|-------|-----------|
+| Google Calendar | `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_CALENDAR_ID`, `GOOGLE_BUSY_CALENDAR_IDS` |
+| Email (Resend) | `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL`, `CONTACT_PHONE`, `PUBLIC_SITE_URL` |
+| Admin | `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` |
+| ACC Pipeline | `INBOUND_WEBHOOK_SECRET` |
+| Square | `SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID`, `SQUARE_WEBHOOK_SECRET`, `SQUARE_ENVIRONMENT` |
+| Analytics | `NEXT_PUBLIC_GA_MEASUREMENT_ID` |
+| Mileage (future) | `GOOGLE_MAPS_API_KEY` |
 
-Locally, missing reCAPTCHA server config is skipped so development forms keep working. In production, `RECAPTCHA_SECRET_KEY` must be configured or protected submissions are rejected.
+## Cron jobs (vercel.json)
 
-## Animation patterns
+| Schedule | Endpoint | Purpose |
+|----------|----------|---------|
+| Daily 3pm UTC (9am MT) | `/api/cron/reminders` | 48h reminder emails |
+| Daily 5pm UTC (11am MT) | `/api/cron/followup` | 72h follow-up + review ask |
 
-Hero content uses the shared `hero-reveal` utility in `app/globals.css` to fade in and move up slightly on page load. Add `hero-reveal-1` through `hero-reveal-5` to create a stepped reveal for eyebrow, headline, body/stats, CTAs, and secondary panels.
+## Setup guides
 
-The homepage service strip uses `animate-marquee` with a duplicated item track for a seamless horizontal slide. Site animations respect `prefers-reduced-motion`.
-
-## Routing
-
-
-| Path                        | Page            | Title                                                  |
-| --------------------------- | --------------- | ------------------------------------------------------ |
-| `/`                         | Home            | Home Inspections in Evergreen, CO & Denver Metro       |
-| `/services/full-inspection` | Full Inspection | Full Home Inspection — Same-Day Reports                |
-| `/services/radon`           | Radon           | Radon Testing in Colorado — 48-Hour Continuous Monitor |
-| `/services/mold`            | Mold            | Mold Assessment & Moisture Mapping in Denver Metro     |
-| `/services/commercial`      | Commercial      | Commercial Property Inspections in Colorado            |
-| `/contact`                  | Contact         | Contact Inspectrum Inspections                         |
-| `/schedule`                 | Scheduler       | Schedule a Home Inspection Online                      |
-
-
-Each page exports its own `metadata` object — Next.js merges it with the defaults from `app/layout.js`.
-
-## Navigation
-
-`components/Nav.jsx` includes a responsive Services dropdown. Desktop users get a hover/focus mega menu, while mobile users get a drawer-style menu with larger tap targets, a backdrop, and a collapsible Services section that groups service links inside a scrollable card. The menu links to the available service pages plus included/quote-based service categories:
-
-- Full Home Inspection: `/services/full-inspection`
-- Radon Testing: `/services/radon`
-- Mold & Meth Testing: `/services/mold`
-- Commercial Inspections: `/services/commercial`
-- Roof & Exterior and Plumbing & Electrical: `/services/full-inspection`
-- À La Carte Inspections: `/contact`
-
-The nav logo renders larger in a badge at the top of the page, extending below the fixed nav. As the user scrolls, `components/Nav.jsx` interpolates the logo badge down until it fits within the nav height. The nav keeps its standard gray border after scrolling, with an amber left-to-right sweep animation only when the page is at the top.
-
-## SEO checklist (already done)
-
-- Server-rendered HTML on every page
-- Unique `<title>` and `<meta description>` per page
-- Canonical URLs
-- OpenGraph + Twitter card tags
-- LocalBusiness JSON-LD with hours, geo, service area
-- FAQPage JSON-LD on every page with FAQs (rich results in Google)
-- sitemap.xml
-- robots.txt
-- Optimized Google Fonts via `next/font`
-- `lang="en"` on `<html>`
-- Semantic landmarks (`<header>`, `<main>`, `<footer>`, `<nav>`)
-
-## Still TODO when going live
-
-1. **Update `metadataBase`** in `app/layout.js` if your domain isn't `evergreeninspections.com`
-2. **Add Google Search Console** — verify the site, submit the sitemap
-3. **Add Google Business Profile** — local SEO for "near me" searches lives here, not on the site
-4. **Get reviews** — embed review snippets and add `aggregateRating` to the LocalBusiness JSON-LD once you have them
-5. **Add real OG images** — drop a 1200x630px `og-image.png` in `public/` and reference it in the metadata
-6. **Wire up the scheduler** — replace the mock `getAvailableSlots` in `SchedulerClient.jsx` with a real availability API
+- `SQUARE_SETUP.md` — Square Developer app, credentials, webhooks, sandbox testing
+- `EMAIL_SETUP.md` — Resend domain verification, email configuration
+- `DOMAIN_LAUNCH_CHECKLIST.md` — Complete checklist for moving to production domain
+- `GEO-AUDIT-REPORT.md` — Full GEO audit with scores and action items
 
 ## Deployment
 
-Best fit is **Vercel** (made by the Next.js team, zero config):
+Deployed on **Vercel**. Push to `main` triggers auto-deploy.
 
 ```bash
-npx vercel
+npx vercel          # first-time setup
+git push            # subsequent deploys
 ```
 
-Other options that work:
+## Still TODO
 
-- **Netlify** — supports Next.js with their Next.js Runtime
-- **Cloudflare Pages** — supports Next.js via `@cloudflare/next-on-pages`
-- Self-hosted Node — `npm run build && npm start`
-
-## Theming
-
-Brand tokens live in `app/globals.css` under `@theme`. Edit once, everything updates:
-
-```css
-@theme {
-  --color-teal: #2B7E8C;
-  --color-amber: #E89A3F;
-  ...
-}
-```
-
-These auto-generate `bg-teal`, `text-amber`, `border-teal-deep`, etc. throughout the project.
-
-Fraunces is loaded in `app/layout.js` with the `opsz`, `SOFT`, and `WONK` variable axes enabled through `next/font/google`.
+- [ ] Move to production domain (`evergreeninspections.com`) — see `DOMAIN_LAUNCH_CHECKLIST.md`
+- [ ] Verify Resend domain for real customer emails
+- [ ] Switch Square from sandbox to production
+- [ ] Enable Google Maps Geocoding API for mileage calculations
+- [ ] Add Privacy Policy and Terms of Service pages
+- [ ] Create blog / educational content section
+- [ ] Build location-specific landing pages
+- [ ] Add YouTube channel + embed videos on service pages
