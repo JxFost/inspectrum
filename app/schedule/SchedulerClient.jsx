@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
+
+const PHONE = process.env.NEXT_PUBLIC_OFFICE_PHONE || '(303) 697-0990'
+const PHONE_DIGITS = PHONE.replace(/\D/g, '')
 import { SERVICES } from '@/lib/services'
 import { trackBookingStep, trackBookingSubmit, trackBookingFormStart, trackBookingFormAbandon } from '@/lib/analytics'
 
@@ -39,7 +42,7 @@ function buildGCalUrl({ service, startISO, endISO, address }) {
     action: 'TEMPLATE',
     text: `Inspectrum Inspection — ${service}`,
     dates: `${fmt(startISO)}/${fmt(endISO)}`,
-    details: `${service} with Inspectrum Inspections.\n\nAddress: ${address || 'TBD'}\n\nQuestions: (303) 697-0990`,
+    details: `${service} with Inspectrum Inspections.\n\nAddress: ${address || 'TBD'}\n\nQuestions: ${PHONE}`,
     location: address || 'Evergreen, CO',
   })
   return `https://calendar.google.com/calendar/render?${params}`
@@ -52,7 +55,7 @@ function buildICS({ service, startISO, endISO, address }) {
     'BEGIN:VEVENT', `UID:${Date.now()}@inspectrum.com`, `DTSTAMP:${fmt(new Date().toISOString())}`,
     `DTSTART:${fmt(startISO)}`, `DTEND:${fmt(endISO)}`,
     `SUMMARY:Inspectrum Inspection — ${service}`,
-    `DESCRIPTION:${service} with Inspectrum Inspections.\\n\\nAddress: ${address || 'TBD'}\\n\\nQuestions: (303) 697-0990`,
+    `DESCRIPTION:${service} with Inspectrum Inspections.\\n\\nAddress: ${address || 'TBD'}\\n\\nQuestions: ${PHONE}`,
     `LOCATION:${address || 'Evergreen, CO'}`, 'END:VEVENT', 'END:VCALENDAR',
   ].join('\r\n')
   return URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
@@ -195,7 +198,7 @@ export default function SchedulerClient() {
       })
       .catch((err) => {
         if (controller.signal.aborted) return
-        setSlotsError(typeof err === 'string' ? err : 'Could not load availability. Please try again or call (303) 697-0990.')
+        setSlotsError(typeof err === 'string' ? err : `Could not load availability. Please try again or call ${PHONE}.`)
         setLoadingSlots(false)
       })
 
@@ -262,7 +265,7 @@ export default function SchedulerClient() {
       }
 
       if (!res.ok) {
-        setBookingError(data.error || 'Something went wrong. Please try again or call (303) 697-0990.')
+        setBookingError(data.error || `Something went wrong. Please try again or call ${PHONE}.`)
         setSubmitting(false)
         return
       }
@@ -271,7 +274,7 @@ export default function SchedulerClient() {
       trackBookingSubmit(service.name)
       setBooking(data)
     } catch {
-      setBookingError('Network error. Please check your connection and try again, or call (303) 697-0990.')
+      setBookingError(`Network error. Please check your connection and try again, or call ${PHONE}.`)
     } finally {
       setSubmitting(false)
     }
@@ -741,7 +744,7 @@ export default function SchedulerClient() {
         <div className="max-w-[900px] mx-auto text-center">
           <p className="text-charcoal mb-3">Prefer to talk to a person? Have a question first?</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="tel:3036970990" className="btn btn-teal">Call (303) 697-0990</a>
+            <a href={`tel:${PHONE_DIGITS}`} className="btn btn-teal">Call {PHONE}</a>
             <Link href="/contact" className="text-teal underline hover:text-amber py-4 px-2">Send a message instead</Link>
           </div>
         </div>

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+
+const PHONE = process.env.NEXT_PUBLIC_OFFICE_PHONE || '(303) 697-0990'
+const PHONE_DIGITS = PHONE.replace(/\D/g, '')
 import Button from '@/components/Button'
 
 const TIMEZONE = 'America/Denver'
@@ -61,7 +64,7 @@ export default function ManageClient() {
         }
       })
       .catch(() => {
-        setError('Could not reach the server. Please try again or call (303) 697-0990.')
+        setError(`Could not reach the server. Please try again or call ${PHONE}.`)
       })
       .finally(() => setLoading(false))
   }, [token])
@@ -80,14 +83,14 @@ export default function ManageClient() {
       const data = await res.json()
 
       if (!res.ok) {
-        setCancelError(data.error || 'Could not cancel. Please call (303) 697-0990.')
+        setCancelError(data.error || `Could not cancel. Please call ${PHONE}.`)
         setCancelState('idle')
         return
       }
 
       setCancelState('cancelled')
     } catch {
-      setCancelError('Network error. Please try again or call (303) 697-0990.')
+      setCancelError(`Network error. Please try again or call ${PHONE}.`)
       setCancelState('idle')
     }
   }
@@ -117,7 +120,7 @@ export default function ManageClient() {
             <div className="text-center bg-paper p-12 rounded-sm border border-line">
               <p className="text-lg text-ink mb-4">{error}</p>
               <p className="text-sm text-charcoal/70">
-                Need help? Call <a href="tel:3036970990" className="text-teal font-semibold">(303) 697-0990</a>
+                Need help? Call <a href={`tel:${PHONE_DIGITS}`} className="text-teal font-semibold">{PHONE}</a>
               </p>
             </div>
           )}
@@ -166,7 +169,7 @@ export default function ManageClient() {
                       Pay Now →
                     </a>
                   )}
-                  <p className="text-xs text-charcoal/60">If you've already paid by other means, please contact us at (303) 697-0990.</p>
+                  <p className="text-xs text-charcoal/60">If you've already paid by other means, please contact us at {PHONE}.</p>
                 </div>
               )}
 
@@ -241,7 +244,7 @@ export default function ManageClient() {
           )}
 
           <p className="text-center text-sm text-charcoal/60 mt-8">
-            Questions? Call <a href="tel:3036970990" className="text-teal font-semibold hover:text-amber">(303) 697-0990</a> ·{' '}
+            Questions? Call <a href={`tel:${PHONE_DIGITS}`} className="text-teal font-semibold hover:text-amber">{PHONE}</a> ·{' '}
             <Link href="/contact" className="text-teal font-semibold hover:text-amber no-underline">Send a message</Link>
           </p>
         </div>
