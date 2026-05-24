@@ -15,6 +15,7 @@ import { getBusyRanges, insertEvent } from '@/lib/google-calendar'
 import { computeSlots } from '@/lib/slots'
 import { buildManageUrl } from '@/lib/booking-tokens'
 import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber } from '@/lib/booking'
+import { computeDistance } from '@/lib/mileage'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 
@@ -150,12 +151,17 @@ export async function POST(request) {
     radonPickupDate = `${pickup.getMonth() + 1}/${pickup.getDate()}`
   }
 
-  // Assign inspection number for the year
+  // Assign inspection number and compute distance
   const inspectionNumber = await getNextInspectionNumber()
+  const dist = await computeDistance(fullAddress)
 
   // Build event description using shared helpers.
   const { description, token } = buildEventDescription({
     inspectionNumber,
+    distanceMiles: dist?.miles,
+    tripChargeCents: dist?.tripChargeCents,
+    geoLat: dist?.geoLat,
+    geoLng: dist?.geoLng,
     serviceName: service.name,
     customerName: name,
     phone,

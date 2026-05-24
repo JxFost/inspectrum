@@ -181,7 +181,8 @@ export default function InspectionsDashboard({
                   <span className="text-ink">{item.customerName || '—'}</span>
                   <span className="text-charcoal/50 hidden sm:inline">·</span>
                   <span className="text-charcoal/60 hidden sm:inline truncate max-w-[200px]">{item.address || ''}</span>
-                  {item.inspectionNumber && <span className="text-charcoal/40 text-xs font-mono ml-auto">{item.inspectionNumber}</span>}
+                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}</span>
+                  {item.inspectionNumber && <span className="text-charcoal/40 text-xs font-mono">{item.inspectionNumber}</span>}
                 </div>
               ))}
             </div>
@@ -251,6 +252,7 @@ export default function InspectionsDashboard({
                   <th className="text-left px-3 py-2.5">Date & Time</th>
                   <th className="text-left px-3 py-2.5">Customer</th>
                   <th className="text-left px-3 py-2.5 hidden md:table-cell">Address</th>
+                  <th className="text-right px-3 py-2.5 hidden lg:table-cell">Dist.</th>
                   <th className="text-left px-3 py-2.5">Service</th>
                   <th className="text-right px-3 py-2.5 hidden sm:table-cell">Price</th>
                   <th className="text-left px-3 py-2.5 hidden sm:table-cell">
@@ -277,7 +279,7 @@ export default function InspectionsDashboard({
                   return (<Fragment key={item.eventId}>
                     {showDivider && (
                       <tr key={`divider-${idx}`}>
-                        <td colSpan="10" className="px-3 py-1">
+                        <td colSpan="11" className="px-3 py-1">
                           <div className="flex items-center gap-3">
                             <div className="flex-1 h-px bg-teal/30" />
                             <span className="text-[0.6rem] uppercase tracking-widest text-teal font-semibold">Upcoming</span>
@@ -296,6 +298,11 @@ export default function InspectionsDashboard({
                     <td className="px-3 py-2 hidden md:table-cell">
                       <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block" title={item.address || ''}>
                         {item.address ? (item.address.length > 40 ? item.address.slice(0, 40) + '…' : item.address) : '—'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-right hidden lg:table-cell">
+                      <span className={`text-[0.75rem] ${item.distanceMiles && parseInt(item.distanceMiles) > 25 ? 'text-amber font-medium' : 'text-charcoal/50'}`} title={item.tripChargeCents ? `Trip charge: $${Math.round(parseInt(item.tripChargeCents) / 100)}` : ''}>
+                        {item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}
                       </span>
                     </td>
                     <td className="px-3 py-2">

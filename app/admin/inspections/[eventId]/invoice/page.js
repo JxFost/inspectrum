@@ -80,9 +80,12 @@ export default async function InvoicePage({ params }) {
     )
   }
 
-  // Determine suggested price from service name
+  // Determine suggested price from service name + trip charge
   const priceMap = { 'Full Home Inspection': 450, 'Radon Testing Only': 150, 'Mold Assessment': 250, 'Pre-Listing Inspection': 400 }
-  const suggestedPrice = priceMap[parsed.service] || ''
+  const basePrice = priceMap[parsed.service] || 0
+  const tripCharge = parsed.tripChargeCents ? parseInt(parsed.tripChargeCents, 10) / 100 : 0
+  const suggestedPrice = basePrice ? basePrice + tripCharge : ''
+  const distanceMiles = parsed.distanceMiles
 
   return (
     <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
@@ -105,6 +108,7 @@ export default async function InvoicePage({ params }) {
             {startISO && <div className="flex justify-between"><span className="text-charcoal/60">Date</span><span className="text-ink font-medium">{formatDate(startISO)}</span></div>}
             {startISO && <div className="flex justify-between"><span className="text-charcoal/60">Time</span><span className="text-ink font-medium">{formatTime(startISO)}</span></div>}
             <div className="flex justify-between"><span className="text-charcoal/60">Address</span><span className="text-ink font-medium text-right max-w-[200px]">{parsed.address || '—'}</span></div>
+            <div className="flex justify-between"><span className="text-charcoal/60">Distance</span><span className={`font-medium ${distanceMiles && parseInt(distanceMiles) > 25 ? 'text-amber' : 'text-ink'}`}>{distanceMiles ? `${distanceMiles} mi` : 'TBD'}{tripCharge > 0 ? ` (+$${tripCharge} trip)` : ''}</span></div>
             <div className="flex justify-between"><span className="text-charcoal/60">Email</span><span className="text-ink font-medium">{parsed.email || 'No email on file'}</span></div>
           </div>
         </div>

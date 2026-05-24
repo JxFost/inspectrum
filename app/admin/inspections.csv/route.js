@@ -53,7 +53,7 @@ export async function GET(request) {
 
   const siteUrl = process.env.PUBLIC_SITE_URL || 'http://localhost:3000'
 
-  const headers = ['date', 'time', 'customer_name', 'customer_phone', 'customer_email', 'address', 'service', 'price_dollars', 'payment_status', 'source', 'status', 'manage_url', 'calendar_event_id']
+  const headers = ['date', 'time', 'customer_name', 'customer_phone', 'customer_email', 'address', 'distance_miles', 'trip_charge_dollars', 'service', 'price_dollars', 'payment_status', 'source', 'status', 'manage_url', 'calendar_event_id']
 
   const rows = inspections.map((i) => csvRow([
     formatDate(i.startISO),
@@ -62,6 +62,8 @@ export async function GET(request) {
     i.phone || '',
     i.email || '',
     i.address || '',
+    i.distanceMiles || '',
+    i.tripChargeCents ? (parseInt(i.tripChargeCents) / 100).toFixed(2) : '',
     i.service || '',
     formatCents(i.paymentAmountCents || i.invoiceAmountCents),
     i.paymentStatus || 'not_invoiced',

@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server'
 import { SERVICES } from '@/lib/services'
 import { insertEvent } from '@/lib/google-calendar'
 import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber } from '@/lib/booking'
+import { computeDistance } from '@/lib/mileage'
 import { buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
@@ -45,9 +46,14 @@ export async function POST(request) {
 
   const isVacation = name === 'Blocked' && !email && !phone
   const inspectionNumber = isVacation ? null : await getNextInspectionNumber()
+  const dist = isVacation ? null : await computeDistance(address)
 
   const { description, token } = buildEventDescription({
     inspectionNumber,
+    distanceMiles: dist?.miles,
+    tripChargeCents: dist?.tripChargeCents,
+    geoLat: dist?.geoLat,
+    geoLng: dist?.geoLng,
     serviceName: isVacation ? 'Blocked Time' : service.name,
     customerName: name,
     phone,

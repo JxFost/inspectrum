@@ -18,6 +18,7 @@
 import { NextResponse } from 'next/server'
 import { parseACCEmail, isValidACCSender } from '@/lib/acc-email-parser'
 import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber } from '@/lib/booking'
+import { computeDistance } from '@/lib/mileage'
 import { insertEvent, findEventsBetween, deleteEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
 
@@ -185,9 +186,14 @@ export async function POST(request) {
     const endISO = endDate.toISOString()
 
     const inspectionNumber = await getNextInspectionNumber()
+    const dist = await computeDistance(fullAddress)
 
     const { description, token } = buildEventDescription({
       inspectionNumber,
+      distanceMiles: dist?.miles,
+      tripChargeCents: dist?.tripChargeCents,
+      geoLat: dist?.geoLat,
+      geoLng: dist?.geoLng,
       serviceName: service.name,
       customerName: parsed.clientName || 'ACC Client',
       phone: parsed.clientPhone || '',
