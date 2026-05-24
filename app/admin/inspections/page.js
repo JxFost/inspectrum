@@ -2,13 +2,15 @@
  * Admin Inspections Dashboard — read-only table of recent and upcoming inspections.
  *
  * Default window: 14 days back through 14 days forward.
- * Override via ?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * Override via ?range=2w|1m|2m|3m or ?from=YYYY-MM-DD&to=YYYY-MM-DD
  * Pagination via ?page=N (1-indexed, 20 per page)
+ * Sort via ?sort=payment (toggles payment column sort)
  */
 
 import Link from 'next/link'
 import { getInspectionsInWindow, serviceNameToId } from '@/lib/booking'
 import { TIMEZONE } from '@/lib/working-hours'
+import RangeSelector from './RangeSelector'
 
 export const metadata = {
   title: 'Admin — Inspections',
@@ -17,10 +19,18 @@ export const metadata = {
 
 const PAGE_SIZE = 20
 
-function defaultWindow() {
+const RANGE_OPTIONS = {
+  '2w': { label: '2 Weeks', days: 14 },
+  '1m': { label: '1 Month', days: 30 },
+  '2m': { label: '2 Months', days: 60 },
+  '3m': { label: '3 Months', days: 90 },
+}
+
+function windowFromRange(range) {
+  const config = RANGE_OPTIONS[range] || RANGE_OPTIONS['2w']
   const now = new Date()
-  const from = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-  const to = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+  const from = new Date(now.getTime() - config.days * 24 * 60 * 60 * 1000)
+  const to = new Date(now.getTime() + config.days * 24 * 60 * 60 * 1000)
   return {
     from: from.toISOString().slice(0, 10),
     to: to.toISOString().slice(0, 10),
@@ -58,12 +68,14 @@ function formatCents(cents) {
   return `$${Math.round(num / 100)}`
 }
 
-function buildUrl(from, to, page) {
+function buildUrl(range, from, to, page, sort) {
   const params = new URLSearchParams()
-  params.set('from', from)
-  params.set('to', to)
+  if (range && range !== '2w') params.set('range', range)
+  if (!range) { params.set('from', from); params.set('to', to) }
   if (page > 1) params.set('page', String(page))
-  return `/admin/inspections?${params}`
+  if (sort) params.set('sort', sort)
+  const qs = params.toString()
+  return `/admin/inspections${qs ? `?${qs}` : ''}`
 }
 
 // ---- Pill components ----
@@ -136,10 +148,12 @@ function SendInvoiceIcon() {
 
 export default async function InspectionsPage({ searchParams }) {
   const params = await searchParams
-  const defaults = defaultWindow()
-  const from = params.from || defaults.from
-  const to = params.to || defaults.to
+  const range = params.range || '2w'
+  const rangeWindow = windowFromRange(range)
+  const from = params.from || rangeWindow.from
+  const to = params.to || rangeWindow.to
   const page = Math.max(1, parseInt(params.page, 10) || 1)
+  const sort = params.sort || ''
 
   let inspections = []
   let fetchError = null
@@ -149,6 +163,19 @@ export default async function InspectionsPage({ searchParams }) {
   } catch (err) {
     console.error('[admin-inspections] fetch error:', err)
     fetchError = err.message
+  }
+
+  // Default sort: newest first
+  inspections.reverse()
+
+  // Payment sort: group by payment status
+  if (sort === 'payment') {
+    const ORDER = { pending: 0, paid: 1, refunded: 2, voided: 3 }
+    inspections.sort((a, b) => {
+      const aVal = a.paymentStatus ? (ORDER[a.paymentStatus] ?? 4) : 5
+      const bVal = b.paymentStatus ? (ORDER[b.paymentStatus] ?? 4) : 5
+      return aVal - bVal
+    })
   }
 
   const total = inspections.length
@@ -180,12 +207,13 @@ export default async function InspectionsPage({ searchParams }) {
             <p className="text-sm text-charcoal/60 mt-1">{formatWindowDate(from)} – {formatWindowDate(to)}</p>
           </div>
           <div className="flex items-center gap-3">
+            <RangeSelector currentRange={range} />
             <a
               href={`/admin/inspections.csv?from=${from}&to=${to}`}
               className="inline-flex items-center gap-1.5 text-sm text-teal font-semibold hover:text-amber transition-colors"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-              Download CSV
+              CSV
             </a>
             <a href="/admin/block" className="text-sm text-charcoal/60 hover:text-teal">+ New</a>
           </div>
@@ -232,7 +260,12 @@ export default async function InspectionsPage({ searchParams }) {
                   <th className="text-left px-3 py-2.5 hidden md:table-cell">Address</th>
                   <th className="text-left px-3 py-2.5">Service</th>
                   <th className="text-right px-3 py-2.5 hidden sm:table-cell">Price</th>
-                  <th className="text-left px-3 py-2.5 hidden sm:table-cell">Payment</th>
+                  <th className="text-left px-3 py-2.5 hidden sm:table-cell">
+                    <Link href={buildUrl(range, from, to, 1, sort === 'payment' ? '' : 'payment')} className="no-underline text-charcoal/50 hover:text-teal transition-colors inline-flex items-center gap-1">
+                      Payment
+                      {sort === 'payment' && <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3 text-teal"><path d="M6 2l4 5H2z" /></svg>}
+                    </Link>
+                  </th>
                   <th className="text-left px-3 py-2.5 hidden lg:table-cell">Source</th>
                   <th className="text-left px-3 py-2.5 hidden lg:table-cell">Status</th>
                   <th className="text-right px-3 py-2.5">Actions</th>
@@ -295,10 +328,10 @@ export default async function InspectionsPage({ searchParams }) {
         {totalPages > 1 && (
           <div className="flex justify-between items-center mt-6">
             {currentPage > 1 ? (
-              <Link href={buildUrl(from, to, currentPage - 1)} className="text-sm text-teal font-medium hover:text-amber no-underline">← Previous</Link>
+              <Link href={buildUrl(range, from, to, currentPage - 1, sort)} className="text-sm text-teal font-medium hover:text-amber no-underline">← Previous</Link>
             ) : <span />}
             {currentPage < totalPages ? (
-              <Link href={buildUrl(from, to, currentPage + 1)} className="text-sm text-teal font-medium hover:text-amber no-underline">Next →</Link>
+              <Link href={buildUrl(range, from, to, currentPage + 1, sort)} className="text-sm text-teal font-medium hover:text-amber no-underline">Next →</Link>
             ) : <span />}
           </div>
         )}
