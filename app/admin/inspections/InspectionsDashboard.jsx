@@ -133,6 +133,10 @@ export default function InspectionsDashboard({
   const outstanding = inspections
     .filter((i) => i.paymentStatus === 'pending' && i.invoiceAmountCents)
     .reduce((sum, i) => sum + (parseInt(i.invoiceAmountCents, 10) || 0), 0)
+  const overdueCount = inspections.filter((i) =>
+    i.paymentStatus === 'pending' && i.invoicedAt &&
+    (Date.now() - new Date(i.invoicedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
+  ).length
 
   // Today's agenda
   const todayItems = inspections.filter((i) => i.status === 'today')
@@ -185,12 +189,13 @@ export default function InspectionsDashboard({
         )}
 
         {/* Summary strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
           <StatCard label="Inspections" value={inspections.length} trend={trendArrow(inspections.length, prevTotal)} />
           <StatCard label="Completed" value={completed} trend={trendArrow(completed, prevCompleted)} />
           <StatCard label="Upcoming" value={upcoming} />
           <StatCard label="Collected" value={collected ? `$${Math.round(collected / 100).toLocaleString()}` : '$0'} trend={trendArrow(collected, prevCollected)} />
           <StatCard label="Outstanding" value={outstanding ? `$${Math.round(outstanding / 100).toLocaleString()}` : '$0'} />
+          <StatCard label="Overdue" value={overdueCount} alert={overdueCount > 0} />
           <StatCard label="YTD Total" value={ytdCount} />
         </div>
 
@@ -265,6 +270,10 @@ export default function InspectionsDashboard({
                   const prev = idx > 0 ? pageItems[idx - 1] : null
                   const showDivider = prev && prev.status !== 'upcoming' && item.status === 'upcoming'
 
+                  // Overdue: pending invoice that was sent 7+ days ago
+                  const isOverdue = item.paymentStatus === 'pending' && item.invoicedAt &&
+                    (Date.now() - new Date(item.invoicedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
+
                   return (<Fragment key={item.eventId}>
                     {showDivider && (
                       <tr key={`divider-${idx}`}>
@@ -277,7 +286,7 @@ export default function InspectionsDashboard({
                         </td>
                       </tr>
                     )}
-                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${item.status === 'past' ? 'bg-charcoal/[0.02]' : ''} ${item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
+                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.03]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
                     <td className="px-3 py-2 text-charcoal/40 text-xs font-mono">{item.inspectionNumber || '—'}</td>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
@@ -298,7 +307,9 @@ export default function InspectionsDashboard({
                       {formatCents(item.paymentAmountCents || item.invoiceAmountCents)}
                     </td>
                     <td className="px-3 py-2 hidden sm:table-cell">
-                      {item.paymentStatus ? (
+                      {isOverdue ? (
+                        <span className="inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold bg-red-100 text-red-700">Overdue</span>
+                      ) : item.paymentStatus ? (
                         <span className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${PAYMENT_COLORS[item.paymentStatus] || 'bg-cream text-charcoal'}`}>
                           {item.paymentStatus.charAt(0).toUpperCase() + item.paymentStatus.slice(1)}
                         </span>
@@ -366,11 +377,11 @@ export default function InspectionsDashboard({
   )
 }
 
-function StatCard({ label, value, trend }) {
+function StatCard({ label, value, trend, alert }) {
   return (
-    <div className="bg-paper border border-line rounded-sm p-4">
-      <div className="font-serif text-2xl text-ink">{value}{trend}</div>
-      <div className="text-[0.65rem] uppercase tracking-wider text-charcoal/60 mt-1">{label}</div>
+    <div className={`border rounded-sm p-4 ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
+      <div className={`font-serif text-2xl ${alert ? 'text-red-700' : 'text-ink'}`}>{value}{trend}</div>
+      <div className={`text-[0.65rem] uppercase tracking-wider mt-1 ${alert ? 'text-red-500' : 'text-charcoal/60'}`}>{label}</div>
     </div>
   )
 }
