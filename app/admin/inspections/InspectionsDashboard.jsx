@@ -124,6 +124,17 @@ export default function InspectionsDashboard({
     return items
   }, [inspections, sourceFilter, search, sortByPayment])
 
+  // Customer history — count bookings per customer name (across full window)
+  const customerCounts = useMemo(() => {
+    const counts = {}
+    for (const i of inspections) {
+      if (!i.customerName) continue
+      const key = i.customerName.toLowerCase().trim()
+      counts[key] = (counts[key] || 0) + 1
+    }
+    return counts
+  }, [inspections])
+
   // Pagination
   const total = filtered.length
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -306,7 +317,14 @@ export default function InspectionsDashboard({
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
                       <div className="text-charcoal/60 text-[0.75rem]">{formatTime(item.startISO)}</div>
                     </td>
-                    <td className="px-3 py-2 text-ink">{item.customerName || '—'}</td>
+                    <td className="px-3 py-2 text-ink">
+                      {item.customerName || '—'}
+                      {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
+                        <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full" title={`${customerCounts[item.customerName.toLowerCase().trim()]} bookings in this window`}>
+                          {customerCounts[item.customerName.toLowerCase().trim()]}x
+                        </span>
+                      )}
+                    </td>
                     <td className="px-3 py-2 hidden md:table-cell">
                       <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block" title={item.address || ''}>
                         {item.address ? (item.address.length > 40 ? item.address.slice(0, 40) + '…' : item.address) : '—'}

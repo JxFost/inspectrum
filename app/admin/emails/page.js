@@ -22,6 +22,12 @@ const TEMPLATES = [
     description: 'Sent 72 hours after the inspection with a Google review request.',
     trigger: 'Daily cron (5pm UTC / 11am MT)',
   },
+  {
+    id: 'digest',
+    name: 'Daily Morning Digest',
+    description: "Sent to Harry each morning with today's schedule, addresses, access info, and distances.",
+    trigger: 'Daily cron (12pm UTC / 6am MT)',
+  },
 ]
 
 export default function EmailPreviewsPage() {

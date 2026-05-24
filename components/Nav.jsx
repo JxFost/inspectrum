@@ -186,6 +186,15 @@ export default function Nav() {
   const isContact = pathname === '/contact'
   // If user is on /admin/*, they're authenticated (middleware enforces this)
   const isOnAdminPage = pathname.startsWith('/admin')
+  const [uninvoicedCount, setUninvoicedCount] = useState(0)
+
+  useEffect(() => {
+    if (!isOnAdminPage) return
+    fetch('/api/admin/uninvoiced-count')
+      .then((r) => r.json())
+      .then((d) => setUninvoicedCount(d.count || 0))
+      .catch(() => {})
+  }, [isOnAdminPage, pathname])
 
   const close = () => {
     setOpen(false)
@@ -329,7 +338,12 @@ export default function Nav() {
         {/* Admin nav — replaces client nav when on admin pages */}
         {isOnAdminPage && pathname.startsWith('/admin') ? (
           <>
-            <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
+            <span className="relative w-full lg:w-auto">
+              <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
+              {uninvoicedCount > 0 && (
+                <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-5 lg:bottom-auto bg-red-500 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center">{uninvoicedCount}</span>
+              )}
+            </span>
             <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
             <NavItem href="/admin/emails" label="Emails" active={pathname === '/admin/emails'} onClick={close} />
             <div className="hidden lg:block w-px h-5 bg-line" />

@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server'
 import { followupHtml } from '@/lib/email/templates/followup'
 import { reminderHtml } from '@/lib/email/templates/reminder'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
+import { dailyDigestHtml } from '@/lib/email/templates/daily-digest'
 
 const SAMPLE = {
   customerName: 'Peter McDougall',
@@ -50,6 +51,15 @@ export async function GET(request) {
       break
     case 'receipt':
       html = bookingReceiptHtml(SAMPLE)
+      break
+    case 'digest':
+      html = dailyDigestHtml({
+        dateLabel: 'Monday, May 26',
+        inspections: [
+          { startISO: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), customerName: 'Sarah Johnson', service: 'Full Home Inspection', phone: '303-555-1234', address: '4642 Plettner Ln, Evergreen, CO 80439', distanceMiles: '8', accessProvidedBy: "Seller's Agent will let you in", inspectionNumber: '2026-048' },
+          { startISO: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), customerName: 'Mike Chen', service: 'Radon Testing Only', phone: '720-555-5678', address: '1035 N Pearl St, Denver, CO 80205', distanceMiles: '32', accessProvidedBy: 'Lockbox — 4521', inspectionNumber: '2026-049' },
+        ],
+      })
       break
     default:
       return NextResponse.json({ error: 'Unknown template. Use: followup, reminder, receipt' }, { status: 400 })
