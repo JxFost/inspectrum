@@ -200,7 +200,7 @@ export default function Nav() {
     })
   }
 
-  const visibleLogoProgress = animateLogo && !open ? logoProgress : 1
+  const visibleLogoProgress = isOnAdminPage ? 1 : (animateLogo && !open ? logoProgress : 1)
   const logoImageHeight = 52 + (100 - 52) * (1 - visibleLogoProgress)
   const logoPaddingY = 2 + (12 - 2) * (1 - visibleLogoProgress)
   const logoPaddingX = 2 + (16 - 2) * (1 - visibleLogoProgress)
