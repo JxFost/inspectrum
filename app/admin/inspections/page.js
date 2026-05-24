@@ -271,7 +271,7 @@ export default async function InspectionsPage({ searchParams }) {
               </thead>
               <tbody>
                 {pageItems.map((item) => (
-                  <tr key={item.eventId} className="border-b border-line/50 hover:bg-cream/50">
+                  <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${item.status === 'past' ? 'bg-charcoal/[0.02]' : ''} ${item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
                       <div className="text-charcoal/60 text-[0.75rem]">{formatTime(item.startISO)}</div>
