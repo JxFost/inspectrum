@@ -15,11 +15,21 @@ function loadGoogleMaps() {
 
   if (!API_KEY) return Promise.resolve(false)
 
+  // Suppress Google Maps errors from referrer restrictions (local dev)
+  const origError = window.console.error
+  window.gm_authFailure = () => {
+    console.warn('[AddressAutocomplete] Google Maps API key not authorized for this domain — autocomplete disabled')
+    window._gmapsAuthFailed = true
+  }
+
   loadPromise = new Promise((resolve) => {
     const script = document.createElement('script')
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`
     script.async = true
-    script.onload = () => resolve(true)
+    script.onload = () => {
+      // Give gm_authFailure a moment to fire if it's going to
+      setTimeout(() => resolve(!window._gmapsAuthFailed), 200)
+    }
     script.onerror = () => { loadPromise = null; resolve(false) }
     document.head.appendChild(script)
   })
