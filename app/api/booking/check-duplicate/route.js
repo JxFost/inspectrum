@@ -85,41 +85,55 @@ export async function GET(request) {
     const future = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
     const events = await findEventsBetween(now.toISOString(), future.toISOString())
 
+    // First pass: find address matches (same property = most likely a duplicate)
+    // Second pass: name-only matches (same person, different property = less likely)
+    let addressMatch = null
+    let nameOnlyMatch = null
+
     for (const event of events) {
       const parsed = parseEventDescription(event.description)
       const startISO = event.start?.dateTime
       if (!startISO) continue
 
-      const nameHit = name && parsed.customerName && namesMatch(name, parsed.customerName)
       const addressHit = address && parsed.address && addressesMatch(address, parsed.address)
+      const nameHit = name && parsed.customerName && namesMatch(name, parsed.customerName)
 
-      // Require at least name match, or address match, or both
-      if (nameHit || addressHit) {
-        const dateLabel = new Date(startISO).toLocaleDateString('en-US', {
-          timeZone: TIMEZONE,
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-        })
-        const timeLabel = new Date(startISO).toLocaleTimeString('en-US', {
-          timeZone: TIMEZONE,
-          hour: 'numeric',
-          minute: '2-digit',
-        })
-
-        return NextResponse.json({
-          match: {
-            eventId: event.id,
-            customerName: parsed.customerName,
-            address: parsed.address,
-            service: parsed.service,
-            date: dateLabel,
-            time: timeLabel,
-            startISO,
-            token: parsed.token,
-          },
-        })
+      if (addressHit && !addressMatch) {
+        addressMatch = { event, parsed, startISO }
+      } else if (nameHit && !addressHit && !nameOnlyMatch) {
+        nameOnlyMatch = { event, parsed, startISO }
       }
+    }
+
+    // Prefer address match over name-only match
+    const hit = addressMatch || nameOnlyMatch
+    if (hit) {
+      const { parsed, startISO } = hit
+      const dateLabel = new Date(startISO).toLocaleDateString('en-US', {
+        timeZone: TIMEZONE,
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      })
+      const timeLabel = new Date(startISO).toLocaleTimeString('en-US', {
+        timeZone: TIMEZONE,
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+
+      return NextResponse.json({
+        match: {
+          eventId: hit.event.id,
+          customerName: parsed.customerName,
+          address: parsed.address,
+          service: parsed.service,
+          date: dateLabel,
+          time: timeLabel,
+          startISO,
+          token: parsed.token,
+          matchType: addressMatch ? 'address' : 'name',
+        },
+      })
     }
 
     return NextResponse.json({ match: null })

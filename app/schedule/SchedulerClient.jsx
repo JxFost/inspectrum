@@ -654,9 +654,14 @@ export default function SchedulerClient() {
                   <div className="flex items-start gap-3 mb-4">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-amber shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                     <div>
-                      <p className="text-sm font-semibold text-ink mb-1">Existing booking found</p>
+                      <p className="text-sm font-semibold text-ink mb-1">
+                        {duplicateMatch.matchType === 'address' ? 'Existing booking at this address' : 'Existing booking found'}
+                      </p>
                       <p className="text-sm text-charcoal">
-                        We found an upcoming inspection for <span className="font-medium text-ink">{duplicateMatch.customerName}</span> at <span className="font-medium text-ink">{duplicateMatch.address}</span> on <span className="font-medium text-ink">{duplicateMatch.date}</span> at <span className="font-medium text-ink">{duplicateMatch.time}</span>.
+                        {duplicateMatch.matchType === 'address'
+                          ? <>There&apos;s already an inspection scheduled at <span className="font-medium text-ink">{duplicateMatch.address}</span> on <span className="font-medium text-ink">{duplicateMatch.date}</span> at <span className="font-medium text-ink">{duplicateMatch.time}</span> for <span className="font-medium text-ink">{duplicateMatch.customerName}</span>.</>
+                          : <>We found an upcoming inspection for <span className="font-medium text-ink">{duplicateMatch.customerName}</span> on <span className="font-medium text-ink">{duplicateMatch.date}</span> at <span className="font-medium text-ink">{duplicateMatch.time}</span> at a different address.</>
+                        }
                       </p>
                     </div>
                   </div>
