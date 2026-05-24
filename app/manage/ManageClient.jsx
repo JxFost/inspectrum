@@ -149,6 +149,42 @@ export default function ManageClient() {
                 {booking.phone && <DetailRow label="Phone" value={booking.phone} />}
               </div>
 
+              {/* Payment section */}
+              {booking.paymentStatus === 'pending' && (
+                <div className="bg-amber/10 border border-amber rounded-sm p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-amber font-semibold text-sm">Payment Due</span>
+                    {booking.invoiceAmountCents && <span className="text-ink font-semibold">${Math.round(parseInt(booking.invoiceAmountCents, 10) / 100)}</span>}
+                  </div>
+                  {booking.squareInvoiceUrl && (
+                    <a
+                      href={booking.squareInvoiceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-amber text-white px-6 py-2.5 rounded-sm font-semibold text-sm no-underline hover:bg-amber-deep transition-colors mb-3"
+                    >
+                      Pay Now →
+                    </a>
+                  )}
+                  <p className="text-xs text-charcoal/60">If you've already paid by other means, please contact us at (303) 697-0990.</p>
+                </div>
+              )}
+
+              {booking.paymentStatus === 'paid' && (
+                <div className="bg-teal/10 border border-teal/30 rounded-sm p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-teal font-semibold text-sm">Paid ✓</span>
+                    {booking.paymentAmountCents && <span className="text-ink font-semibold">${Math.round(parseInt(booking.paymentAmountCents, 10) / 100)}</span>}
+                  </div>
+                  {booking.paidAt && <p className="text-xs text-charcoal/60 mb-2">Paid on {new Date(booking.paidAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>}
+                  {booking.squareInvoiceUrl && (
+                    <a href={booking.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-teal hover:text-amber no-underline">
+                      View receipt →
+                    </a>
+                  )}
+                </div>
+              )}
+
               {cancelError && (
                 <div className="bg-amber/10 border border-amber text-ink rounded-sm p-4 mb-6 text-sm">
                   {cancelError}

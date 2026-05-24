@@ -46,12 +46,14 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Booking not found.' }, { status: 404 })
   }
 
-  // Check if the appointment is in the past.
-  if (new Date(startISO) < new Date()) {
+  const description = event.description || ''
+  const paymentStatus = parseCustomerField(description, 'payment_status') || null
+  const isPast = new Date(startISO) < new Date()
+
+  // Only block past events if they have no payment info — customers may need to view/pay
+  if (isPast && !paymentStatus) {
     return NextResponse.json({ error: 'This appointment has already passed.' }, { status: 410 })
   }
-
-  const description = event.description || ''
 
   return NextResponse.json({
     service: parseCustomerField(description, 'Service'),
@@ -62,5 +64,10 @@ export async function GET(_request, { params }) {
     startISO,
     endISO,
     status: event.status,
+    paymentStatus,
+    invoiceAmountCents: parseCustomerField(description, 'invoice_amount_cents') || null,
+    paymentAmountCents: parseCustomerField(description, 'payment_amount_cents') || null,
+    squareInvoiceUrl: parseCustomerField(description, 'square_invoice_url') || null,
+    paidAt: parseCustomerField(description, 'paid_at') || null,
   })
 }

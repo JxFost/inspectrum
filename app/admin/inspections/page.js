@@ -128,6 +128,10 @@ function InvoiceIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
 }
 
+function SendInvoiceIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><line x1="12" y1="1" x2="12" y2="15" /><polyline points="16 11 12 15 8 11" /><path d="M20 21H4a2 2 0 01-2-2v-4h4l2 2h8l2-2h4v4a2 2 0 01-2 2z" /></svg>
+}
+
 // ---- Main page ----
 
 export default async function InspectionsPage({ searchParams }) {
@@ -259,6 +263,16 @@ export default async function InspectionsPage({ searchParams }) {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center justify-end gap-2">
+                        {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
+                          <a href={`/admin/inspections/${item.eventId}/invoice`} title="Send Invoice" className="text-charcoal/40 hover:text-amber transition-colors">
+                            <SendInvoiceIcon />
+                          </a>
+                        )}
+                        {item.squareInvoiceUrl && (
+                          <a href={item.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" title="View Square invoice" className="text-charcoal/40 hover:text-amber transition-colors">
+                            <InvoiceIcon />
+                          </a>
+                        )}
                         {item.htmlLink && (
                           <a href={item.htmlLink} target="_blank" rel="noopener noreferrer" title="Open in Google Calendar" className="text-charcoal/40 hover:text-teal transition-colors">
                             <CalendarIcon />
@@ -267,11 +281,6 @@ export default async function InspectionsPage({ searchParams }) {
                         {item.token && (
                           <a href={`/manage?token=${item.token}`} target="_blank" rel="noopener noreferrer" title="Manage booking" className="text-charcoal/40 hover:text-teal transition-colors">
                             <ManageIcon />
-                          </a>
-                        )}
-                        {item.squareInvoiceUrl && (
-                          <a href={item.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" title="View Square invoice" className="text-charcoal/40 hover:text-amber transition-colors">
-                            <InvoiceIcon />
                           </a>
                         )}
                       </div>
