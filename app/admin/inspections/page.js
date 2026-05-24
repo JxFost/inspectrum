@@ -141,7 +141,7 @@ function InvoiceIcon() {
 }
 
 function SendInvoiceIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><line x1="12" y1="1" x2="12" y2="15" /><polyline points="16 11 12 15 8 11" /><path d="M20 21H4a2 2 0 01-2-2v-4h4l2 2h8l2-2h4v4a2 2 0 01-2 2z" /></svg>
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M22 2L11 13" /><path d="M22 2L15 22l-4-9-9-4 20-7z" /></svg>
 }
 
 // ---- Main page ----
@@ -194,8 +194,6 @@ export default async function InspectionsPage({ searchParams }) {
   const outstanding = inspections
     .filter((i) => i.paymentStatus === 'pending' && i.invoiceAmountCents)
     .reduce((sum, i) => sum + (parseInt(i.invoiceAmountCents, 10) || 0), 0)
-
-  const siteUrl = process.env.PUBLIC_SITE_URL || 'http://localhost:3000'
 
   return (
     <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
@@ -305,11 +303,11 @@ export default async function InspectionsPage({ searchParams }) {
                             <InvoiceIcon />
                           </a>
                         )}
-                        {item.htmlLink && (
+                        {/* {item.htmlLink && (
                           <a href={item.htmlLink} target="_blank" rel="noopener noreferrer" title="Open in Google Calendar" className="text-charcoal/40 hover:text-teal transition-colors">
                             <CalendarIcon />
                           </a>
-                        )}
+                        )} */}
                         {item.token && (
                           <a href={`/manage?token=${item.token}`} target="_blank" rel="noopener noreferrer" title="Manage booking" className="text-charcoal/40 hover:text-teal transition-colors">
                             <ManageIcon />
