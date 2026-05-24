@@ -257,8 +257,24 @@ export default function InspectionsDashboard({
                 </tr>
               </thead>
               <tbody>
-                {pageItems.map((item) => (
-                  <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${item.status === 'past' ? 'bg-charcoal/[0.02]' : ''} ${item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
+                {pageItems.map((item, idx) => {
+                  // Insert a divider when transitioning from past/today to upcoming
+                  const prev = idx > 0 ? pageItems[idx - 1] : null
+                  const showDivider = prev && prev.status !== 'upcoming' && item.status === 'upcoming'
+
+                  return (<>
+                    {showDivider && (
+                      <tr key={`divider-${idx}`}>
+                        <td colSpan="10" className="px-3 py-1">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-px bg-teal/30" />
+                            <span className="text-[0.6rem] uppercase tracking-widest text-teal font-semibold">Upcoming</span>
+                            <div className="flex-1 h-px bg-teal/30" />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${item.status === 'past' ? 'bg-charcoal/[0.02]' : ''} ${item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
                     <td className="px-3 py-2 text-charcoal/40 text-xs font-mono">{item.inspectionNumber || '—'}</td>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
@@ -318,7 +334,8 @@ export default function InspectionsDashboard({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  </>)
+                })}
               </tbody>
             </table>
           </div>
