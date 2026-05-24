@@ -153,7 +153,7 @@ export async function POST(request) {
 
   // Assign inspection number and compute distance
   const inspectionNumber = await getNextInspectionNumber()
-  const dist = await computeDistance(fullAddress)
+  const dist = await computeDistance(address)
 
   // Build event description using shared helpers.
   const { description, token } = buildEventDescription({
