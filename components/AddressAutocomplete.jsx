@@ -31,17 +31,18 @@ function loadGoogleMaps() {
   return loadPromise
 }
 
+/**
+ * Try to find the inner <input> inside the web component.
+ * Tries direct query first, then shadow root.
+ */
+function findInnerInput(el) {
+  return el.querySelector('input')
+    || el.shadowRoot?.querySelector('input')
+    || null
+}
+
 // ---- Component ----
 
-/**
- * Street address input with Google Places Autocomplete (new PlaceAutocompleteElement API).
- *
- * Props:
- * - value: current street value (used for initial/fallback render only)
- * - onChange(streetStr): called on manual typing
- * - onPlaceSelect({ street, city, state, zip }): called when user picks from dropdown
- * - placeholder, required, error, className: standard form field props
- */
 export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
   const containerRef = useRef(null)
   const autocompleteElRef = useRef(null)
@@ -49,12 +50,12 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
   const onChangeRef = useRef(onChange)
   const [apiLoaded, setApiLoaded] = useState(false)
   const [useFallback, setUseFallback] = useState(false)
+  // After selection, show a plain input with the parsed street so user can edit
+  const [selectedStreet, setSelectedStreet] = useState(null)
 
-  // Keep refs current so event listener always calls latest callbacks
   useEffect(() => { onPlaceSelectRef.current = onPlaceSelect }, [onPlaceSelect])
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
 
-  // Load the Google Maps script
   useEffect(() => {
     loadGoogleMaps().then((loaded) => {
       setApiLoaded(loaded)
@@ -62,9 +63,11 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
     })
   }, [])
 
-  // Create and mount the PlaceAutocompleteElement once the API is ready
+  // Create and mount the PlaceAutocompleteElement
   useEffect(() => {
     if (!apiLoaded || !containerRef.current || autocompleteElRef.current) return
+    // Don't create if we've already selected (showing the plain input)
+    if (selectedStreet !== null) return
 
     try {
       const el = new window.google.maps.places.PlaceAutocompleteElement({
@@ -72,38 +75,35 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
         componentRestrictions: { country: 'us' },
       })
 
-      // Bias results toward the Colorado Front Range
+      // Bias toward Colorado Front Range
       try {
         el.locationBias = {
           center: { lat: 39.7392, lng: -104.9903 },
           radius: 50000,
         }
-      } catch { /* locationBias may not be supported in all versions */ }
+      } catch { /* ignore if not supported */ }
 
       // Place selected from dropdown
       const handlePlaceSelect = async (event) => {
         const place = event.place
-        await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] })
+        if (!place) return
 
+        await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] })
         if (!place.addressComponents) return
 
         const parsed = parseAddressComponents(place.addressComponents)
 
-        // Update parent form state with parsed components
+        // Update parent form state with all parsed components
         onPlaceSelectRef.current?.(parsed)
 
-        // Override the input to show just the street (Google sets it to the full address)
-        requestAnimationFrame(() => {
-          const inner = el.querySelector('input')
-          if (inner && parsed.street) {
-            inner.value = parsed.street
-          }
-        })
+        // Switch to a plain editable input showing just the street
+        // This avoids fighting the web component's display value
+        setSelectedStreet(parsed.street)
       }
 
-      // Manual typing — relay to parent so form validation works
+      // Manual typing relay
       const handleInput = () => {
-        const inner = el.querySelector('input')
+        const inner = findInnerInput(el)
         if (inner) onChangeRef.current?.(inner.value)
       }
 
@@ -121,9 +121,18 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
       console.warn('[AddressAutocomplete] PlaceAutocompleteElement failed:', err.message)
       setUseFallback(true)
     }
-  }, [apiLoaded])
+  }, [apiLoaded, selectedStreet])
 
-  const borderClass = error ? 'border-red-400' : 'border-line'
+  // Reset back to autocomplete mode
+  const handleClear = () => {
+    setSelectedStreet(null)
+    autocompleteElRef.current = null
+    // Clear the container so the element can be re-created
+    if (containerRef.current) containerRef.current.innerHTML = ''
+  }
+
+  const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
+  const inputClasses = `bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] w-full`
 
   // Fallback: plain text input when API is unavailable
   if (useFallback) {
@@ -136,13 +145,41 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || '123 Main St'}
           required={required}
-          className={`bg-cream border ${borderClass} focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`}
+          className={inputClasses}
         />
         {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
       </div>
     )
   }
 
+  // After a place is selected: show a regular input with the parsed street
+  if (selectedStreet !== null) {
+    return (
+      <div className={`flex flex-col gap-1.5 ${className}`}>
+        <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Street Address</label>
+        <div className="relative">
+          <input
+            type="text"
+            defaultValue={selectedStreet}
+            onChange={(e) => onChange(e.target.value)}
+            required={required}
+            className={inputClasses}
+          />
+          <button
+            type="button"
+            onClick={handleClear}
+            title="Search for a different address"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-teal transition-colors bg-transparent border-0 cursor-pointer p-1"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg>
+          </button>
+        </div>
+        {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
+      </div>
+    )
+  }
+
+  // Default: show the autocomplete web component
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Street Address</label>
