@@ -120,7 +120,7 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
           placeholder={placeholder || '123 Main St'}
           required={required}
           autoComplete="off"
-          className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] w-full`}
+          className={`bg-cream border ${borderClass} relative z-[100] px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] w-full`}
         />
         {/* Hidden autocomplete element — its input is invisible but dropdown is visible */}
         <div ref={containerRef} className="address-autocomplete-overlay" />
