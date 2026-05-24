@@ -7,7 +7,7 @@ const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 let loadPromise = null
 function loadGoogleMaps() {
   if (typeof window === 'undefined') return Promise.resolve(false)
-  if (window.google?.maps?.places) return Promise.resolve(true)
+  if (window.google?.maps?.places?.PlaceAutocompleteElement) return Promise.resolve(true)
   if (loadPromise) return loadPromise
   if (!API_KEY) return Promise.resolve(false)
 
@@ -18,9 +18,9 @@ function loadGoogleMaps() {
 
   loadPromise = new Promise((resolve) => {
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&loading=async`
     script.async = true
-    script.onload = () => setTimeout(() => resolve(!window._gmapsAuthFailed), 200)
+    script.onload = () => setTimeout(() => resolve(!window._gmapsAuthFailed), 300)
     script.onerror = () => { loadPromise = null; resolve(false) }
     document.head.appendChild(script)
   })
@@ -28,99 +28,97 @@ function loadGoogleMaps() {
   return loadPromise
 }
 
-function parsePlaceComponents(place) {
+function parsePlace(place) {
   const result = { street: '', city: '', state: '', zip: '' }
-  const components = place.address_components || []
+  const components = place.addressComponents || []
   let streetNumber = ''
   let route = ''
 
   for (const c of components) {
-    const types = c.types
-    if (types.includes('street_number')) streetNumber = c.long_name
-    if (types.includes('route')) route = c.long_name
-    if (types.includes('locality')) result.city = c.long_name
-    if (types.includes('sublocality_level_1') && !result.city) result.city = c.long_name
-    if (types.includes('administrative_area_level_1')) result.state = c.short_name
-    if (types.includes('postal_code')) result.zip = c.long_name
+    const types = c.types || []
+    if (types.includes('street_number')) streetNumber = c.longText || ''
+    if (types.includes('route')) route = c.longText || ''
+    if (types.includes('locality')) result.city = c.longText || ''
+    if (types.includes('sublocality_level_1') && !result.city) result.city = c.longText || ''
+    if (types.includes('administrative_area_level_1')) result.state = c.shortText || ''
+    if (types.includes('postal_code')) result.zip = c.longText || ''
   }
 
   result.street = [streetNumber, route].filter(Boolean).join(' ')
   return result
 }
 
-/**
- * Address autocomplete using the legacy Autocomplete class.
- * Fully uncontrolled input — React never sets the value, only reads via ref.
- */
 export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
-  const inputRef = useRef(null)
-  const autocompleteRef = useRef(null)
-  const placeSelectedRef = useRef(false)
+  const containerRef = useRef(null)
+  const elementRef = useRef(null)
   const [apiLoaded, setApiLoaded] = useState(false)
+  const [useFallback, setUseFallback] = useState(false)
 
   useEffect(() => {
-    loadGoogleMaps().then(setApiLoaded)
+    loadGoogleMaps().then((loaded) => {
+      setApiLoaded(loaded)
+      if (!loaded) setUseFallback(true)
+    })
   }, [])
 
-  // Set initial value once on mount
   useEffect(() => {
-    if (inputRef.current && value && !inputRef.current.value) {
-      inputRef.current.value = value
-    }
-  }, [value])
+    if (!apiLoaded || !containerRef.current || elementRef.current) return
 
-  useEffect(() => {
-    if (!apiLoaded || !inputRef.current || autocompleteRef.current) return
-    if (!window.google?.maps?.places?.Autocomplete) return
-
-    const ac = new window.google.maps.places.Autocomplete(inputRef.current, {
-      types: ['address'],
-      componentRestrictions: { country: 'us' },
-      fields: ['address_components'],
-    })
-
-    ac.addListener('place_changed', () => {
-      const place = ac.getPlace()
-      if (!place?.address_components) return
-
-      const parsed = parsePlaceComponents(place)
-      placeSelectedRef.current = true
-
-      // Update parent state with parsed fields
-      onPlaceSelect?.(parsed)
-
-      // Override Google's full-address input with just the street
-      requestAnimationFrame(() => {
-        if (inputRef.current) {
-          inputRef.current.value = parsed.street
-        }
-        placeSelectedRef.current = false
+    try {
+      const el = new window.google.maps.places.PlaceAutocompleteElement({
+        componentRestrictions: { country: 'us' },
+        types: ['address'],
       })
-    })
 
-    autocompleteRef.current = ac
-    return () => window.google.maps.event.clearInstanceListeners(ac)
-  }, [apiLoaded, onPlaceSelect])
+      el.addEventListener('gmp-placeselect', async (e) => {
+        const place = e.place
+        await place.fetchFields({ fields: ['addressComponents'] })
+        const parsed = parsePlace(place)
+        onPlaceSelect?.(parsed)
 
-  const borderClass = error ? 'border-red-400 focus:border-red-400' : 'border-line focus:border-teal'
+        // Reset input to street only after Google finishes
+        requestAnimationFrame(() => {
+          const inner = el.querySelector('input')
+          if (inner && parsed.street) inner.value = parsed.street
+        })
+      })
+
+      el.addEventListener('input', () => {
+        const inner = el.querySelector('input')
+        if (inner) onChange(inner.value)
+      })
+
+      containerRef.current.appendChild(el)
+      elementRef.current = el
+    } catch (err) {
+      console.warn('[AddressAutocomplete] PlaceAutocompleteElement failed:', err.message)
+      setUseFallback(true)
+    }
+  }, [apiLoaded, onChange, onPlaceSelect])
+
+  const borderClass = error ? 'border-red-400' : 'border-line'
+
+  if (useFallback) {
+    return (
+      <div className={`flex flex-col gap-1.5 ${className}`}>
+        <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Street Address</label>
+        <input
+          type="text"
+          defaultValue={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder || '123 Main St'}
+          required={required}
+          className={`bg-cream border ${borderClass} focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`}
+        />
+        {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
+      </div>
+    )
+  }
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Street Address</label>
-      <input
-        ref={inputRef}
-        type="text"
-        defaultValue={value}
-        onInput={(e) => {
-          if (!placeSelectedRef.current) {
-            onChange(e.target.value)
-          }
-        }}
-        placeholder={placeholder || '123 Main St'}
-        required={required}
-        autoComplete="off"
-        className={`bg-cream border ${borderClass} px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]`}
-      />
+      <div ref={containerRef} className="address-autocomplete-container" />
       {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>
   )

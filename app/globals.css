@@ -83,6 +83,11 @@
 
   details summary::-webkit-details-marker { display: none; }
   details summary { list-style: none; }
+
+  /* Google Places Autocomplete — style the web component to match site design */
+  .address-autocomplete-container gmp-place-autocomplete {
+    width: 100%;
+  }
 }
 
 @layer utilities {
