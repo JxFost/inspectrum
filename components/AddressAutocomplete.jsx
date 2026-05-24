@@ -15,8 +15,7 @@ function loadGoogleMaps() {
 
   if (!API_KEY) return Promise.resolve(false)
 
-  // Suppress Google Maps errors from referrer restrictions (local dev)
-  const origError = window.console.error
+  // Suppress Google Maps auth errors (local dev with restricted key)
   window.gm_authFailure = () => {
     console.warn('[AddressAutocomplete] Google Maps API key not authorized for this domain — autocomplete disabled')
     window._gmapsAuthFailed = true
@@ -27,7 +26,6 @@ function loadGoogleMaps() {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`
     script.async = true
     script.onload = () => {
-      // Give gm_authFailure a moment to fire if it's going to
       setTimeout(() => resolve(!window._gmapsAuthFailed), 200)
     }
     script.onerror = () => { loadPromise = null; resolve(false) }
@@ -63,16 +61,8 @@ function parsePlaceComponents(place) {
 
 /**
  * Address input with Google Places Autocomplete.
- * Falls back to a regular text input if the API key is not configured.
- *
- * @param {object} props
- * @param {string} props.value — current street address value
- * @param {function} props.onChange — called with just the street string on manual typing
- * @param {function} props.onPlaceSelect — called with { street, city, state, zip } when a place is selected
- * @param {string} [props.placeholder]
- * @param {boolean} [props.required]
- * @param {string} [props.error]
- * @param {string} [props.className]
+ * Uses an uncontrolled input to avoid conflicts with Google's DOM manipulation.
+ * Falls back to a regular controlled input if the API is not available.
  */
 export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
   const inputRef = useRef(null)
@@ -83,14 +73,21 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
     loadGoogleMaps().then(setApiLoaded)
   }, [])
 
+  // Sync the input value from parent when it changes externally (e.g., reset)
+  useEffect(() => {
+    if (inputRef.current && inputRef.current !== document.activeElement) {
+      inputRef.current.value = value || ''
+    }
+  }, [value])
+
   const handlePlaceChanged = useCallback(() => {
     const place = autocompleteRef.current?.getPlace()
     if (!place?.address_components) return
 
     const parsed = parsePlaceComponents(place)
 
-    // Google overwrites the input with the full formatted address — reset it to just the street
-    if (inputRef.current && parsed.street) {
+    // Set the input to just the street portion
+    if (inputRef.current) {
       inputRef.current.value = parsed.street
     }
 
@@ -103,7 +100,7 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
     const ac = new window.google.maps.places.Autocomplete(inputRef.current, {
       types: ['address'],
       componentRestrictions: { country: 'us' },
-      fields: ['address_components', 'formatted_address'],
+      fields: ['address_components'],
     })
 
     ac.addListener('place_changed', handlePlaceChanged)
@@ -122,7 +119,7 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
       <input
         ref={inputRef}
         type="text"
-        value={value}
+        defaultValue={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || '123 Main St'}
         required={required}
