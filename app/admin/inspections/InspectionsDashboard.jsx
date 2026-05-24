@@ -320,7 +320,7 @@ export default function InspectionsDashboard({
                     <td className="px-3 py-2 text-ink">
                       {item.customerName || '—'}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
-                        <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full" title={`${customerCounts[item.customerName.toLowerCase().trim()]} bookings in this window`}>
+                        <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full" title={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings in this window`}>
                           {customerCounts[item.customerName.toLowerCase().trim()]}x
                         </span>
                       )}
