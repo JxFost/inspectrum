@@ -411,7 +411,7 @@ export default function InspectionsDashboard({
 
 function StatCard({ label, value, trend, alert }) {
   return (
-    <div className={`border rounded-sm p-4 min-w-[120px] shrink-0 sm:min-w-0 sm:shrink ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
+    <div className={`border rounded-sm p-4 min-w-[130px] w-[130px] sm:w-auto shrink-0 sm:shrink ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
       <div className={`font-serif text-2xl ${alert ? 'text-red-700' : 'text-ink'}`}>{value}{trend}</div>
       <div className={`text-[0.65rem] uppercase tracking-wider mt-1 ${alert ? 'text-red-500' : 'text-charcoal/60'}`}>{label}</div>
     </div>
