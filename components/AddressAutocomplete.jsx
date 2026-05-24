@@ -72,11 +72,19 @@ export default function AddressAutocomplete({ onPlaceSelect, className = '' }) {
         if (!placePrediction) return
 
         const place = placePrediction.toPlace()
-        await place.fetchFields({ fields: ['addressComponents'] })
+        await place.fetchFields({ fields: ['addressComponents', 'location'] })
 
         if (!place.addressComponents) return
 
         const parsed = parseAddressComponents(place.addressComponents)
+
+        // Include lat/lng for trip charge calculation
+        const loc = place.location
+        if (loc) {
+          parsed.lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat
+          parsed.lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng
+        }
+
         onPlaceSelectRef.current?.(parsed)
       })
 

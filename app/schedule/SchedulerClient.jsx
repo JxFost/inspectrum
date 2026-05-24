@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
+import { estimateTripCharge } from '@/lib/address-parser'
 
 const PHONE = process.env.NEXT_PUBLIC_OFFICE_PHONE || '(303) 697-0990'
 const PHONE_DIGITS = PHONE.replace(/\D/g, '')
@@ -529,6 +530,8 @@ export default function SchedulerClient() {
                       street: place.street || prev.street,
                       city: place.city || prev.city,
                       zip: place.zip || prev.zip,
+                      placeLat: place.lat || prev.placeLat,
+                      placeLng: place.lng || prev.placeLng,
                     }))
                     setFieldErrors((p) => ({ ...p, street: undefined, city: undefined, zip: undefined }))
                   }}
@@ -707,7 +710,9 @@ export default function SchedulerClient() {
           {!confirmed && step === 6 && (() => {
             const basePrice = service?.basePrice || 0
             const radonPrice = details.radonAddOn ? 150 : 0
-            const estimatedTotal = basePrice + radonPrice
+            const trip = estimateTripCharge(details.placeLat, details.placeLng)
+            const tripCharge = trip?.tripChargeDollars || 0
+            const estimatedTotal = basePrice + radonPrice + tripCharge
             return (
             <div>
               <h2 className="text-2xl mb-6 text-ink">One last look.</h2>
@@ -718,6 +723,7 @@ export default function SchedulerClient() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-charcoal">{service.name}</span><span className="text-ink font-medium">${basePrice}</span></div>
                   {details.radonAddOn && <div className="flex justify-between"><span className="text-charcoal">Radon Testing Add-On</span><span className="text-ink font-medium">$150</span></div>}
+                  {tripCharge > 0 && <div className="flex justify-between"><span className="text-charcoal">Trip charge <span className="text-charcoal/50">({trip.miles} mi)</span></span><span className="text-amber font-medium">+${tripCharge}</span></div>}
                   <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
                     <span className="text-ink font-semibold">Estimated Total</span>
                     <span className="text-teal font-serif text-xl font-semibold">${estimatedTotal}</span>
