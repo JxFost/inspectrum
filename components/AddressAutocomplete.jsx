@@ -76,7 +76,7 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
       try {
         el.locationBias = {
           center: { lat: 39.7392, lng: -104.9903 },
-          radius: 100000,
+          radius: 50000,
         }
       } catch { /* locationBias may not be supported in all versions */ }
 
