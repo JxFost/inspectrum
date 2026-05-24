@@ -180,14 +180,12 @@ export default function Nav() {
   const [servicesOpen, setServicesOpen] = useState(false)
   const [logoProgress, setLogoProgress] = useState(0)
   const [animateLogo, setAnimateLogo] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
   const isHome = pathname === '/'
   const isServices = pathname.startsWith('/services/')
   const isContact = pathname === '/contact'
-  useEffect(() => {
-    setIsAdmin(document.cookie.includes('admin_session='))
-  }, [])
+  // If user is on /admin/*, they're authenticated (middleware enforces this)
+  const isOnAdminPage = pathname.startsWith('/admin')
 
   const close = () => {
     setOpen(false)
@@ -329,19 +327,18 @@ export default function Nav() {
         ].join(' ')}
       >
         {/* Admin nav — replaces client nav when on admin pages */}
-        {isAdmin && pathname.startsWith('/admin') ? (
+        {isOnAdminPage && pathname.startsWith('/admin') ? (
           <>
             <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
             <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
             <div className="hidden lg:block w-px h-5 bg-line" />
             <NavItem href="/" label="View Site" active={false} onClick={close} />
-            <button
-              type="button"
-              onClick={() => { document.cookie = 'admin_session=; max-age=0; path=/'; setIsAdmin(false); close() }}
-              className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-charcoal/50 transition-colors hover:text-red-600 lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium cursor-pointer bg-transparent border-0"
+            <a
+              href="/api/admin/logout"
+              className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-charcoal/50 transition-colors hover:text-red-600 lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium no-underline"
             >
               Logout
-            </button>
+            </a>
           </>
         ) : (
           <>
@@ -361,7 +358,7 @@ export default function Nav() {
             </Link>
             <NavItem href="/contact" label="Contact" active={isContact} onClick={close} />
 
-            {isAdmin && (
+            {isOnAdminPage && (
               <>
                 <div className="hidden lg:block w-px h-5 bg-line" />
                 <NavItem href="/admin/inspections" label="Admin" active={false} onClick={close} />
