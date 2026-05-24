@@ -2,6 +2,7 @@
 
 import { useState, useMemo, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
+import * as mileage from '@/lib/mileage'
 
 const PAGE_SIZE = 20
 
@@ -312,7 +313,19 @@ export default function InspectionsDashboard({
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right hidden lg:table-cell">
-                      <span className={`text-[0.75rem] ${item.distanceMiles && parseInt(item.distanceMiles) > 25 ? 'text-amber font-medium' : 'text-charcoal/50'}`} title={item.tripChargeCents ? `Trip charge: $${Math.round(parseInt(item.tripChargeCents) / 100)}` : ''}>
+                      <span
+                        className={`text-[0.75rem] ${
+                          item.distanceMiles && parseInt(item.distanceMiles) > mileage.BASE_RADIUS_MILES
+                            ? 'text-amber font-medium'
+                            : 'text-charcoal/50'
+                        }`}
+                        title={
+                          item.tripChargeCents
+                            ? `Trip charge: $${Math.round(parseInt(item.tripChargeCents) / 100)}`
+                            : ''
+                        }
+                      >
+
                         {item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}
                       </span>
                     </td>
