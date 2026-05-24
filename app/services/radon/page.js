@@ -4,7 +4,7 @@ import SectionIntro from '@/components/SectionIntro'
 import Deliverables from '@/components/Deliverables'
 import FAQ from '@/components/FAQ'
 import CTABanner from '@/components/CTABanner'
-import { serviceJsonLd, faqJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
+import { serviceJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 
 export const metadata = {
   title: 'Radon Testing in Colorado — 48-Hour Continuous Monitor',
@@ -84,7 +84,6 @@ function RadonDiagram() {
 export default function RadonPage() {
   const schemas = [
     serviceJsonLd({ name: 'Radon Testing', description: metadata.description, url: '/services/radon', price: '150' }),
-    faqJsonLd(FAQ_ITEMS),
     breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Radon Testing', url: '/services/radon' }]),
   ].filter(Boolean)
 

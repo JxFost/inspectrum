@@ -7,6 +7,65 @@ export const metadata = {
   alternates: { canonical: '/about/harry' },
 }
 
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': 'https://evergreeninspections.com/about/harry#person',
+  name: 'Harry Foster',
+  givenName: 'Harry',
+  familyName: 'Foster',
+  jobTitle: 'Lead Inspector & Founder',
+  url: 'https://evergreeninspections.com/about/harry',
+  image: 'https://evergreeninspections.com/harry-foster.jpg',
+  description:
+    'Founder and lead inspector at Inspectrum Inspections with 28+ years of construction experience and 20+ years conducting home inspections across Colorado\'s Front Range.',
+  worksFor: {
+    '@type': 'HomeAndConstructionBusiness',
+    '@id': 'https://evergreeninspections.com#business',
+    name: 'Inspectrum Inspections',
+  },
+  knowsAbout: [
+    'Home Inspection', 'Construction', 'Radon Testing', 'Mold Assessment',
+    'Colorado Real Estate', 'Mountain Home Construction', 'Foundation Assessment', 'Roof Inspection',
+  ],
+  hasCredential: [
+    {
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: 'Professional Certification',
+      name: 'NACHI Certified Professional Inspector (CPI)',
+      recognizedBy: { '@type': 'Organization', name: 'International Association of Certified Home Inspectors', url: 'https://www.nachi.org' },
+    },
+    {
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: 'Professional Certification',
+      name: 'EPA-Certified Radon Measurement Provider',
+    },
+    {
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: 'State License',
+      name: 'Colorado Certified Home Inspector',
+    },
+  ],
+  sameAs: [
+    'https://www.linkedin.com/company/inspectrum-evergreen-co',
+  ],
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Evergreen',
+    addressRegion: 'CO',
+    addressCountry: 'US',
+  },
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://evergreeninspections.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Meet Harry Foster', item: 'https://evergreeninspections.com/about/harry' },
+  ],
+}
+
 const CERTIFICATIONS = [
   'NACHI Certified Professional Inspector (CPI)',
   'InterNACHI Member',
@@ -35,6 +94,8 @@ const SPECIALTIES = [
 export default function HarryBioPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       {/* Hero */}
       <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-32 pb-16 px-5 lg:px-8">
         <div className="max-w-[900px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16 items-center">

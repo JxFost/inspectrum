@@ -46,11 +46,13 @@ export const metadata = {
     description:
       'NACHI-certified home inspections rooted in 20+ years of Colorado construction experience.',
     url: 'https://evergreeninspections.com',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Inspectrum Inspections — Home Inspections in Evergreen, CO' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Inspectrum Inspections',
     description: 'A better inspection. Evergreen, CO & Denver Metro.',
+    images: ['/og-image.jpg'],
   },
   robots: {
     index: true,
@@ -79,6 +81,12 @@ const localBusinessJsonLd = {
   description:
     'NACHI-certified home inspection company serving Evergreen, Denver Metro, Boulder, and Colorado mountain communities.',
   url: 'https://evergreeninspections.com',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://evergreeninspections.com/InspectrumLogo_440.png',
+  },
+  image: 'https://evergreeninspections.com/og-image.jpg',
+  foundingDate: '2003',
   telephone: '+1-303-697-0990',
   email: 'office@evergreeninspections.com',
   priceRange: '$$',
@@ -106,7 +114,7 @@ const localBusinessJsonLd = {
   sameAs: [
     'https://www.facebook.com/evergreeninspections',
     'https://www.yelp.com/biz/inspectrum-evergreen',
-    'https://www.linkedin.com/company/3066275',
+    'https://www.linkedin.com/company/inspectrum-evergreen-co',
     'https://www.google.com/maps/place/Inspectrum+Inspections/data=!4m2!3m1!1s0x0:0xb96c3042c196d430',
   ],
   memberOf: [

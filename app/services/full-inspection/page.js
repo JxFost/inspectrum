@@ -4,7 +4,7 @@ import SectionIntro from '@/components/SectionIntro'
 import Deliverables from '@/components/Deliverables'
 import FAQ from '@/components/FAQ'
 import CTABanner from '@/components/CTABanner'
-import { serviceJsonLd, faqJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
+import { serviceJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 
 export const metadata = {
   title: 'Full Home Inspection — Same-Day Reports',
@@ -93,7 +93,6 @@ function CheckCard({ iconPath, iconElement, title, items }) {
 export default function FullInspectionPage() {
   const schemas = [
     serviceJsonLd({ name: 'Full Home Inspection', description: metadata.description, url: '/services/full-inspection', price: '450' }),
-    faqJsonLd(FAQ_ITEMS),
     breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Full Inspection', url: '/services/full-inspection' }]),
   ].filter(Boolean)
 
