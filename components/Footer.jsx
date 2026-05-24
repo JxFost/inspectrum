@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import BrandLogo from './BrandLogo'
+import { OFFICE_PHONE, OFFICE_EMAIL, OFFICE_ADDRESS } from '@/lib/constants'
 
 function FooterLink({ href, external, children }) {
   const className =
@@ -58,11 +59,11 @@ export default function Footer() {
             <h5 className="text-[0.7rem] uppercase tracking-[0.25em] text-amber mb-5 font-semibold">
               Reach Us
             </h5>
-            <FooterLink href="tel:3036970990" external>(303) 697-0990</FooterLink>
-            <FooterLink href="mailto:office@evergreeninspections.com" external>
-              office@evergreeninspections.com
+            <FooterLink href={`tel:${OFFICE_PHONE.replace(/\D/g, '')}`} external>{OFFICE_PHONE}</FooterLink>
+            <FooterLink href={`mailto:${OFFICE_EMAIL}`} external>
+              {OFFICE_EMAIL}
             </FooterLink>
-            <FooterLink href="#" external>Evergreen, CO 80439</FooterLink>
+            <FooterLink href="#" external>{OFFICE_ADDRESS}</FooterLink>
           </div>
         </div>
 

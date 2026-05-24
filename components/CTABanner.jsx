@@ -1,4 +1,5 @@
 import Button from './Button'
+import { OFFICE_PHONE } from '@/lib/constants'
 
 export default function CTABanner({
   eyebrow = 'Ready to Schedule',
@@ -6,8 +7,8 @@ export default function CTABanner({
   description = "Pick a date, choose a time, and we'll confirm by phone within a few hours.",
   primaryLabel = 'Schedule Online',
   primaryHref = '/schedule',
-  secondaryLabel = 'Call (303) 697-0990',
-  secondaryHref = 'tel:3036970990',
+  secondaryLabel = `Call ${OFFICE_PHONE}`,
+  secondaryHref = `tel:${OFFICE_PHONE.replace(/\D/g, '')}`,
 }) {
   return (
     <section className="relative overflow-hidden bg-charcoal-deep text-cream py-24 px-5 lg:px-8">
