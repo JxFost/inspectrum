@@ -160,6 +160,8 @@ export default function SchedulerClient() {
   const [bookingError, setBookingError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
+  const [duplicateMatch, setDuplicateMatch] = useState(null)
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
   const funnelStarted = useRef(false)
   const funnelCompleted = useRef(false)
   const currentStepRef = useRef(1)
@@ -510,7 +512,7 @@ export default function SchedulerClient() {
 
           {/* ---- Step 4: Property Details ---- */}
           {!confirmed && step === 4 && (
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
               e.preventDefault()
               const errors = {}
               if (!details.street.trim()) errors.street = 'Street address is required.'
@@ -518,7 +520,23 @@ export default function SchedulerClient() {
               if (!details.zip.trim()) errors.zip = 'ZIP code is required.'
               else if (!isColoradoZip(details.zip)) errors.zip = 'Please enter a valid Colorado ZIP code.'
               setFieldErrors(errors)
-              if (Object.keys(errors).length === 0) { currentStepRef.current = 5; trackBookingStep(5); goToStep(5) }
+              if (Object.keys(errors).length > 0) return
+
+              // Check for duplicate bookings
+              setCheckingDuplicate(true)
+              try {
+                const fullAddr = [details.street.trim(), details.city.trim(), details.zip.trim() ? `CO ${details.zip.trim()}` : ''].filter(Boolean).join(', ')
+                const res = await fetch(`/api/booking/check-duplicate?name=${encodeURIComponent(details.name)}&address=${encodeURIComponent(fullAddr)}`)
+                const data = await res.json()
+                if (data.match) {
+                  setDuplicateMatch(data.match)
+                  setCheckingDuplicate(false)
+                  return // Don't advance — show the dialog
+                }
+              } catch { /* proceed if check fails */ }
+              setCheckingDuplicate(false)
+
+              currentStepRef.current = 5; trackBookingStep(5); goToStep(5)
             }}>
               <h2 className="text-2xl mb-2 text-ink">Property details</h2>
               <p className="text-sm text-charcoal/70 mb-6">Tell us about the property being inspected.</p>
@@ -630,9 +648,63 @@ export default function SchedulerClient() {
                   </label>
                 </div>
               </div>
+              {/* Duplicate booking dialog */}
+              {duplicateMatch && (
+                <div className="bg-amber/10 border border-amber rounded-sm p-6 mt-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-amber shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                    <div>
+                      <p className="text-sm font-semibold text-ink mb-1">Existing booking found</p>
+                      <p className="text-sm text-charcoal">
+                        We found an upcoming inspection for <span className="font-medium text-ink">{duplicateMatch.customerName}</span> at <span className="font-medium text-ink">{duplicateMatch.address}</span> on <span className="font-medium text-ink">{duplicateMatch.date}</span> at <span className="font-medium text-ink">{duplicateMatch.time}</span>.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        // Cancel the old booking, proceed with new
+                        try {
+                          await fetch('/api/booking/cancel', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ token: duplicateMatch.token }),
+                          })
+                        } catch { /* proceed anyway */ }
+                        setDuplicateMatch(null)
+                        currentStepRef.current = 5; trackBookingStep(5); goToStep(5)
+                      }}
+                      className="w-full py-2.5 bg-teal text-white rounded-sm text-sm font-semibold cursor-pointer border-0 hover:bg-teal-deep transition-colors"
+                    >
+                      Replace existing booking with this one
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDuplicateMatch(null)
+                        currentStepRef.current = 5; trackBookingStep(5); goToStep(5)
+                      }}
+                      className="w-full py-2.5 bg-transparent border border-line text-ink rounded-sm text-sm font-semibold cursor-pointer hover:border-teal transition-colors"
+                    >
+                      Keep both — this is a separate inspection
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setDuplicateMatch(null); goToStep(1) }}
+                      className="w-full py-2 text-sm text-charcoal/60 hover:text-charcoal cursor-pointer bg-transparent border-0 transition-colors"
+                    >
+                      I&apos;m already booked — cancel this one
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => goToStep(3)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
-                <Button variant="teal" type="submit" withArrow>Access & Add-Ons</Button>
+                <Button variant="teal" type="submit" withArrow disabled={checkingDuplicate}>
+                  {checkingDuplicate ? 'Checking...' : 'Access & Add-Ons'}
+                </Button>
               </div>
             </form>
           )}
