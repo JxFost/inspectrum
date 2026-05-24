@@ -202,7 +202,7 @@ export default function InspectionsDashboard({
         )}
 
         {/* Summary strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible sm:pb-0">
           <StatCard label="Inspections" value={inspections.length} trend={trendArrow(inspections.length, prevTotal)} />
           <StatCard label="Completed" value={completed} trend={trendArrow(completed, prevCompleted)} />
           <StatCard label="Upcoming" value={upcoming} />
@@ -411,7 +411,7 @@ export default function InspectionsDashboard({
 
 function StatCard({ label, value, trend, alert }) {
   return (
-    <div className={`border rounded-sm p-4 ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
+    <div className={`border rounded-sm p-4 min-w-[120px] shrink-0 sm:min-w-0 sm:shrink ${alert ? 'bg-red-50 border-red-200' : 'bg-paper border-line'}`}>
       <div className={`font-serif text-2xl ${alert ? 'text-red-700' : 'text-ink'}`}>{value}{trend}</div>
       <div className={`text-[0.65rem] uppercase tracking-wider mt-1 ${alert ? 'text-red-500' : 'text-charcoal/60'}`}>{label}</div>
     </div>
