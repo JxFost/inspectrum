@@ -67,6 +67,7 @@ function parsePlaceComponents(place) {
 export default function AddressAutocomplete({ value, onChange, onPlaceSelect, placeholder, required, error, className = '' }) {
   const inputRef = useRef(null)
   const autocompleteRef = useRef(null)
+  const selectingRef = useRef(false)
   const [apiLoaded, setApiLoaded] = useState(false)
 
   useEffect(() => {
@@ -86,12 +87,19 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
 
     const parsed = parsePlaceComponents(place)
 
-    // Set the input to just the street portion
-    if (inputRef.current) {
-      inputRef.current.value = parsed.street
-    }
+    // Block onChange during selection so Google's DOM writes don't reset React state
+    selectingRef.current = true
 
+    // Call onPlaceSelect so React state updates for street, city, zip
     onPlaceSelect?.(parsed)
+
+    // Delay the input reset — Google overwrites the input after place_changed
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.value = parsed.street
+      }
+      selectingRef.current = false
+    }, 50)
   }, [onPlaceSelect])
 
   useEffect(() => {
@@ -120,7 +128,10 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
         ref={inputRef}
         type="text"
         defaultValue={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          // Don't fire onChange during place selection — Google triggers input events when it sets the value
+          if (!selectingRef.current) onChange(e.target.value)
+        }}
         placeholder={placeholder || '123 Main St'}
         required={required}
         autoComplete="off"
