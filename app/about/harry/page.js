@@ -101,7 +101,7 @@ export default function HarryBioPage() {
         <div className="max-w-[900px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16 items-center">
           {/* Photo placeholder — replace src with real photo */}
           <div className="mx-auto lg:mx-0 w-56 h-56 lg:w-72 lg:h-72 rounded-full overflow-hidden border-4 border-teal-darker relative">
-            <img src="/harry-foster.jpg" alt="Harry Foster — Founder & Lead Inspector at Inspectrum Inspections" className="w-full h-full object-cover grayscale-[60%]" />
+            <img src="/harry-foster.jpg" alt="Harry Foster — Founder & Lead Inspector at Inspectrum Inspections" className="w-full h-full object-cover grayscale-[60%]" loading="lazy" />
             <div className="absolute inset-0 bg-teal/20 mix-blend-overlay rounded-full" />
           </div>
           <div>
