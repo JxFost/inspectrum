@@ -20,7 +20,7 @@ export default function Footer() {
               <BrandLogo />
             </div>
             <p className="text-[0.95rem] opacity-75 leading-relaxed mb-5">
-              NACHI-certified home inspections rooted in 20+ years of Colorado construction
+              NACHI-certified home inspections rooted in 40+ years of Colorado & construction
               experience. Acting member of the Evergreen Chamber of Commerce.
             </p>
             <div className="flex items-center gap-4">
