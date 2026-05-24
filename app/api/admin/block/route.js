@@ -9,7 +9,7 @@
 import { NextResponse } from 'next/server'
 import { SERVICES } from '@/lib/services'
 import { insertEvent } from '@/lib/google-calendar'
-import { buildEventDescription, extractConfirmationCode } from '@/lib/booking'
+import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber } from '@/lib/booking'
 import { buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
@@ -44,8 +44,10 @@ export async function POST(request) {
   const endISO = endDate.toISOString()
 
   const isVacation = name === 'Blocked' && !email && !phone
+  const inspectionNumber = isVacation ? null : await getNextInspectionNumber()
 
   const { description, token } = buildEventDescription({
+    inspectionNumber,
     serviceName: isVacation ? 'Blocked Time' : service.name,
     customerName: name,
     phone,

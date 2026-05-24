@@ -17,7 +17,7 @@
 
 import { NextResponse } from 'next/server'
 import { parseACCEmail, isValidACCSender } from '@/lib/acc-email-parser'
-import { buildEventDescription, extractConfirmationCode, mapACCServiceType } from '@/lib/booking'
+import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber } from '@/lib/booking'
 import { insertEvent, findEventsBetween, deleteEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
 
@@ -184,7 +184,10 @@ export async function POST(request) {
     const endDate = new Date(new Date(startISO).getTime() + service.durationHours * 60 * 60 * 1000)
     const endISO = endDate.toISOString()
 
+    const inspectionNumber = await getNextInspectionNumber()
+
     const { description, token } = buildEventDescription({
+      inspectionNumber,
       serviceName: service.name,
       customerName: parsed.clientName || 'ACC Client',
       phone: parsed.clientPhone || '',
