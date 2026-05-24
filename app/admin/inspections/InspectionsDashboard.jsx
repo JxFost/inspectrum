@@ -286,7 +286,7 @@ export default function InspectionsDashboard({
                         </td>
                       </tr>
                     )}
-                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.03]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
+                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
                     <td className="px-3 py-2 text-charcoal/40 text-xs font-mono">{item.inspectionNumber || '—'}</td>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
