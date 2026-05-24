@@ -46,7 +46,7 @@ const INSPECTOR_EMAILS = [
 ]
 
 function EmailCard({ t }) {
-  const hasPreview = ['receipt', 'reminder', 'followup', 'digest'].includes(t.id)
+  const hasPreview = ['receipt', 'reminder', 'followup', 'digest', 'cancel-alert', 'monthly'].includes(t.id)
   const Tag = hasPreview ? 'a' : 'div'
   const linkProps = hasPreview ? { href: `/api/preview-email?template=${t.id}`, target: '_blank', rel: 'noopener noreferrer' } : {}
 
