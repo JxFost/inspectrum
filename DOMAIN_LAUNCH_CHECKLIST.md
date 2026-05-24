@@ -33,11 +33,18 @@ These files reference `evergreeninspections.com` and should be verified/updated 
 
 ## 4. Email (Resend)
 
-- [ ] Verify `evergreeninspections.com` domain in Resend (add DNS records)
-- [ ] Set `EMAIL_FROM` env var (e.g. `Inspectrum Inspections <office@evergreeninspections.com>`)
-- [ ] Update `lib/email/send.js` — remove hardcoded `onboarding@resend.dev` fallback
-- [ ] Update `app/api/contact/route.js` — switch `to` address if needed
-- [ ] Test booking receipt and reminder emails with new from address
+How it works now: `lib/email/send.js` auto-switches between test and production mode.
+- **Test mode** (no `EMAIL_FROM` set): sends from `onboarding@resend.dev`, delivers only to `jeff@evergreeninspections.com`
+- **Production mode** (`EMAIL_FROM` set): sends from your verified domain, delivers to actual recipients
+
+Steps to go live:
+- [ ] Log in to [Resend](https://resend.com) → Domains → Add Domain → `evergreeninspections.com`
+- [ ] Add the DNS records Resend provides (SPF, DKIM, usually 3 TXT/CNAME records)
+- [ ] Wait for verification (usually minutes, can take up to 48h for DNS propagation)
+- [ ] Set `EMAIL_FROM` env var in Vercel: `Inspectrum Inspections <office@evergreeninspections.com>`
+- [ ] Redeploy — emails will now send from your domain to actual recipients
+- [ ] Test: book a test inspection → verify receipt email arrives from `office@evergreeninspections.com`
+- [ ] Test: check that the reminder and follow-up crons send correctly (wait or trigger manually)
 
 ## 5. Google Integrations
 

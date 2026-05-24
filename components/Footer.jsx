@@ -68,8 +68,12 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-cream/10 pt-8 flex flex-col sm:flex-row justify-between items-center text-[0.85rem] opacity-60 gap-4 text-center sm:text-left">
-          <div>© 2026 Inspectrum Inspections · NACHI Certified</div>
-          <div>A better inspection.</div>
+          <div>© {new Date().getFullYear()} Inspectrum Inspections · NACHI Certified</div>
+          <div className="flex items-center gap-3">
+            <Link href="/privacy" className="text-cream/60 hover:text-amber no-underline transition-colors">Privacy</Link>
+            <span className="text-cream/30">·</span>
+            <Link href="/terms" className="text-cream/60 hover:text-amber no-underline transition-colors">Terms</Link>
+          </div>
         </div>
       </div>
     </footer>
