@@ -1,5 +1,3 @@
-import Link from 'next/link'
-import Button from '@/components/Button'
 import CTABanner from '@/components/CTABanner'
 
 export const metadata = {
@@ -39,10 +37,11 @@ export default function HarryBioPage() {
     <>
       {/* Hero */}
       <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-32 pb-16 px-5 lg:px-8">
-        <div className="max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16 items-center">
+        <div className="max-w-[900px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16 items-center">
           {/* Photo placeholder — replace src with real photo */}
-          <div className="mx-auto lg:mx-0 w-56 h-56 lg:w-72 lg:h-72 rounded-full overflow-hidden border-4 border-amber/30">
-            <img src="/harry-foster.jpg" alt="Harry Foster — Founder & Lead Inspector at Inspectrum Inspections" className="w-full h-full object-cover" />
+          <div className="mx-auto lg:mx-0 w-56 h-56 lg:w-72 lg:h-72 rounded-full overflow-hidden border-4 border-teal-darker relative">
+            <img src="/harry-foster.jpg" alt="Harry Foster — Founder & Lead Inspector at Inspectrum Inspections" className="w-full h-full object-cover grayscale-[60%]" />
+            <div className="absolute inset-0 bg-teal/20 mix-blend-overlay rounded-full" />
           </div>
           <div>
             <div className="hero-eyebrow justify-start">Meet Your Inspector</div>
@@ -75,7 +74,8 @@ export default function HarryBioPage() {
           </h2>
           <div className="space-y-5 text-[1.05rem] text-charcoal leading-[1.7] mb-12">
             <p>
-              Before Harry ever picked up an inspection clipboard, he spent 28 years in Colorado construction — framing houses in the foothills, running crews in the Denver metro, and learning firsthand how homes are built (and how they fail) at altitude.
+              Before Harry ever became an inspector, he spent 28 years immersed in every aspect of construction—framing homes, running crews, and gaining a firsthand understanding of how houses are built, lived in, and where things can go wrong. When he moved to Colorado, he brought this deep-rooted building expertise with him to the foothills, working on and around homes throughout mountain communities. Eventually, he channeled his experience into inspections full time, combining his builder’s eye with a passion for helping people make informed decisions.
+
             </p>
             <p>
               That hands-on building experience is what sets an Inspectrum inspection apart. Harry doesn't just identify problems — he understands <em className="italic">why</em> a flashing fails, <em className="italic">how</em> a foundation settles in Colorado's expansive clay soils, and <em className="italic">what</em> our freeze-thaw cycles do to a roof over time.
