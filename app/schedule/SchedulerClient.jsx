@@ -707,9 +707,28 @@ export default function SchedulerClient() {
             </div>
           )}
 
-          {!confirmed && step === 6 && (
+          {!confirmed && step === 6 && (() => {
+            const basePrice = service?.basePrice || 0
+            const radonPrice = details.radonAddOn ? 150 : 0
+            const estimatedTotal = basePrice + radonPrice
+            return (
             <div>
               <h2 className="text-2xl mb-6 text-ink">One last look.</h2>
+
+              {/* Estimated cost */}
+              <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-6 mb-6">
+                <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-3">Estimated Cost</div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-charcoal">{service.name}</span><span className="text-ink font-medium">${basePrice}</span></div>
+                  {details.radonAddOn && <div className="flex justify-between"><span className="text-charcoal">Radon Testing Add-On</span><span className="text-ink font-medium">$150</span></div>}
+                  <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
+                    <span className="text-ink font-semibold">Estimated Total</span>
+                    <span className="text-teal font-serif text-xl font-semibold">${estimatedTotal}</span>
+                  </div>
+                </div>
+                <p className="text-[0.7rem] text-charcoal/50 mt-3">Final price may vary based on property size, age, and location. You'll receive an invoice after the inspection.</p>
+              </div>
+
               <div className="bg-paper p-8 rounded-sm border border-line space-y-4">
                 <SummaryRow label="Service" value={service.name} />
                 <SummaryRow label="Date" value={formatDateLong(selectedDate)} />
@@ -752,7 +771,8 @@ export default function SchedulerClient() {
                 </Button>
               </div>
             </div>
-          )}
+            )
+          })()}
         </div>
       </section>
 
