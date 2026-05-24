@@ -147,7 +147,7 @@ export default function InspectionsDashboard({
 
   return (
     <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
