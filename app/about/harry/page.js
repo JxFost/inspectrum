@@ -41,12 +41,8 @@ export default function HarryBioPage() {
       <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-32 pb-16 px-5 lg:px-8">
         <div className="max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16 items-center">
           {/* Photo placeholder — replace src with real photo */}
-          <div className="mx-auto lg:mx-0 w-56 h-56 lg:w-72 lg:h-72 rounded-full overflow-hidden border-4 border-amber/30 bg-teal flex items-center justify-center">
-            {/* TODO: Replace with <img src="/harry-foster.jpg" alt="Harry Foster" className="w-full h-full object-cover" /> */}
-            <div className="text-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-20 h-20 mx-auto opacity-40 mb-2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" /></svg>
-              <span className="text-xs opacity-40">Photo coming soon</span>
-            </div>
+          <div className="mx-auto lg:mx-0 w-56 h-56 lg:w-72 lg:h-72 rounded-full overflow-hidden border-4 border-amber/30">
+            <img src="/harry-foster.jpg" alt="Harry Foster — Founder & Lead Inspector at Inspectrum Inspections" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="hero-eyebrow justify-start">Meet Your Inspector</div>
