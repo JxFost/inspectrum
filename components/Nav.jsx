@@ -328,47 +328,56 @@ export default function Nav() {
           open ? 'flex' : 'hidden',
         ].join(' ')}
       >
-        <NavItem href="/" label="Home" active={isHome} onClick={close} />
-        <ServicesDropdown
-          active={isServices}
-          expanded={servicesOpen}
-          onToggle={() => setServicesOpen(current => !current)}
-          onClick={close}
-        />
-        <Link
-          href="/#process"
-          onClick={close}
-          className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-ink transition-colors hover:bg-white/70 hover:text-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium lg:hover:bg-transparent"
-        >
-          Process
-        </Link>
-        <NavItem href="/contact" label="Contact" active={isContact} onClick={close} />
-
-        {isAdmin && (
+        {/* Admin nav — replaces client nav when on admin pages */}
+        {isAdmin && pathname.startsWith('/admin') ? (
           <>
+            <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
+            <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
             <div className="hidden lg:block w-px h-5 bg-line" />
-            <div className="w-full lg:w-auto flex flex-col lg:flex-row gap-2 lg:gap-4 lg:items-center mt-2 lg:mt-0 pt-2 lg:pt-0 border-t lg:border-0 border-line">
-              <NavItem href="/admin/inspections" label="Inspections" active={pathname === '/admin/inspections'} onClick={close} />
-              <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
-              <button
-                type="button"
-                onClick={() => { document.cookie = 'admin_session=; max-age=0; path=/'; setIsAdmin(false); close() }}
-                className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-charcoal/50 transition-colors hover:text-red-600 lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium cursor-pointer bg-transparent border-0"
-              >
-                Logout
-              </button>
-            </div>
+            <NavItem href="/" label="View Site" active={false} onClick={close} />
+            <button
+              type="button"
+              onClick={() => { document.cookie = 'admin_session=; max-age=0; path=/'; setIsAdmin(false); close() }}
+              className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-charcoal/50 transition-colors hover:text-red-600 lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium cursor-pointer bg-transparent border-0"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <NavItem href="/" label="Home" active={isHome} onClick={close} />
+            <ServicesDropdown
+              active={isServices}
+              expanded={servicesOpen}
+              onToggle={() => setServicesOpen(current => !current)}
+              onClick={close}
+            />
+            <Link
+              href="/#process"
+              onClick={close}
+              className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-ink transition-colors hover:bg-white/70 hover:text-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium lg:hover:bg-transparent"
+            >
+              Process
+            </Link>
+            <NavItem href="/contact" label="Contact" active={isContact} onClick={close} />
+
+            {isAdmin && (
+              <>
+                <div className="hidden lg:block w-px h-5 bg-line" />
+                <NavItem href="/admin/inspections" label="Admin" active={false} onClick={close} />
+              </>
+            )}
+
+            <Link
+              href="/schedule"
+              onClick={close}
+              className="mt-2 inline-flex min-h-12 w-full items-center justify-start gap-2 rounded-sm bg-amber px-5 py-2.5 text-left text-sm font-semibold text-white no-underline shadow-[0_12px_24px_rgba(232,154,63,0.24)] transition-colors hover:bg-amber-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber lg:mt-0 lg:min-h-0 lg:w-auto lg:justify-center lg:self-auto lg:shadow-none"
+            >
+              <CalendarIcon />
+              Schedule
+            </Link>
           </>
         )}
-
-        <Link
-          href="/schedule"
-          onClick={close}
-          className="mt-2 inline-flex min-h-12 w-full items-center justify-start gap-2 rounded-sm bg-amber px-5 py-2.5 text-left text-sm font-semibold text-white no-underline shadow-[0_12px_24px_rgba(232,154,63,0.24)] transition-colors hover:bg-amber-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber lg:mt-0 lg:min-h-0 lg:w-auto lg:justify-center lg:self-auto lg:shadow-none"
-        >
-          <CalendarIcon />
-          Schedule
-        </Link>
       </div>
       {showTopBorderSweep && (
         <span key={`nav-border-${pathname}`} aria-hidden="true" className="absolute bottom-[-1px] left-0 h-px w-full">

@@ -188,7 +188,6 @@ export default async function InspectionsPage({ searchParams }) {
               Download CSV
             </a>
             <a href="/admin/block" className="text-sm text-charcoal/60 hover:text-teal">+ New</a>
-            <a href="/admin/login" className="text-sm text-charcoal/60 hover:text-teal">Logout</a>
           </div>
         </div>
 
