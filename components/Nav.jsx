@@ -180,10 +180,14 @@ export default function Nav() {
   const [servicesOpen, setServicesOpen] = useState(false)
   const [logoProgress, setLogoProgress] = useState(0)
   const [animateLogo, setAnimateLogo] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
   const isHome = pathname === '/'
   const isServices = pathname.startsWith('/services/')
   const isContact = pathname === '/contact'
+  useEffect(() => {
+    setIsAdmin(document.cookie.includes('admin_session='))
+  }, [])
 
   const close = () => {
     setOpen(false)
@@ -339,6 +343,24 @@ export default function Nav() {
           Process
         </Link>
         <NavItem href="/contact" label="Contact" active={isContact} onClick={close} />
+
+        {isAdmin && (
+          <>
+            <div className="hidden lg:block w-px h-5 bg-line" />
+            <div className="w-full lg:w-auto flex flex-col lg:flex-row gap-2 lg:gap-4 lg:items-center mt-2 lg:mt-0 pt-2 lg:pt-0 border-t lg:border-0 border-line">
+              <NavItem href="/admin/inspections" label="Inspections" active={pathname === '/admin/inspections'} onClick={close} />
+              <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
+              <button
+                type="button"
+                onClick={() => { document.cookie = 'admin_session=; max-age=0; path=/'; setIsAdmin(false); close() }}
+                className="flex min-h-11 w-full items-center justify-start rounded-sm px-3 text-left text-base font-semibold text-charcoal/50 transition-colors hover:text-red-600 lg:min-h-0 lg:w-auto lg:px-0 lg:text-sm lg:font-medium cursor-pointer bg-transparent border-0"
+              >
+                Logout
+              </button>
+            </div>
+          </>
+        )}
+
         <Link
           href="/schedule"
           onClick={close}
