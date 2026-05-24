@@ -28,7 +28,8 @@ export default function AdminLoginClient() {
         return
       }
 
-      router.push('/admin/inspections')
+      // Full page reload so middleware picks up the new cookie
+      window.location.href = '/admin/inspections'
     } catch {
       setError('Network error. Please try again.')
       setLoading(false)
