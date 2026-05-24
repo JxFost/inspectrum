@@ -78,6 +78,12 @@ export default function AddressAutocomplete({ value, onChange, onPlaceSelect, pl
     if (!place?.address_components) return
 
     const parsed = parsePlaceComponents(place)
+
+    // Google overwrites the input with the full formatted address — reset it to just the street
+    if (inputRef.current && parsed.street) {
+      inputRef.current.value = parsed.street
+    }
+
     onPlaceSelect?.(parsed)
   }, [onPlaceSelect])
 
