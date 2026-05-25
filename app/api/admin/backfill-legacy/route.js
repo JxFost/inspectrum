@@ -13,7 +13,7 @@
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { insertEvent } from '@/lib/google-calendar'
-import { buildEventDescription, getNextInspectionNumber } from '@/lib/booking'
+import { buildEventDescription } from '@/lib/booking'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -67,21 +67,41 @@ async function fetchHarryEvents(timeMin, timeMax) {
 /**
  * Parse a legacy event title into structured data.
  *
- * 'Insp - Johnson' → { type: 'inspection', customerName: 'Johnson' }
- * 'Set Radon - Johnson' → { type: 'radon-set', customerName: 'Johnson' }
- * 'P/U radon - Johnson' → { type: 'radon-pickup', customerName: 'Johnson' }
+ * Inspection variants:
+ *   'Insp - Johnson'              → residential inspection
+ *   'Insp Johnson'                → residential (missing dash)
+ *   'Insp-commercial - Smith'     �� commercial inspection
+ *   'Commercial insp - Smith'     → commercial inspection
+ *   'Property inspection - Davis' → residential inspection
+ *
+ * Radon:
+ *   'Set Radon - Johnson'         → radon drop
+ *   'P/U radon - Johnson'         → radon pickup
  */
 function parseLegacyTitle(summary) {
   if (!summary) return null
 
-  const inspMatch = summary.match(/^Insp\s*-\s*(.+)/i)
-  if (inspMatch) return { type: 'inspection', customerName: inspMatch[1].trim() }
+  // Radon events (check first so 'Set Radon' doesn't match inspection patterns)
+  const setMatch = summary.match(/^Set Radon\s*-?\s*(.+)/i)
+  if (setMatch) return { type: 'radon-set', customerName: setMatch[1].trim(), commercial: false }
 
-  const setMatch = summary.match(/^Set Radon\s*-\s*(.+)/i)
-  if (setMatch) return { type: 'radon-set', customerName: setMatch[1].trim() }
+  const puMatch = summary.match(/^P\/U radon\s*-?\s*(.+)/i)
+  if (puMatch) return { type: 'radon-pickup', customerName: puMatch[1].trim(), commercial: false }
 
-  const puMatch = summary.match(/^P\/U radon\s*-\s*(.+)/i)
-  if (puMatch) return { type: 'radon-pickup', customerName: puMatch[1].trim() }
+  // Commercial inspection variants
+  const commercialInspMatch = summary.match(/^commercial\s+insp(?:ection)?\s*-?\s*(.+)/i)
+  if (commercialInspMatch) return { type: 'inspection', customerName: commercialInspMatch[1].trim(), commercial: true }
+
+  const inspCommercialMatch = summary.match(/^insp\s*-?\s*commercial\s*-?\s*(.+)/i)
+  if (inspCommercialMatch) return { type: 'inspection', customerName: inspCommercialMatch[1].trim(), commercial: true }
+
+  // Residential inspection variants
+  const propertyInspMatch = summary.match(/^property\s+inspection\s*-?\s*(.+)/i)
+  if (propertyInspMatch) return { type: 'inspection', customerName: propertyInspMatch[1].trim(), commercial: false }
+
+  // 'Insp - Name' or 'Insp Name' (with or without dash)
+  const inspMatch = summary.match(/^insp\s*-?\s+(.+)/i)
+  if (inspMatch) return { type: 'inspection', customerName: inspMatch[1].trim(), commercial: false }
 
   return null
 }
@@ -107,15 +127,22 @@ export async function GET(request) {
 
   // Filter to legacy inspection events
   const legacyEvents = events
-    .filter((e) => {
-      const parsed = parseLegacyTitle(e.summary)
-      return parsed !== null
-    })
+    .filter((e) => parseLegacyTitle(e.summary) !== null)
     .map((e) => ({
       ...e,
       parsed: parseLegacyTitle(e.summary),
     }))
 
+  // Sort by start time so inspection numbers are assigned chronologically
+  legacyEvents.sort((a, b) => {
+    const aStart = a.start?.dateTime || a.start?.date || ''
+    const bStart = b.start?.dateTime || b.start?.date || ''
+    return aStart.localeCompare(bStart)
+  })
+
+  // Assign inspection numbers sequentially starting at 2026-001
+  // Only inspections get numbers (not radon set/pickup)
+  let inspectionCount = 0
   const results = []
 
   for (const event of legacyEvents) {
@@ -125,12 +152,19 @@ export async function GET(request) {
 
     if (!startISO) continue
 
+    const isInspection = parsed.type === 'inspection'
+    if (isInspection) inspectionCount++
+
+    const inspectionNumber = isInspection
+      ? `2026-${String(inspectionCount).padStart(3, '0')}`
+      : null
+
     let serviceName
     let summary
     switch (parsed.type) {
       case 'inspection':
-        serviceName = 'Full Home Inspection'
-        summary = `${parsed.customerName} — Full Home Inspection`
+        serviceName = parsed.commercial ? 'Commercial Inspection' : 'Full Home Inspection'
+        summary = `${parsed.customerName} — ${serviceName}`
         break
       case 'radon-set':
         serviceName = 'Radon Testing Only'
@@ -145,8 +179,10 @@ export async function GET(request) {
     const record = {
       originalTitle: event.summary,
       type: parsed.type,
+      commercial: parsed.commercial,
       customerName: parsed.customerName,
       service: serviceName,
+      inspectionNumber,
       startISO,
       endISO,
       newSummary: summary,
@@ -154,10 +190,6 @@ export async function GET(request) {
 
     if (!dryRun) {
       try {
-        const inspectionNumber = parsed.type === 'inspection'
-          ? await getNextInspectionNumber()
-          : null
-
         const { description } = buildEventDescription({
           serviceName,
           customerName: parsed.customerName,
@@ -166,7 +198,10 @@ export async function GET(request) {
           address: '',
           source: 'admin',
           inspectionNumber,
-          extra: `Imported from Harry's calendar: ${event.summary}`,
+          extra: [
+            parsed.commercial ? 'property_type: commercial' : 'property_type: residential',
+            `Imported from Harry's calendar: ${event.summary}`,
+          ].join('\n'),
         })
 
         const created = await insertEvent({
@@ -178,7 +213,6 @@ export async function GET(request) {
         })
 
         record.eventId = created.id
-        record.inspectionNumber = inspectionNumber
         record.status = 'created'
       } catch (err) {
         record.status = 'error'
@@ -195,6 +229,7 @@ export async function GET(request) {
     dryRun,
     totalEventsScanned: events.length,
     legacyMatched: legacyEvents.length,
+    inspectionsCounted: inspectionCount,
     results,
   })
 }
