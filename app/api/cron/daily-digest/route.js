@@ -11,6 +11,7 @@ import { parseEventDescription } from '@/lib/booking'
 import { sendEmail } from '@/lib/email/send'
 import { TIMEZONE } from '@/lib/working-hours'
 import { dailyDigestHtml } from '@/lib/email/templates/daily-digest'
+import { DRIVING_FACTOR } from '@/lib/mileage'
 
 export async function GET(request) {
   const authHeader = request.headers.get('authorization')
@@ -40,11 +41,45 @@ export async function GET(request) {
       const parsed = parseEventDescription(e.description)
       return {
         startISO: e.start.dateTime,
+        endISO: e.end?.dateTime,
         ...parsed,
         accessProvidedBy: e.description?.match(/Access:\s*(.+)/)?.[1]?.trim() || null,
       }
     })
     .sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
+
+  // Compute drive distances between consecutive appointments
+  // Uses stored geo_lat/geo_lng from booking time; first leg is from home
+  for (let i = 0; i < inspections.length; i++) {
+    const curr = inspections[i]
+    const currLat = parseFloat(curr.geoLat)
+    const currLng = parseFloat(curr.geoLng)
+
+    if (i === 0) {
+      // Distance from home to first appointment (already in distanceMiles)
+      curr.legFromLabel = 'from home'
+      curr.legMiles = curr.distanceMiles ? parseFloat(curr.distanceMiles) : null
+    } else {
+      const prev = inspections[i - 1]
+      const prevLat = parseFloat(prev.geoLat)
+      const prevLng = parseFloat(prev.geoLng)
+
+      if (!isNaN(prevLat) && !isNaN(prevLng) && !isNaN(currLat) && !isNaN(currLng)) {
+        const R = 3959
+        const dLat = (currLat - prevLat) * Math.PI / 180
+        const dLng = (currLng - prevLng) * Math.PI / 180
+        const a = Math.sin(dLat / 2) ** 2 +
+          Math.cos(prevLat * Math.PI / 180) * Math.cos(currLat * Math.PI / 180) *
+          Math.sin(dLng / 2) ** 2
+        const straightLine = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        curr.legMiles = Math.round(straightLine * DRIVING_FACTOR)
+        curr.legFromLabel = 'from previous'
+      } else {
+        curr.legMiles = null
+        curr.legFromLabel = null
+      }
+    }
+  }
 
   const dateLabel = now.toLocaleDateString('en-US', {
     timeZone: TIMEZONE,
