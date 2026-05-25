@@ -84,30 +84,36 @@ async function fetchHarryEvents(timeMin, timeMax) {
 function parseLegacyTitle(summary) {
   if (!summary) return null
 
+  const s = summary.trim()
+
   // Sewer scope (check early so it doesn't accidentally match other patterns)
-  const sewerMatch = summary.match(/^sewer\s+scope\s*-?\s*(.+)/i)
+  const sewerMatch = s.match(/^sewer\s+scope\s*-?\s*(.+)/i)
   if (sewerMatch) return { type: 'sewer-scope', customerName: sewerMatch[1].trim(), commercial: false }
 
   // Radon events (check before inspection patterns)
-  const setMatch = summary.match(/^Set Radon\s*-?\s*(.+)/i)
+  const setMatch = s.match(/^Set Radon\s*-?\s*(.+)/i)
   if (setMatch) return { type: 'radon-set', customerName: setMatch[1].trim(), commercial: false }
 
-  const puMatch = summary.match(/^P\/U radon\s*-?\s*(.+)/i)
+  const puMatch = s.match(/^P\/U radon\s*-?\s*(.+)/i)
   if (puMatch) return { type: 'radon-pickup', customerName: puMatch[1].trim(), commercial: false }
 
   // Commercial inspection variants
-  const commercialInspMatch = summary.match(/^commercial\s+insp(?:ection)?\s*-?\s*(.+)/i)
+  const commercialInspMatch = s.match(/^commercial\s+insp(?:ection)?\s*[.\-]?\s*(.+)/i)
   if (commercialInspMatch) return { type: 'inspection', customerName: commercialInspMatch[1].trim(), commercial: true }
 
-  const inspCommercialMatch = summary.match(/^insp\s*-?\s*commercial\s*-?\s*(.+)/i)
+  const inspCommercialMatch = s.match(/^insp[.\-]?\s*commercial\s*[.\-]?\s*(.+)/i)
   if (inspCommercialMatch) return { type: 'inspection', customerName: inspCommercialMatch[1].trim(), commercial: true }
 
+  // Exterior inspection
+  const exteriorMatch = s.match(/^exterior\s+insp(?:ection)?\s*[.\-]?\s*(.+)/i)
+  if (exteriorMatch) return { type: 'inspection', customerName: exteriorMatch[1].trim(), commercial: false }
+
   // Residential inspection variants
-  const propertyInspMatch = summary.match(/^property\s+inspection\s*-?\s*(.+)/i)
+  const propertyInspMatch = s.match(/^property\s+inspection\s*[.\-]?\s*(.+)/i)
   if (propertyInspMatch) return { type: 'inspection', customerName: propertyInspMatch[1].trim(), commercial: false }
 
-  // 'Insp - Name' or 'Insp Name' (with or without dash)
-  const inspMatch = summary.match(/^insp\s*-?\s+(.+)/i)
+  // 'Insp - Name', 'Insp. Name', 'Insp-Name', 'Insp Name' (with or without dash/period/space)
+  const inspMatch = s.match(/^insp[.\-]?\s*[.\-]?\s*(.+)/i)
   if (inspMatch) return { type: 'inspection', customerName: inspMatch[1].trim(), commercial: false }
 
   return null
