@@ -209,11 +209,19 @@ export default function ManageClient() {
                   <p className="text-xs text-charcoal/50 text-center mt-3">
                     Wrong date, phone, or address? Please cancel and rebook your appointment.
                   </p>
+                  <p className="text-[0.65rem] text-charcoal/40 text-center mt-4 pt-3 border-t border-line">
+                    Cancellation policy: Please provide at least 24 hours notice. Same-day cancellations may be subject to a fee.
+                  </p>
                 </div>
               )}
 
               {cancelState === 'confirming' && (
                 <div className="bg-cream p-6 rounded-sm border border-line">
+                  {booking.startISO && (new Date(booking.startISO) - new Date()) < 24 * 60 * 60 * 1000 && (
+                    <div className="bg-amber/10 border border-amber text-ink rounded-sm p-3 mb-4 text-xs">
+                      This appointment is within 24 hours. Same-day cancellations may be subject to a cancellation fee.
+                    </div>
+                  )}
                   <p className="text-sm text-ink mb-4 font-medium">Are you sure you want to cancel this appointment?</p>
                   <div className="flex gap-3">
                     <button
