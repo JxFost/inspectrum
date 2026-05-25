@@ -75,7 +75,7 @@ export async function POST(request) {
           <p style="margin:4px 0;font-size:14px;"><strong>Address:</strong> ${parsed.address || 'N/A'}</p>
           ${parsed.phone ? `<p style="margin:4px 0;font-size:14px;"><strong>Phone:</strong> <a href="tel:${parsed.phone.replace(/[^+\d]/g, '')}" style="color:#2B7E8C;">${parsed.phone}</a></p>` : ''}
         </div>
-        ${isPaid ? '<p style="color:#DC2626;font-weight:600;font-size:14px;">⚠ This booking had a paid invoice. A refund may be needed.</p>' : ''}
+        ${isPaid ? '<p style="color:#DC2626;font-weight:600;font-size:14px;"> &#9888; This booking had a paid invoice. A refund may be needed.</p>' : ''}
         <p style="font-size:13px;color:#9DA0A2;">This slot is now open on your calendar.</p>
       </div>
     `,

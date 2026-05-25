@@ -63,7 +63,7 @@ export async function GET(request) {
             <p style="margin:4px 0;font-size:14px;"><strong>Address:</strong> 4642 Plettner Ln, Evergreen, CO 80439</p>
             <p style="margin:4px 0;font-size:14px;"><strong>Phone:</strong> <a href="tel:3035551234" style="color:#2B7E8C;">303-555-1234</a></p>
           </div>
-          <p style="color:#DC2626;font-weight:600;font-size:14px;">⚠ This booking had a paid invoice. A refund may be needed.</p>
+          <p style="color:#DC2626;font-weight:600;font-size:14px;">&#9888; This booking had a paid invoice. A refund may be needed.</p>
           <p style="font-size:13px;color:#9DA0A2;">This slot is now open on your calendar.</p>
         </div>`
       break

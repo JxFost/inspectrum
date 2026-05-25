@@ -123,7 +123,7 @@ ${EMAIL_HEAD}
 
 ${emailLogoHeader(logoUrl)}
 
-        <tr><td style="background-color:#FFFFFF;padding:32px 40px;">
+        <tr><td style="background-color:#FFFFFF;padding:32px 24px;">
 
           <p style="font-size:20px;margin:0 0 4px;color:#2B7E8C;font-weight:600;">Monthly Report</p>
           <p style="font-size:15px;margin:0 0 24px;color:#3D3F40;">${monthLabel}</p>
