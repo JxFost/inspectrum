@@ -77,11 +77,18 @@ async function fetchHarryEvents(timeMin, timeMax) {
  * Radon:
  *   'Set Radon - Johnson'         → radon drop
  *   'P/U radon - Johnson'         → radon pickup
+ *
+ * Sewer:
+ *   'Sewer scope - Johnson'       → sewer scope
  */
 function parseLegacyTitle(summary) {
   if (!summary) return null
 
-  // Radon events (check first so 'Set Radon' doesn't match inspection patterns)
+  // Sewer scope (check early so it doesn't accidentally match other patterns)
+  const sewerMatch = summary.match(/^sewer\s+scope\s*-?\s*(.+)/i)
+  if (sewerMatch) return { type: 'sewer-scope', customerName: sewerMatch[1].trim(), commercial: false }
+
+  // Radon events (check before inspection patterns)
   const setMatch = summary.match(/^Set Radon\s*-?\s*(.+)/i)
   if (setMatch) return { type: 'radon-set', customerName: setMatch[1].trim(), commercial: false }
 
@@ -152,10 +159,11 @@ export async function GET(request) {
 
     if (!startISO) continue
 
-    const isInspection = parsed.type === 'inspection'
-    if (isInspection) inspectionCount++
+    // Inspections and sewer scopes get numbered; radon set/pickup don't
+    const isCountable = parsed.type === 'inspection' || parsed.type === 'sewer-scope'
+    if (isCountable) inspectionCount++
 
-    const inspectionNumber = isInspection
+    const inspectionNumber = isCountable
       ? `2026-${String(inspectionCount).padStart(3, '0')}`
       : null
 
@@ -173,6 +181,10 @@ export async function GET(request) {
       case 'radon-pickup':
         serviceName = 'Radon Testing Only'
         summary = `${parsed.customerName} — Radon Pickup`
+        break
+      case 'sewer-scope':
+        serviceName = 'Sewer Scope'
+        summary = `${parsed.customerName} — Sewer Scope`
         break
     }
 
@@ -200,8 +212,10 @@ export async function GET(request) {
           inspectionNumber,
           extra: [
             parsed.commercial ? 'property_type: commercial' : 'property_type: residential',
+            parsed.type === 'radon-set' ? 'Radon Add-On: Yes (radon device set for testing)' : null,
+            parsed.type === 'sewer-scope' ? 'Sewer Scope: Yes' : null,
             `Imported from Harry's calendar: ${event.summary}`,
-          ].join('\n'),
+          ].filter(Boolean).join('\n'),
         })
 
         const created = await insertEvent({
