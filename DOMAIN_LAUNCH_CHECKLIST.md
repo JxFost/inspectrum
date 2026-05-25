@@ -67,7 +67,7 @@ Constants to configure in `lib/mileage.js`:
 - `HOME_ADDRESS` = 2525 Witter Gulch Rd, Evergreen, CO 80439
 - `BASE_RADIUS_MILES` = 45 (no surcharge within this)
 - `SURCHARGE_PER_MILE` = $0.50 per mile beyond base radius
-- `MAX_SERVICE_RADIUS` = 75 miles (show "please call" beyond this)
+- `MAX_SERVICE_RADIUS` = 100 miles (show "please call" beyond this)
 
 Touches these areas when implemented:
 - Booking form step 4: show distance + auto-calculate trip charge
