@@ -324,6 +324,11 @@ export default function InspectionsDashboard({
                           {customerCounts[item.customerName.toLowerCase().trim()]}x
                         </span>
                       )}
+                      {item.feedbackRating && (
+                        <span className="ml-1 text-amber text-xs" title={`Customer rated ${item.feedbackRating}/5`}>
+                          {'★'.repeat(parseInt(item.feedbackRating))}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2 hidden md:table-cell">
                       <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block" title={item.address || ''}>

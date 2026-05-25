@@ -91,6 +91,7 @@ export async function GET(request) {
           service: service || 'inspection',
           startISO,
           address: address || 'your property',
+          token,
         }),
       })
 

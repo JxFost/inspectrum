@@ -1,12 +1,13 @@
 /*
- * GET /api/feedback?rating=5&name=Jeff&service=Full+Home+Inspection
+ * GET /api/feedback?rating=5&name=Jeff&service=Full+Home+Inspection&token=abc-123
  *
- * Logs the private star rating and redirects:
+ * Logs the private star rating, stores it in the calendar event, and redirects:
  * - 4-5 stars → Google review page (warm handoff)
  * - 1-3 stars → thank you page with contact info (capture private feedback)
  */
 
 import { NextResponse } from 'next/server'
+import { findEventByToken, updateEventDescription } from '@/lib/google-calendar'
 
 const GOOGLE_REVIEW_URL = 'https://g.page/Inspectrum/review'
 
@@ -15,14 +16,35 @@ export async function GET(request) {
   const rating = parseInt(searchParams.get('rating'), 10)
   const name = searchParams.get('name') || 'Customer'
   const service = searchParams.get('service') || 'Inspection'
+  const token = searchParams.get('token') || ''
   const firstName = name.split(' ')[0]
 
   if (!rating || rating < 1 || rating > 5) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Log the feedback (privacy-safe: first name only)
   console.log(`[feedback] ${firstName} rated ${rating}/5 for ${service}`)
+
+  // Store the rating in the calendar event description
+  if (token) {
+    try {
+      const event = await findEventByToken(token)
+      if (event) {
+        let desc = event.description || ''
+        // Don't overwrite if already rated
+        if (!desc.includes('feedback_rating:')) {
+          const ratingBlock = `feedback_rating: ${rating}\nfeedback_at: ${new Date().toISOString()}`
+          desc = desc.includes('\n---\n')
+            ? desc.replace('\n---\n', `\n${ratingBlock}\n\n---\n`)
+            : `${desc}\n${ratingBlock}`
+          await updateEventDescription(event.id, desc)
+          console.log(`[feedback] stored rating ${rating}/5 on event ${event.id}`)
+        }
+      }
+    } catch (err) {
+      console.error('[feedback] failed to store rating:', err.message)
+    }
+  }
 
   // 4-5 stars: redirect to Google review
   if (rating >= 4) {
