@@ -118,12 +118,30 @@ At 20-50 inspections/month, free tier is sufficient for years.
 
 ---
 
-## Open Questions
+## Decisions
 
-- Should the DB become the source of truth, or remain a backup/mirror of the calendar?
-- Do we need a `customers` table (normalize repeat customers)?
-- Should cancelled inspections retain their inspection_number or release it?
-- How to handle edits made directly in Google Calendar? (Webhook? Polling?)
+**Source of truth: split by time horizon.**
+- Today and future → Google Calendar is the source of truth. DB mirrors it.
+- Past events → DB is the source of truth. No need to re-query the calendar for historical data.
+- This means reads for the dashboard can use calendar for today/upcoming and DB for past, reducing API calls significantly.
+
+**Customers table: yes, when the customer portal is built.**
+- Not needed for the initial DB sprint — inspections table stores name/email/phone inline.
+- When the customer portal goes live (see CUSTOMER_PORTAL_PLAN.md), normalize into a `customers` table and add `customer_id` FK to inspections.
+- Until then, repeat customer detection can use email matching on the inspections table.
+
+**Cancelled inspections retain their inspection number.**
+- Numbers are sequential and represent work that was scheduled, even if cancelled.
+- Gaps in the sequence are expected and tell their own story (cancellation rate).
+- Simpler than renumbering — avoids confusion if a number was already referenced in emails or invoices.
+- YTD counter on the dashboard counts actual events with inspection numbers on the calendar (not the max number), so cancellations are naturally excluded since deleted events disappear from the calendar.
+- When DB is live: YTD = `SELECT COUNT(*) FROM inspections WHERE status != 'cancelled' AND inspection_number IS NOT NULL AND YEAR(start_at) = current_year`.
+
+**Calendar edits: nightly sync cron, not webhooks.**
+- Google Calendar push notifications require a public HTTPS endpoint and channel management — more complexity than it's worth at this scale.
+- A nightly cron (e.g. 2am MT) syncs today + future events from calendar → DB, flags any discrepancies.
+- If Harry edits an event directly in Google Calendar during the day, it's picked up that night.
+- For past events, no sync needed — DB is already the record.
 
 ---
 

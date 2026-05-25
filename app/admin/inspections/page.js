@@ -74,18 +74,11 @@ export default async function InspectionsPage({ searchParams }) {
     const prev = prevWindowFromRange(range)
     prevInspections = await getInspectionsInWindow({ from: prev.from, to: prev.to })
 
-    // YTD count — find the highest inspection number from past events this year
+    // YTD count — count events that have an inspection number (excludes cancelled,
+    // which are deleted from calendar, so gaps from cancellations are naturally excluded)
     const year = new Date().getFullYear()
     const ytdEvents = await findEventsBetween(`${year}-01-01T00:00:00Z`, new Date().toISOString())
-    let maxNum = 0
-    for (const e of ytdEvents) {
-      const match = e.description?.match(/inspection_number:\s*\d{4}-(\d+)/)
-      if (match) {
-        const num = parseInt(match[1], 10)
-        if (num > maxNum) maxNum = num
-      }
-    }
-    ytdCount = maxNum
+    ytdCount = ytdEvents.filter((e) => e.description?.match(/inspection_number:\s*\d{4}-\d+/)).length
   } catch (err) {
     console.error('[admin-inspections] fetch error:', err)
     fetchError = err.message
