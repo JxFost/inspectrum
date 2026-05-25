@@ -132,13 +132,23 @@ export async function GET(request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
-  // Filter to legacy inspection events
-  const legacyEvents = events
-    .filter((e) => parseLegacyTitle(e.summary) !== null)
-    .map((e) => ({
-      ...e,
-      parsed: parseLegacyTitle(e.summary),
-    }))
+  // Filter to legacy inspection events (matched by parser)
+  // Also pull in any event containing 'insp' that the parser doesn't match — flag for review
+  const legacyEvents = []
+  const unmatchedInspEvents = []
+
+  for (const e of events) {
+    const parsed = parseLegacyTitle(e.summary)
+    if (parsed) {
+      legacyEvents.push({ ...e, parsed })
+    } else if (e.summary && /insp/i.test(e.summary)) {
+      unmatchedInspEvents.push({
+        title: e.summary,
+        startISO: e.start?.dateTime || e.start?.date,
+        endISO: e.end?.dateTime || e.end?.date,
+      })
+    }
+  }
 
   // Sort by start time so inspection numbers are assigned chronologically
   legacyEvents.sort((a, b) => {
@@ -245,5 +255,6 @@ export async function GET(request) {
     legacyMatched: legacyEvents.length,
     inspectionsCounted: inspectionCount,
     results,
+    unmatchedContainingInsp: unmatchedInspEvents,
   })
 }
