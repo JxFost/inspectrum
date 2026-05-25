@@ -117,3 +117,28 @@ Caching: geocoded lat/lng stored in event description — each unique address co
 - [ ] Admin login → dashboard → invoice flow works
 - [ ] ACC email → calendar event creation works
 - [ ] Square webhook → payment status update works
+- [ ] `/api/health` returns 200 (calendar connected)
+
+## 10. Uptime Monitoring (StatusBot)
+
+### Critical (bookings break if these fail)
+- [ ] `/api/health` — Google Calendar API connected (5 min interval, SMS alert)
+- [ ] Homepage (`/`) — site is up and serving HTML (5 min interval)
+- [ ] `/api/book` — booking endpoint responds (POST with empty body, expect 400 not 5xx) (5 min)
+
+### High Priority (revenue or ops impact)
+- [ ] `/api/inbound/acc` — ACC email pipeline alive (expect 401 without secret, not 5xx) (10 min)
+- [ ] `/api/square/webhook` — Square payment webhook reachable (expect 401, not 5xx) (10 min)
+- [ ] `/schedule` — booking page loads (customers land here from Google) (10 min)
+
+### Nice to Have (catch silent failures)
+- [ ] `/api/cron/reminders` — reminder cron endpoint reachable (15 min)
+- [ ] `/api/cron/followup` — follow-up cron endpoint reachable (15 min)
+- [ ] `/api/cron/daily-digest` — daily digest cron reachable (15 min)
+- [ ] SSL certificate expiry monitor on `evergreeninspections.com` (daily check, 14-day warning)
+
+### Alert Configuration
+- [ ] Critical monitors → SMS + email to Harry immediately
+- [ ] High priority → email to Harry, escalate to SMS after 10 min downtime
+- [ ] Nice to have → email only
+- [ ] Set up a status page (optional) for transparency if extended outage occurs
