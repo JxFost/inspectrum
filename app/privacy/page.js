@@ -7,7 +7,7 @@ export const metadata = {
 }
 
 export default function PrivacyPage() {
-  const lastUpdated = 'May 24, 2026'
+  const lastUpdated = 'May 25, 2026'
 
   return (
     <div className="bg-cream pt-32 pb-20 px-5 lg:px-8">
@@ -32,6 +32,7 @@ export default function PrivacyPage() {
               <li>Payment information (processed securely through Square — we do not store credit card numbers)</li>
               <li>Real estate agent information (if booking through an agent)</li>
               <li>Any additional information you provide via our contact form or during the inspection process</li>
+              <li>Customer portal account information (email address used for login)</li>
             </ul>
             <p className="font-semibold text-ink mt-4 mb-2">Information collected automatically:</p>
             <ul className="list-disc pl-5 space-y-1">
@@ -62,7 +63,8 @@ export default function PrivacyPage() {
               <li><span className="font-medium text-ink">Square</span> — for payment processing</li>
               <li><span className="font-medium text-ink">Resend</span> — for sending transactional emails</li>
               <li><span className="font-medium text-ink">Google</span> — for calendar scheduling, analytics, and address autocomplete</li>
-              <li><span className="font-medium text-ink">Vercel</span> — for website hosting</li>
+              <li><span className="font-medium text-ink">Vercel</span> — for website hosting and secure file storage (inspection reports)</li>
+              <li><span className="font-medium text-ink">Neon</span> — for secure database hosting (customer accounts and inspection records)</li>
               <li><span className="font-medium text-ink">Your real estate agent</span> — if they booked the inspection on your behalf</li>
               <li><span className="font-medium text-ink">Legal authorities</span> — if required by law, subpoena, or court order</li>
             </ul>
@@ -81,7 +83,7 @@ export default function PrivacyPage() {
               We use Google Analytics to understand how visitors use our website. This service uses cookies to collect anonymized usage data. You can opt out of Google Analytics by installing the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-teal hover:text-amber">Google Analytics Opt-out Browser Add-on</a>.
             </p>
             <p className="mt-2">
-              We also use a session cookie for admin authentication. This cookie is essential for our staff to access the admin portal and does not track visitors.
+              We also use session cookies for admin authentication and customer portal login. These cookies are essential for accessing secure areas of the site and do not track visitors. Customer portal sessions use a secure, single-use magic link sent to your email — no password is stored.
             </p>
           </section>
 
@@ -102,7 +104,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-serif text-ink mb-3">Data Retention</h2>
             <p>
-              We retain your booking and inspection records for a reasonable period to fulfill our business obligations and comply with applicable laws. Payment records are retained as required for tax and accounting purposes. You may request deletion of your data at any time.
+              We retain your booking and inspection records for a reasonable period to fulfill our business obligations and comply with applicable laws. Payment records are retained as required for tax and accounting purposes. Inspection reports are stored securely and remain accessible through your customer portal indefinitely. Customer portal accounts and session data are retained until you request deletion. You may request deletion of your data at any time.
             </p>
           </section>
 

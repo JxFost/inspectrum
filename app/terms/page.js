@@ -7,7 +7,7 @@ export const metadata = {
 }
 
 export default function TermsPage() {
-  const lastUpdated = 'May 24, 2026'
+  const lastUpdated = 'May 25, 2026'
 
   return (
     <div className="bg-cream pt-32 pb-20 px-5 lg:px-8">
@@ -70,7 +70,20 @@ export default function TermsPage() {
               Your inspection report will be delivered electronically on the same day as the inspection, typically within a few hours of completion. The report is for your personal use and includes photographs, descriptions of findings, and recommendations.
             </p>
             <p className="mt-2">
+              Reports are stored securely and accessible through your customer portal at any time. You will receive an email notification when your report is available for download.
+            </p>
+            <p className="mt-2">
               The report is not a substitute for professional engineering, architectural, or other specialized evaluations. If the report identifies areas of concern, we recommend consulting with qualified specialists.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-serif text-ink mb-3">Customer Portal</h2>
+            <p>
+              When you book an inspection, a customer account is automatically created using your email address. You can access your customer portal to view past and upcoming inspections, download inspection reports, and manage appointments.
+            </p>
+            <p className="mt-2">
+              Login is handled via secure magic links sent to your email — no password is required or stored. You are responsible for maintaining the security of the email account associated with your portal.
             </p>
           </section>
 
