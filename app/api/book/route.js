@@ -20,6 +20,7 @@ import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
+import { createAgreement } from '@/lib/db-agreements'
 
 const MAX_FIELD_LENGTH = 500
 
@@ -205,7 +206,8 @@ export async function POST(request) {
     upsertCustomer({ email, name, phone })
       .catch((err) => console.error('[db] customer upsert failed:', err.message))
 
-    // Write to DB (non-blocking — don't fail the booking if DB write fails).
+    // Write to DB and create agreement (non-blocking)
+    const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
     upsertInspection({
       googleEventId: event.id,
       inspectionNumber,
@@ -223,6 +225,20 @@ export async function POST(request) {
       geoLng: dist?.geoLng || null,
       token,
       rawDescription: description,
+    }).then(async (row) => {
+      if (!row) return
+      try {
+        const agToken = await createAgreement({
+          inspectionId: row.id,
+          customerName: name,
+          customerEmail: email,
+          propertyAddress: address,
+          radonAddendum: radonAddOn,
+        })
+        console.log(`[agreement] created for ${name.split(' ')[0]}: ${siteUrl}/agreement/${agToken}`)
+      } catch (err) {
+        console.error('[agreement] creation failed:', err.message)
+      }
     }).catch((err) => console.error('[db] booking insert failed:', err.message))
 
     // Send booking receipt email (non-blocking — don't fail the booking if email fails).

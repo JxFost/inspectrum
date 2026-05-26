@@ -34,7 +34,7 @@
     },
     {
       "path": "/api/cron/import-reports",
-      "schedule": "0 */2 * * *"
+      "schedule": "30 0 * * *"
     }
   ]
 }

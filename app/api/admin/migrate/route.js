@@ -115,6 +115,28 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
     await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
 
+    // ---- Signed agreements table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS signed_agreements (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        inspection_id   UUID REFERENCES inspections(id) ON DELETE CASCADE,
+        token           TEXT UNIQUE NOT NULL,
+        customer_name   TEXT,
+        customer_email  TEXT,
+        property_address TEXT,
+        initials        TEXT,
+        signature_data  TEXT,
+        signature_name  TEXT,
+        radon_addendum  BOOLEAN DEFAULT false,
+        signed_at       TIMESTAMPTZ,
+        sent_at         TIMESTAMPTZ DEFAULT now(),
+        ip_address      TEXT,
+        user_agent      TEXT
+      )
+    `
+    await db`CREATE INDEX IF NOT EXISTS idx_agreements_token ON signed_agreements(token)`
+    await db`CREATE INDEX IF NOT EXISTS idx_agreements_inspection ON signed_agreements(inspection_id)`
+
     // ---- Processed emails table (dedup for cron imports) ----
     await db`
       CREATE TABLE IF NOT EXISTS processed_emails (
