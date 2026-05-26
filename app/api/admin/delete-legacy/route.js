@@ -78,7 +78,8 @@ export async function GET(request) {
 
   const results = {
     dryRun,
-    totalLegacy: legacyEvents.length,
+    totalNonAcc: nonAccEvents.length,
+    accDuplicates: accDuplicates.length,
     duplicates: duplicates.length,
     kept: kept.length,
     deleted: 0,
