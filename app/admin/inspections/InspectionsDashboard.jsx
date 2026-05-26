@@ -164,6 +164,18 @@ export default function InspectionsDashboard({
   const todayItems = inspections.filter((i) => i.status === 'today')
     .sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
 
+  // Tomorrow's agenda — show after 6pm MT (working hours end)
+  const now = new Date()
+  const denverHour = parseInt(now.toLocaleTimeString('en-US', { timeZone: 'America/Denver', hour12: false, hour: 'numeric' }), 10)
+  const tomorrowStr = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    .toLocaleDateString('en-CA', { timeZone: 'America/Denver' })
+  const tomorrowItems = denverHour >= 18
+    ? inspections.filter((i) => {
+        const eventDate = new Date(i.startISO).toLocaleDateString('en-CA', { timeZone: 'America/Denver' })
+        return eventDate === tomorrowStr
+      }).sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
+    : []
+
   // Reset page when filter/search changes
   const updateSearch = (v) => { setSearch(v); setPage(1) }
   const updateSource = (v) => { setSourceFilter(v); setPage(1) }
@@ -199,6 +211,28 @@ export default function InspectionsDashboard({
             <div className="text-xs uppercase tracking-wider text-amber font-semibold mb-3">Today&apos;s Agenda</div>
             <div className="space-y-2">
               {todayItems.map((item) => (
+                <div key={item.eventId} className="flex items-center gap-4 text-sm">
+                  <span className="text-ink font-medium w-20 shrink-0">{formatTime(item.startISO)}</span>
+                  <span className="text-ink">{item.customerName || '—'}</span>
+                  <span className="text-charcoal/50">·</span>
+                  {item.address ? (
+                    <a href={`https://maps.apple.com/?q=${encodeURIComponent(item.address)}`} className="text-teal/70 hover:text-teal truncate max-w-[250px] no-underline hover:underline">{item.address}</a>
+                  ) : (
+                    <span className="text-charcoal/40">Address TBD</span>
+                  )}
+                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : ''}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tomorrow's agenda — visible after 6pm MT */}
+        {tomorrowItems.length > 0 && (
+          <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-4 mb-6">
+            <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-3">Tomorrow&apos;s Schedule</div>
+            <div className="space-y-2">
+              {tomorrowItems.map((item) => (
                 <div key={item.eventId} className="flex items-center gap-4 text-sm">
                   <span className="text-ink font-medium w-20 shrink-0">{formatTime(item.startISO)}</span>
                   <span className="text-ink">{item.customerName || '—'}</span>
