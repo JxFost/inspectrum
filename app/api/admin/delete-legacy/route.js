@@ -47,18 +47,18 @@ export async function GET(request) {
     (e.description || '').includes('acc_source: true')
   )
 
-  // Build a set of dates that have ACC events (the clean ones we want to keep)
-  const accDates = new Set(accEvents.map((e) => (e.start?.dateTime || '').slice(0, 10)))
+  // A legacy event is a duplicate if an ACC event overlaps its time window
+  // (start times within 4 hours of each other = same inspection)
+  function hasDuplicate(legacyEvent) {
+    const legacyStart = new Date(legacyEvent.start?.dateTime || 0).getTime()
+    return accEvents.some((acc) => {
+      const accStart = new Date(acc.start?.dateTime || 0).getTime()
+      return Math.abs(legacyStart - accStart) < 4 * 60 * 60 * 1000
+    })
+  }
 
-  // Only delete legacy events that have a duplicate ACC event on the same day
-  const duplicates = legacyEvents.filter((e) => {
-    const eventDate = (e.start?.dateTime || '').slice(0, 10)
-    return accDates.has(eventDate)
-  })
-  const kept = legacyEvents.filter((e) => {
-    const eventDate = (e.start?.dateTime || '').slice(0, 10)
-    return !accDates.has(eventDate)
-  })
+  const duplicates = legacyEvents.filter(hasDuplicate)
+  const kept = legacyEvents.filter((e) => !hasDuplicate(e))
 
   const results = {
     dryRun,
