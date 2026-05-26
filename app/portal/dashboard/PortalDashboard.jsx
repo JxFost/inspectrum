@@ -122,6 +122,21 @@ export default function PortalDashboard({ inspections, customerEmail }) {
                     <PaymentBadge status={insp.paymentStatus} amountCents={insp.invoiceAmountCents} />
                   </div>
                 </div>
+                {insp.reports?.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-3">
+                    {insp.reports.map((r, i) => (
+                      <a
+                        key={i}
+                        href={r.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal text-white text-xs font-semibold rounded-sm no-underline hover:bg-teal-deep transition-colors"
+                      >
+                        Download Report
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -31,6 +31,23 @@ export default async function DashboardPage() {
     ORDER BY start_at DESC
   `
 
+  // Fetch reports for this customer's inspections
+  const inspectionIds = inspections.map((r) => r.id)
+  let reports = []
+  if (inspectionIds.length > 0) {
+    reports = await db`
+      SELECT inspection_id, file_url, file_name
+      FROM inspection_reports
+      WHERE inspection_id = ANY(${inspectionIds})
+      ORDER BY uploaded_at DESC
+    `
+  }
+  const reportsByInspection = {}
+  for (const r of reports) {
+    if (!reportsByInspection[r.inspection_id]) reportsByInspection[r.inspection_id] = []
+    reportsByInspection[r.inspection_id].push({ fileUrl: r.file_url, fileName: r.file_name })
+  }
+
   const now = new Date()
   const serialized = inspections.map((row) => {
     const startAt = row.start_at?.toISOString?.() || row.start_at
@@ -48,6 +65,7 @@ export default async function DashboardPage() {
       paymentStatus: row.payment_status,
       invoiceAmountCents: row.invoice_amount_cents,
       token: row.token,
+      reports: reportsByInspection[row.id] || [],
     }
   })
 
@@ -57,7 +75,7 @@ export default async function DashboardPage() {
         <div className="max-w-[700px] mx-auto text-center">
           <div className="hero-eyebrow justify-center">Customer Portal</div>
           <h1 className="text-[clamp(2rem,4vw,3.5rem)] mb-4">
-            Welcome back, <em className="italic text-amber">{customer.name?.split(' ')[0] || 'there'}.</em>
+            Welcome home, <em className="italic text-amber">{customer.name?.split(' ')[0] || 'there'}.</em>
           </h1>
         </div>
       </header>

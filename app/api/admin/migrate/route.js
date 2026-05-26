@@ -96,6 +96,25 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_portal_sessions_token ON portal_sessions(token)`
     await db`CREATE INDEX IF NOT EXISTS idx_portal_sessions_expires ON portal_sessions(expires_at)`
 
+    // ---- Inspection reports table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS inspection_reports (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        inspection_id   UUID REFERENCES inspections(id) ON DELETE CASCADE,
+        customer_email  TEXT,
+        file_url        TEXT NOT NULL,
+        file_name       TEXT NOT NULL,
+        file_size_bytes INT,
+        mime_type       TEXT DEFAULT 'application/pdf',
+        uploaded_at     TIMESTAMPTZ DEFAULT now(),
+        uploaded_via    TEXT DEFAULT 'admin',
+        notified_at     TIMESTAMPTZ,
+        downloaded_at   TIMESTAMPTZ
+      )
+    `
+    await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
+    await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
+
     return NextResponse.json({ success: true, message: 'Migration complete — all tables ready.' })
   } catch (err) {
     console.error('[migrate] error:', err)
