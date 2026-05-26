@@ -12,12 +12,52 @@
  */
 
 import { NextResponse } from 'next/server'
+import { google } from 'googleapis'
 import { searchEmails } from '@/lib/gmail'
-import { parseACCEmail, isValidACCSender } from '@/lib/acc-email-parser'
-import { parseEventDescription, buildEventDescription, mapACCServiceType } from '@/lib/booking'
+import { parseACCEmail } from '@/lib/acc-email-parser'
+import { parseEventDescription, mapACCServiceType } from '@/lib/booking'
 import { findEventsBetween, updateEventDescription } from '@/lib/google-calendar'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
+
+/**
+ * Fetch events from Harry's personal calendar.
+ */
+async function fetchHarryEvents(timeMin, timeMax) {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  const rawKey = process.env.GOOGLE_PRIVATE_KEY
+  if (!email || !rawKey) return []
+
+  const key = rawKey.replace(/\\n/g, '\n')
+  const auth = new google.auth.JWT({
+    email,
+    key,
+    scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+  })
+  await auth.authorize()
+  const calendar = google.calendar({ version: 'v3', auth })
+
+  const calendarId = process.env.GOOGLE_BUSY_CALENDAR_IDS?.split(',')[0]?.trim()
+  if (!calendarId) return []
+
+  const allEvents = []
+  let pageToken
+  do {
+    const res = await calendar.events.list({
+      calendarId,
+      timeMin,
+      timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 250,
+      pageToken,
+    })
+    allEvents.push(...(res.data.items || []))
+    pageToken = res.data.nextPageToken
+  } while (pageToken)
+
+  return allEvents
+}
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -134,14 +174,31 @@ export async function GET(request) {
     return NextResponse.json({ error: `Gmail error: ${err.message}` }, { status: 500 })
   }
 
-  // 2. Fetch all calendar events for matching
+  // 2. Fetch events from BOTH calendars for matching
+  const year = new Date().getFullYear()
+  const timeMin = `${year}-01-01T00:00:00Z`
+  const timeMax = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+
   let calendarEvents
   try {
-    const year = new Date().getFullYear()
-    calendarEvents = await findEventsBetween(
-      `${year}-01-01T00:00:00Z`,
-      new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
-    )
+    const [bookingEvents, harryEvents] = await Promise.all([
+      findEventsBetween(timeMin, timeMax),
+      fetchHarryEvents(timeMin, timeMax).catch((err) => {
+        console.warn('[backfill-acc] Harry calendar fetch failed:', err.message)
+        return []
+      }),
+    ])
+
+    // Tag events with their source calendar
+    bookingEvents.forEach((e) => { e._calendar = 'booking' })
+    harryEvents.forEach((e) => { e._calendar = 'harry' })
+
+    // Merge, dedup by event ID (booking calendar takes priority)
+    const seenIds = new Set(bookingEvents.map((e) => e.id))
+    calendarEvents = [
+      ...bookingEvents,
+      ...harryEvents.filter((e) => !seenIds.has(e.id)),
+    ]
   } catch (err) {
     console.error('[backfill-acc] calendar fetch error:', err.message)
     return NextResponse.json({ error: `Calendar error: ${err.message}` }, { status: 500 })
@@ -178,6 +235,8 @@ export async function GET(request) {
   const results = {
     emailsFound: emails.length,
     uniqueAppointments: parsedEmails.length,
+    bookingCalendarEvents: calendarEvents.filter((e) => e._calendar === 'booking').length,
+    harryCalendarEvents: calendarEvents.filter((e) => e._calendar === 'harry').length,
     matched: 0,
     unmatched: 0,
     updated: 0,
@@ -230,6 +289,7 @@ export async function GET(request) {
 
     const record = {
       eventId: match.id,
+      matchedCalendar: match._calendar || 'booking',
       originalSummary: match.summary,
       clientName: parsed.clientName,
       fieldsAdded: Object.keys(fieldsToUpdate),
@@ -245,8 +305,10 @@ export async function GET(request) {
 
     if (!dryRun) {
       try {
-        // Rebuild the event description with merged data
+        // Only update calendar description for booking calendar events
+        // Harry's calendar events are read-only references
         let desc = match.description || ''
+        const isBookingCalendar = match._calendar === 'booking'
 
         // Update specific fields in the description
         if (fieldsToUpdate.customerName && !desc.includes('Customer:')) {
@@ -282,9 +344,12 @@ export async function GET(request) {
           desc = `Service: ${fieldsToUpdate.service}\n${desc}`
         }
 
-        await updateEventDescription(match.id, desc)
+        // Only write to booking calendar (not Harry's personal)
+        if (isBookingCalendar) {
+          await updateEventDescription(match.id, desc)
+        }
 
-        // Update DB too
+        // Always update DB
         await upsertInspection({
           googleEventId: match.id,
           customerName: fieldsToUpdate.customerName || existing.customerName,
