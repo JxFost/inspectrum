@@ -126,6 +126,24 @@ export default function AgreementClient({ data }) {
           <p className="text-sm text-charcoal/60">Please review, initial, and sign below</p>
         </div>
 
+        {/* What to Expect */}
+        <div className="bg-paper border border-line rounded-sm p-6 sm:p-8 mb-6">
+          <p className="text-[0.7rem] uppercase tracking-wider text-amber font-semibold mb-4">What to Expect</p>
+          <p className="text-sm text-charcoal leading-relaxed mb-4">
+            Thank you for choosing Inspectrum Inspections. Here are a few things to know before your appointment:
+          </p>
+          <ul className="text-sm text-charcoal leading-relaxed space-y-2 list-none pl-0">
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">1.</span> <span><strong>Start times are approximate</strong> — we may be delayed slightly due to traffic or a previous inspection.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">2.</span> <span><strong>The inspection takes 3–4 hours</strong> for a standard home. The inspector will need to focus with minimal interruption during this time.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">3.</span> <span><strong>Planning to attend?</strong> You may want to arrive toward the end to avoid waiting. We'll do a full walk-through, explain our findings, and answer all your questions.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">4.</span> <span><strong>Your report will be delivered same day</strong> — a comprehensive, photo-rich report sent directly to your email.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">5.</span> <span><strong>Payment is due at completion.</strong> We accept credit cards, checks, cash, Venmo, and Zelle.</span></li>
+          </ul>
+          <p className="text-sm text-charcoal/60 mt-4">
+            Questions before your inspection? Call Harry at <a href="tel:3036970990" className="text-teal hover:text-amber no-underline font-medium">(303) 697-0990</a>.
+          </p>
+        </div>
+
         {/* Pre-filled info */}
         <div className="bg-paper border border-line rounded-sm p-6 mb-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -162,50 +180,290 @@ export default function AgreementClient({ data }) {
         <form onSubmit={handleSubmit}>
           {/* Agreement body */}
           <div className="bg-paper border border-line rounded-sm p-6 sm:p-8 mb-6">
-            <p className="text-[0.7rem] uppercase tracking-wider text-amber font-semibold mb-4">Scope, Limitations, Terms, and Conditions</p>
-            <p className="text-xs text-charcoal/60 mb-6 italic">This is a legally binding document consisting of the following sections. It contains limitations on the scope of inspection, remedies and liability. Please read it carefully.</p>
+            <p className="text-[0.7rem] uppercase tracking-wider text-amber font-semibold mb-4">
+              Scope, Limitations, Terms, and Conditions
+            </p>
 
-            <Section number="1" title="AUTHORIZATION; PRESENCE OF CUSTOMER; BINDING EFFECT">
-              <p>Customer hereby authorizes and contracts for INSPECTRUM INSPECTIONS, INC. (the "Inspection Company") to perform an inspection at the referenced property in accordance with the terms and conditions of this Agreement, and agrees to pay Company the Inspection Fee at the time of the inspection. Inspection Company has the right to not release its Inspection Report without payment in full. Customer's signature below acknowledges he/she has read, understands and agrees to be bound by the terms and conditions below and intends to bind his/her spouse, heirs and successors as his/her/their authorized agent.</p>
+            <p className="text-xs text-charcoal/60 mb-6 italic">
+              This is a legally binding document consisting of the following sections.
+              It contains limitations on the scope of inspection, remedies, and
+              liability. Please read it carefully.
+            </p>
+
+            <Section
+              number="1"
+              title="AUTHORIZATION; PRESENCE OF CUSTOMER; BINDING EFFECT"
+            >
+              <p>
+                Customer hereby authorizes and contracts for INSPECTRUM INSPECTIONS,
+                INC. (the "Inspection Company") to perform an inspection at the
+                referenced property in accordance with the terms and conditions of this
+                Agreement, and agrees to pay Company the Inspection Fee at the time of
+                the inspection. Inspection Company has the right to withhold release of
+                the Inspection Report until payment is received in full. Customer's
+                signature below acknowledges he/she has read, understands, and agrees
+                to be bound by the terms and conditions below and intends to bind
+                his/her spouse, heirs, successors, and assigns as his/her/their
+                authorized agent. Any acceptance, delivery, or use of the Inspection
+                Report shall constitute acceptance of all terms and conditions contained
+                herein.
+              </p>
 
               <div className="bg-cream border border-line rounded-sm p-4 my-4">
                 <p className="text-xs font-bold text-ink mb-2">1.1 INSPECTION:</p>
-                <p className="text-xs text-charcoal leading-relaxed mb-3">I have received, had the opportunity to read, and have read all sections of the Contract for this Limited Visual Inspection and report. In approximately 3-4 hours, for an average house, Inspection Company will provide the Customer with specified limited information on the condition of the major components of the house at the time of the inspection. <span className="font-bold">INSPECTION COMPANY'S LIABILITY FOR ANY AND ALL CLAIMS IS LIMITED TO A MAXIMUM OF THE INSPECTION FEE PAID</span> as provided in paragraph 7.5.</p>
-                <InitialBox value={initials11} onChange={setInitials11} label="Customer's initials — confirms you have read Section 1.1" />
+
+                <p className="text-xs text-charcoal leading-relaxed mb-3">
+                  I have received, had the opportunity to read, and have read all
+                  sections of this Contract for Limited Visual Inspection and report.
+                  In approximately 3-4 hours, for an average house, Inspection Company
+                  will provide Customer with limited visual observations regarding the
+                  condition of the major components of the property at the time of
+                  inspection.
+                  <span className="font-bold">
+                    {" "}
+                    INSPECTION COMPANY'S LIABILITY FOR ANY AND ALL CLAIMS IS LIMITED TO
+                    A MAXIMUM OF THE INSPECTION FEE PAID
+                  </span>{" "}
+                  as provided in Section 7.5.
+                </p>
+
+                <InitialBox
+                  value={initials11}
+                  onChange={setInitials11}
+                  label="Customer's initials — confirms you have read Section 1.1"
+                />
               </div>
             </Section>
 
             <Section number="2" title="STANDARDS">
-              <p>The inspection will be conducted with reasonable care and will be performed in accordance with the Standards of Practice and Code of Ethics as promulgated by the International Association of Certified Home Inspectors (InterNACHI) where applicable and conditions allow, except as modified by this Agreement.</p>
+              <p>
+                The inspection will be conducted with reasonable care and performed in
+                accordance with the Standards of Practice and Code of Ethics
+                promulgated by the International Association of Certified Home
+                Inspectors (InterNACHI), where applicable and conditions allow, except
+                as modified by this Agreement. A copy of the Standards of Practice is
+                available upon request.
+              </p>
             </Section>
 
             <Section number="3" title="SCOPE OF INSPECTION">
-              <p className="mb-2">The scope of this inspection is to examine <strong>visually</strong> the following areas, systems, and components of the building, where applicable, that are safely and readily accessible:</p>
-              <p className="mb-2"><strong>ROOF:</strong> Surface, skylights, chimneys, flashings, penetrations, gutters & downspouts. <strong>SITE & BUILDING EXTERIOR:</strong> Grading, drainage, retaining walls, walkways, stairs, porches, driveways, exterior finishes. <strong>STRUCTURAL:</strong> Foundation, basement, crawlspace, structural components. <strong>ELECTRICAL:</strong> Main panel, sub panels, branch circuits, GFCI, AFCI, visible wiring. <strong>HEATING:</strong> Furnace, heat pump, ductwork, chimney, flue. <strong>COOLING:</strong> Central air conditioning, heat pump. <strong>PLUMBING:</strong> Water supply, drain/waste/vent systems, water heater, fixtures. <strong>INTERIOR:</strong> Walls, ceilings, floors, windows, doors, stairs, railings. <strong>INSULATION & VENTILATION:</strong> Attic, walls (where visible), vapor barriers. <strong>GARAGE:</strong> Doors, openers, fire separation.</p>
-              <p className="text-xs text-charcoal/60 mt-2">Items NOT included: swimming pools, spas, sprinkler systems, fencing, landscaping, security systems, telecommunications, outbuildings, environmental hazards (asbestos, lead, mold, radon — unless tested separately), elevators, free-standing appliances, pest inspection.</p>
+              <p className="mb-3">
+                <strong>3.1 INSPECTION SCOPE:</strong> The scope of this inspection is
+                to visually examine the following areas, systems, and components of the
+                building, where applicable, that are safely and readily accessible.
+              </p>
+
+              <p className="mb-3 text-sm leading-relaxed">
+                <strong>ROOF:</strong> Roof coverings, skylights, chimneys, flashings,
+                penetrations, gutters, and downspouts.
+                <strong> SITE & EXTERIOR:</strong> Grading, drainage, retaining walls,
+                walkways, stairs, railings, decks, patios, porches, siding, trim,
+                doors, windows, flashing, and exterior finishes.
+                <strong> GARAGE:</strong> Primary garage doors, openers, safety
+                controls, firewall separation, visible structure, and representative
+                receptacles.
+                <strong> STRUCTURAL:</strong> Visible foundation, framing,
+                crawlspaces, basements, and structural components.
+                <strong> PLUMBING:</strong> Accessible supply, drain, waste, and vent
+                systems, fixtures, and water heater components.
+                <strong> ELECTRICAL:</strong> Service entrance, panels, grounding,
+                bonding, visible wiring, branch circuitry, switches, lights, and a
+                representative sampling of receptacles.
+                <strong> HEATING & COOLING:</strong> Furnaces, boilers, heat pumps,
+                ductwork, flues, chimneys, condensers, refrigerant lines, and normal
+                operating controls.
+                <strong> ATTIC, INSULATION & VENTILATION:</strong> Representative attic
+                areas, insulation, ventilation, vapor barriers, and visible mechanical
+                systems.
+                <strong> INTERIOR:</strong> Walls, ceilings, floors, windows, doors,
+                stairs, railings, fireplaces, and representative built-in appliances.
+              </p>
+
+              <p className="mb-3 text-sm">
+                Inspection is not intended to determine compliance with building codes,
+                manufacturer specifications, governmental regulations, or warranty
+                requirements.
+              </p>
+
+              <p className="mb-3">
+                <strong>3.2 EXCLUSIONS:</strong> The following items are specifically
+                excluded from the inspection unless otherwise agreed to in writing:
+                swimming pools, spas, hot tubs, sprinkler systems, wells, septic
+                systems, cisterns, fencing, landscaping, trees, security systems,
+                telecommunications equipment, elevators, environmental hazards
+                including asbestos, lead paint, mold, fungi, indoor air quality, radon
+                (unless separately tested), pest inspections, outbuildings, solar
+                systems, water quality testing, and free-standing appliances.
+              </p>
+
+              <p className="text-xs text-charcoal/70 italic">
+                Any information regarding excluded items that may appear in the report
+                is provided strictly as a courtesy and shall not be construed as
+                expanding the scope of the inspection or creating any responsibility or
+                liability for those items.
+              </p>
             </Section>
 
             <Section number="4" title="LIMITATIONS">
-              <p className="mb-2"><strong>4.1 UTILITIES & EQUIPMENT:</strong> Inspectors will not turn on gas/water mains, activate electrical power, or move items to gain access. Systems that are inoperable or disabled cannot be tested.</p>
-              <p className="mb-2"><strong>4.2 ACCESSIBILITY:</strong> It is the Customer's responsibility to make the property accessible. The inspector will not move furnishings, stored belongings, soil, snow, or vegetation. Concealed or inaccessible conditions cannot be judged and customer assumes risk for any such conditions.</p>
-              <p className="mb-2"><strong>4.3 PURPOSE & SCOPE:</strong> This is a limited visual inspection. It is not an engineering evaluation. No examinations are made to determine building code compliance. The inspection is not intended to identify cosmetic conditions.</p>
-              <p><strong>4.4 LIMITED WARRANTY:</strong> This is a limited and nontransferable warranty. All other warranties including warranties of merchantability and fitness for a particular purpose are expressly excluded. Customer waives any claim for consequential, exemplary or incidental damages.</p>
+              <p className="mb-3">
+                <strong>4.1 UTILITIES & EQUIPMENT:</strong> Inspectors are not required
+                to activate utilities, pilot lights, shutoff valves, breakers, or
+                equipment that is shut down, unsafe, inaccessible, or disabled.
+                Inspectors will not move furniture, storage, personal property, snow,
+                soil, debris, or vegetation to gain access. No dismantling or
+                destructive testing will be performed.
+              </p>
+
+              <p className="mb-3">
+                <strong>4.2 ACCESSIBILITY:</strong> Conditions that are concealed,
+                inaccessible, latent, or otherwise not visible at the time of
+                inspection cannot be evaluated. Customer acknowledges and assumes all
+                risk for concealed or inaccessible defects, including conditions hidden
+                by finishes, furnishings, storage, weather, occupants, or seller
+                concealment.
+              </p>
+
+              <p className="mb-3">
+                Inspection Company shall not be responsible for limitations caused by
+                weather, snow, ice, occupancy, storage conditions, locked areas, pets,
+                or other conditions beyond its control.
+              </p>
+
+              <p className="mb-3">
+                <strong>4.3 PURPOSE & SCOPE:</strong> This inspection is a limited,
+                non-invasive visual inspection and is not technically exhaustive. It is
+                not an engineering evaluation, code compliance inspection,
+                environmental assessment, or guarantee of future condition or
+                performance. Cosmetic and aesthetic conditions are excluded.
+              </p>
+
+              <p className="mb-3">
+                <strong>4.4 DISCLAIMER OF WARRANTIES:</strong> The inspection and
+                report are not a warranty, guarantee, insurance policy, or
+                certification of any kind. Inspection Company makes no express or
+                implied warranties, including warranties of merchantability or fitness
+                for a particular purpose. Customer waives any claim for consequential,
+                incidental, punitive, or exemplary damages.
+              </p>
+
+              <p className="mb-3">
+                <strong>4.5 SEVERABILITY:</strong> If any provision of this Agreement
+                is held invalid or unenforceable, the remaining provisions shall remain
+                in full force and effect.
+              </p>
+
+              <p>
+                <strong>4.6 ELECTRONIC SIGNATURES:</strong> Electronic signatures and
+                electronically transmitted copies of this Agreement shall be deemed
+                originals and fully enforceable.
+              </p>
             </Section>
 
             <Section number="5" title="INSPECTION REPORT">
-              <p>Inspection Company agrees to prepare a written report as documentation of the inspector's observations. The report is not an express or implied warranty as to the performance, adequacy, or remaining life of any system or component. Report and its contents are intended for the exclusive use of, and are the nontransferable property of, the customer.</p>
+              <p className="mb-3">
+                Inspection Company agrees to prepare a written report as documentation
+                of the inspector's observations based on conditions present during the
+                inspection. The report is not an express or implied warranty as to the
+                performance, adequacy, efficiency, suitability, or remaining life of
+                any system or component.
+              </p>
+
+              <p className="mb-3">
+                The report reflects conditions observed only at the time of inspection.
+                Future conditions may change.
+              </p>
+
+              <p className="mb-3">
+                Customer agrees to promptly read the entire report and notify
+                Inspection Company of any questions or concerns regarding the report or
+                findings.
+              </p>
+
+              <p className="mb-3">
+                Inspection Company reserves the right to amend, clarify, or supplement
+                the report within forty-eight (48) hours of delivery.
+              </p>
+
+              <p>
+                Report and its contents are intended solely for the exclusive use of,
+                and are the nontransferable property of, the Customer.
+              </p>
             </Section>
 
             <Section number="6" title="INSPECTION FEES & PAYMENT TERMS">
-              <p>Fees are based on the reported size of the building and a single visit to the property. Additional charges may apply for additional square footage, multiple systems, or additional travel. Fees are due at the end of the inspection. A late charge of $25 will be assessed to balances not paid within 30 days.</p>
+              <p>
+                Fees are based on the reported size of the building and a single visit
+                to the property. Additional charges may apply for additional square
+                footage, multiple systems, additional buildings, additional travel,
+                re-inspections, inaccessible systems, inactive utilities, or return
+                visits required due to conditions beyond Inspection Company's control.
+                Fees are due at the completion of the inspection. Inspection Company
+                may withhold the report until payment is received in full. Balances
+                unpaid after 30 days may incur a $25 late fee and interest at 1.5% per
+                month, in addition to any collection costs and attorney fees.
+              </p>
             </Section>
 
             <Section number="7" title="STANDARD TERMS AND CONDITIONS">
-              <p className="mb-2"><strong>7.1 REINSPECTION RIGHT:</strong> Customer shall provide the Inspection Company with three (3) working days to re-inspect before repair or replacement of any component.</p>
-              <p className="mb-2"><strong>7.2 DISPUTE RESOLUTION:</strong> Parties shall attempt in good faith to settle disputes. Unresolved disputes may be submitted to binding arbitration in Jefferson County, Colorado.</p>
-              <p className="mb-2"><strong>7.3 TIME LIMIT:</strong> No action shall be brought beyond six months following the date of the report or 120 days after discovery of the condition.</p>
-              <p className="mb-2"><strong>7.5 LIMITATION OF LIABILITY:</strong> Inspector's liability for alleged mistakes or omissions is limited to a refund of the fee paid for the inspection and report.</p>
-              <p><strong>7.7 THIRD PARTY:</strong> The report is not intended for use by anyone other than the Customer. No third party shall have any right arising from this Contract.</p>
+              <p className="mb-3">
+                <strong>7.1 REINSPECTION RIGHT:</strong> Customer shall provide
+                Inspection Company with three (3) business days to re-inspect any
+                claimed defect before repair, replacement, or alteration. Failure to
+                provide such opportunity shall constitute a waiver of any claim
+                relating to that item.
+              </p>
+
+              <p className="mb-3">
+                <strong>7.2 DISPUTE RESOLUTION:</strong> The parties agree to attempt
+                in good faith to resolve disputes informally. If disputes cannot be
+                resolved informally, the parties agree to participate in non-binding
+                mediation prior to arbitration or litigation.
+              </p>
+
+              <p className="mb-3">
+                Any dispute arising out of this Agreement, the inspection, or the
+                report shall thereafter be resolved exclusively by binding arbitration
+                in Jefferson County, Colorado, in accordance with the Construction
+                Industry Rules of the American Arbitration Association.
+              </p>
+
+              <p className="mb-3">
+                <strong>7.3 TIME LIMIT FOR ACTION:</strong> Any legal action arising
+                out of this Agreement, inspection, or report must be commenced within
+                one (1) year from the date of the inspection report.
+              </p>
+
+              <p className="mb-3">
+                <strong>7.4 ATTORNEY FEES:</strong> The prevailing party in any action
+                arising from this Agreement shall be entitled to recover reasonable
+                attorney fees, mediation costs, arbitration costs, and expenses.
+              </p>
+
+              <p className="mb-3">
+                <strong>7.5 LIMITATION OF LIABILITY:</strong> The maximum liability of
+                Inspection Company, its employees, agents, and inspectors, for any and
+                all claims, damages, costs, expenses, negligence, errors, or omissions
+                arising out of or relating to the inspection, report, or this
+                Agreement shall be limited to the amount of the inspection fee actually
+                paid by Customer.
+              </p>
+
+              <p className="mb-3">
+                <strong>7.6 INSPECTOR LIABILITY:</strong> Customer agrees that any
+                claim arising from the inspection shall be brought solely against
+                Inspection Company and not against individual inspectors, employees,
+                officers, directors, or agents personally.
+              </p>
+
+              <p>
+                <strong>7.7 THIRD PARTY USE:</strong> The inspection report is prepared
+                exclusively for the Customer and no third party may rely upon it.
+                Customer shall not distribute the report to third parties without
+                written permission from Inspection Company. Customer agrees to
+                indemnify and hold harmless Inspection Company and its inspectors from
+                any third-party claims arising from unauthorized use or distribution of
+                the report.
+              </p>
             </Section>
           </div>
 
