@@ -7,6 +7,7 @@ import Link from 'next/link'
 const PHONE = process.env.NEXT_PUBLIC_OFFICE_PHONE || '(303) 697-0990'
 const PHONE_DIGITS = PHONE.replace(/\D/g, '')
 import Button from '@/components/Button'
+import PricingBlock from '@/components/PricingBlock'
 
 const TIMEZONE = 'America/Denver'
 
@@ -172,6 +173,17 @@ export default function ManageClient() {
                   <span className="text-teal font-semibold text-sm">Agreement Signed ✓</span>
                 </div>
               )}
+
+              {/* Pricing block */}
+              <div className="mb-6">
+                <PricingBlock
+                  service={booking.service}
+                  radonAddOn={booking.radonAddOn}
+                  sewerScope={booking.sewerScope}
+                  tripChargeCents={booking.tripChargeCents}
+                  distanceMiles={booking.distanceMiles}
+                />
+              </div>
 
               {/* Payment section */}
               {booking.paymentStatus === 'pending' && (

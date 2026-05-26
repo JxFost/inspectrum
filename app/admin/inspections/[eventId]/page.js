@@ -65,6 +65,10 @@ export default async function InspectionDetailPage({ params }) {
     endISO,
     paymentStatus: parsed.paymentStatus || dbRecord?.payment_status,
     source: parsed.source || dbRecord?.source,
+    radonAddOn: (event?.description || '').includes('Radon Add-On: Yes'),
+    sewerScope: (event?.description || '').includes('Sewer Scope: Yes'),
+    tripChargeCents: parsed.tripChargeCents || (dbRecord?.trip_charge_cents ? String(dbRecord.trip_charge_cents) : null),
+    distanceMiles: parsed.distanceMiles || (dbRecord?.distance_miles ? String(dbRecord.distance_miles) : null),
   }
 
   // Fetch agreement status

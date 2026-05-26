@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import PricingBlock from '@/components/PricingBlock'
 
 const TIMEZONE = 'America/Denver'
 
@@ -116,6 +117,17 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
           <DetailRow label="Payment" value={inspection.paymentStatus} />
           <DetailRow label="Source" value={inspection.source} />
         </div>
+      </div>
+
+      {/* Pricing */}
+      <div className="mb-8">
+        <PricingBlock
+          service={inspection.service}
+          radonAddOn={inspection.radonAddOn}
+          sewerScope={inspection.sewerScope}
+          tripChargeCents={inspection.tripChargeCents}
+          distanceMiles={inspection.distanceMiles}
+        />
       </div>
 
       {/* Agreement */}

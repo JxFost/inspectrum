@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import PricingBlock from '@/components/PricingBlock'
 
 const PHONE = '(303) 697-0990'
 const TIMEZONE = 'America/Denver'
@@ -145,6 +146,17 @@ export default function AgreementClient({ data }) {
               <div className="text-ink font-medium">{data.service}</div>
             </div>
           </div>
+        </div>
+
+        {/* Pricing */}
+        <div className="mb-6">
+          <PricingBlock
+            service={data.service}
+            radonAddOn={data.hasRadon}
+            sewerScope={data.hasSewer}
+            tripChargeCents={data.tripChargeCents}
+            distanceMiles={data.distanceMiles}
+          />
         </div>
 
         <form onSubmit={handleSubmit}>

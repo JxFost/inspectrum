@@ -89,5 +89,9 @@ export async function GET(_request, { params }) {
     paidAt: parseCustomerField(description, 'paid_at') || null,
     agreementStatus,
     agreementToken,
+    radonAddOn: description.includes('Radon Add-On: Yes'),
+    sewerScope: description.includes('Sewer Scope: Yes'),
+    tripChargeCents: parseCustomerField(description, 'trip_charge_cents') || null,
+    distanceMiles: parseCustomerField(description, 'distance_miles') || null,
   })
 }

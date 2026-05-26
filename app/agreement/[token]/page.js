@@ -13,7 +13,8 @@ export default async function AgreementPage({ params }) {
   // Look up the agreement record
   const agreements = await db`
     SELECT sa.*, i.service, i.start_at, i.end_at, i.inspection_number,
-           i.invoice_amount_cents
+           i.invoice_amount_cents, i.trip_charge_cents, i.distance_miles,
+           i.raw_description
     FROM signed_agreements sa
     JOIN inspections i ON i.id = sa.inspection_id
     WHERE sa.token = ${token}
@@ -64,6 +65,8 @@ export default async function AgreementPage({ params }) {
     inspectionNumber: agreement.inspection_number || '',
     hasRadon,
     hasSewer,
+    tripChargeCents: agreement.trip_charge_cents ? String(agreement.trip_charge_cents) : null,
+    distanceMiles: agreement.distance_miles ? String(agreement.distance_miles) : null,
   }
 
   return <AgreementClient data={data} />
