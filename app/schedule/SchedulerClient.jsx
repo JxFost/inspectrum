@@ -149,7 +149,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -247,6 +247,7 @@ export default function SchedulerClient() {
           garageType: details.garageType,
           occupied: details.occupied,
           radonAddOn: details.radonAddOn,
+          sewerScope: details.sewerScope,
           pets: details.pets,
           isAgent: details.isAgent,
           agentType: details.agentType,
@@ -295,7 +296,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -776,6 +777,21 @@ export default function SchedulerClient() {
                       <span className="text-xs text-charcoal/80 leading-relaxed">Nearly 1 in 2 Colorado homes have radon levels above the EPA action level of 4 pCi/L, with mountain and foothills communities at even higher risk.</span>
                     </div>
                   </div>
+
+                  <div className="bg-cream/50 border border-line rounded-sm p-4 mt-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={details.sewerScope}
+                        onChange={(e) => setDetails({ ...details, sewerScope: e.target.checked })}
+                        className="accent-teal w-5 h-5"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-semibold text-ink">Add Sewer Scope</span>
+                        <span className="text-xs text-charcoal/70 block mt-1">Camera inspection of the main sewer line — identifies blockages, root intrusion, and damage</span>
+                      </div>
+                    </label>
+                  </div>
                 </>
               )}
 
@@ -789,9 +805,10 @@ export default function SchedulerClient() {
           {!confirmed && step === 6 && (() => {
             const basePrice = service?.basePrice || 0
             const radonPrice = details.radonAddOn ? 150 : 0
+            const sewerPrice = details.sewerScope ? 225 : 0
             const trip = estimateTripCharge(details.placeLat, details.placeLng)
             const tripCharge = trip?.tripChargeDollars || 0
-            const estimatedTotal = basePrice + radonPrice + tripCharge
+            const estimatedTotal = basePrice + radonPrice + sewerPrice + tripCharge
             return (
             <div>
               <h2 className="text-2xl mb-6 text-ink">One last look.</h2>
@@ -802,6 +819,7 @@ export default function SchedulerClient() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-charcoal">{service.name}</span><span className="text-ink font-medium">${basePrice}</span></div>
                   {details.radonAddOn && <div className="flex justify-between"><span className="text-charcoal">Radon Testing Add-On</span><span className="text-ink font-medium">$150</span></div>}
+                  {details.sewerScope && <div className="flex justify-between"><span className="text-charcoal">Sewer Scope Add-On</span><span className="text-ink font-medium">$225</span></div>}
                   {tripCharge > 0 && <div className="flex justify-between"><span className="text-charcoal">Trip charge <span className="text-charcoal/50">({trip.miles} mi)</span></span><span className="text-amber font-medium">+${tripCharge}</span></div>}
                   <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
                     <span className="text-ink font-semibold">Estimated Total</span>
@@ -835,6 +853,7 @@ export default function SchedulerClient() {
                 } />}
                 {details.pets && <SummaryRow label="Pets on Property" value="Yes" />}
                 {details.radonAddOn && <SummaryRow label="Radon Add-On" value="Yes — 48hr continuous monitor" />}
+                {details.sewerScope && <SummaryRow label="Sewer Scope" value="Yes — camera inspection of main sewer line" />}
               </div>
 
               {bookingError && (

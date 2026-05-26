@@ -75,6 +75,7 @@ export async function POST(request) {
   const garageType = trim(body.garageType, 50)
   const occupied = trim(body.occupied, 10)
   const radonAddOn = body.radonAddOn === true
+  const sewerScope = body.sewerScope === true
   const pets = body.pets === true
   const isAgent = body.isAgent === true
   const agentType = trim(body.agentType, 50)
@@ -179,6 +180,7 @@ export async function POST(request) {
     radonAddOn,
     radonDropDate,
     radonPickupDate,
+    sewerScope,
     pets,
     orderedBy: isAgent ? agentType : null,
     clientAttending,
