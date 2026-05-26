@@ -37,16 +37,21 @@ export async function GET(request) {
   // Map DB rows to the format the report expects
   const inspections = dbRows
     .filter((r) => r.customer_name && r.service !== 'Blocked Time')
-    .map((r) => ({
-      startISO: r.start_at?.toISOString?.() || r.start_at,
-      service: r.service,
-      customerName: r.customer_name,
-      address: r.address,
-      paymentStatus: r.payment_status,
-      paymentAmountCents: r.payment_amount_cents ? String(r.payment_amount_cents) : null,
-      invoiceAmountCents: r.invoice_amount_cents ? String(r.invoice_amount_cents) : null,
-      source: r.source,
-    }))
+    .map((r) => {
+      const desc = r.raw_description || ''
+      return {
+        startISO: r.start_at?.toISOString?.() || r.start_at,
+        service: r.service,
+        customerName: r.customer_name,
+        address: r.address,
+        paymentStatus: r.payment_status,
+        paymentAmountCents: r.payment_amount_cents ? String(r.payment_amount_cents) : null,
+        invoiceAmountCents: r.invoice_amount_cents ? String(r.invoice_amount_cents) : null,
+        source: r.source,
+        radonAddOn: desc.includes('Radon Add-On: Yes'),
+        sewerScope: desc.includes('Sewer Scope: Yes'),
+      }
+    })
 
   const totalCount = inspections.length
 
@@ -91,6 +96,14 @@ export async function GET(request) {
   const serviceBreakdown = Object.entries(serviceCounts)
     .sort(([, a], [, b]) => b - a)
     .map(([svc, count]) => `${svc}: ${count}`)
+
+  // Add-on breakdown
+  const radonCount = inspections.filter((i) => i.radonAddOn).length
+  const sewerCount = inspections.filter((i) => i.sewerScope).length
+  const addOnBreakdown = [
+    radonCount > 0 ? `Radon Testing: ${radonCount}` : null,
+    sewerCount > 0 ? `Sewer Scope: ${sewerCount}` : null,
+  ].filter(Boolean)
 
   // Source breakdown
   const sourceCounts = {}
@@ -143,6 +156,7 @@ ${emailLogoHeader(logoUrl)}
           </table>
 
           ${listSection('Services', serviceBreakdown)}
+          ${listSection('Add-Ons', addOnBreakdown)}
           ${listSection('Booking Sources', sourceBreakdown)}
           ${listSection('Busiest Days', busiestDays)}
           ${listSection('Top Service Areas', topAreas)}
