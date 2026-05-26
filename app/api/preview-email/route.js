@@ -21,6 +21,7 @@ const SAMPLE = {
   confirmationCode: 'ABC12345',
   manageUrl: 'http://localhost:3000/manage?token=preview',
   gcalUrl: '#',
+  agreementUrl: 'http://localhost:3000/agreement/preview-token',
 }
 
 function verifyAdmin(request) {
