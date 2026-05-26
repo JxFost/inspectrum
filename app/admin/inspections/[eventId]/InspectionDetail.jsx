@@ -42,7 +42,7 @@ function DetailRow({ label, value }) {
   )
 }
 
-export default function InspectionDetail({ inspection, reports }) {
+export default function InspectionDetail({ inspection, reports, agreement }) {
   const [uploadState, setUploadState] = useState('idle') // idle | uploading | done | error
   const [notify, setNotify] = useState(true)
   const [uploadResult, setUploadResult] = useState(null)
@@ -116,6 +116,32 @@ export default function InspectionDetail({ inspection, reports }) {
           <DetailRow label="Payment" value={inspection.paymentStatus} />
           <DetailRow label="Source" value={inspection.source} />
         </div>
+      </div>
+
+      {/* Agreement */}
+      <div className="bg-paper p-8 rounded-sm border border-line mb-8">
+        <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Agreement</div>
+        {agreement?.signedAt ? (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-teal/10 text-teal flex items-center justify-center text-sm font-bold">✓</div>
+            <div>
+              <div className="text-sm text-ink font-medium">Signed by {agreement.signatureName} ({agreement.initials})</div>
+              <div className="text-xs text-charcoal/50">{new Date(agreement.signedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+            </div>
+          </div>
+        ) : agreement ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-amber font-medium">Sent — awaiting signature</div>
+              <div className="text-xs text-charcoal/50">Sent {agreement.sentAt ? new Date(agreement.sentAt).toLocaleDateString('en-US') : ''}</div>
+            </div>
+            <a href={`/agreement/${agreement.token}`} target="_blank" rel="noopener noreferrer" className="text-xs text-teal hover:text-amber no-underline font-semibold">
+              View link →
+            </a>
+          </div>
+        ) : (
+          <p className="text-sm text-charcoal/50">No agreement created for this inspection.</p>
+        )}
       </div>
 
       {/* Reports */}

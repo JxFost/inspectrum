@@ -67,6 +67,25 @@ export default async function InspectionDetailPage({ params }) {
     source: parsed.source || dbRecord?.source,
   }
 
+  // Fetch agreement status
+  let agreement = null
+  if (dbRecord) {
+    const agreements = await db`
+      SELECT token, signed_at, signature_name, initials, sent_at
+      FROM signed_agreements WHERE inspection_id = ${dbRecord.id}
+    `
+    if (agreements[0]) {
+      const a = agreements[0]
+      agreement = {
+        token: a.token,
+        signedAt: a.signed_at?.toISOString?.() || a.signed_at,
+        signatureName: a.signature_name,
+        initials: a.initials,
+        sentAt: a.sent_at?.toISOString?.() || a.sent_at,
+      }
+    }
+  }
+
   const serializedReports = reports.map((r) => ({
     id: r.id,
     fileUrl: r.file_url,
@@ -93,7 +112,7 @@ export default async function InspectionDetailPage({ params }) {
 
       <section className="bg-cream py-16 px-5 lg:px-8 min-h-[50vh]">
         <div className="max-w-[600px] mx-auto">
-          <InspectionDetail inspection={inspection} reports={serializedReports} />
+          <InspectionDetail inspection={inspection} reports={serializedReports} agreement={agreement} />
         </div>
       </section>
     </>

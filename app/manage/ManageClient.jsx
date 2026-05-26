@@ -152,6 +152,27 @@ export default function ManageClient() {
                 {booking.phone && <DetailRow label="Phone" value={booking.phone} />}
               </div>
 
+              {/* Agreement section */}
+              {booking.agreementStatus === 'pending' && booking.agreementToken && (
+                <div className="bg-amber/10 border border-amber rounded-sm p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-amber font-semibold text-sm">Agreement Required</span>
+                  </div>
+                  <p className="text-sm text-charcoal mb-3">Please review and sign your Inspection Service Agreement before your appointment.</p>
+                  <a
+                    href={`/agreement/${booking.agreementToken}`}
+                    className="inline-block bg-teal text-white px-6 py-2.5 rounded-sm font-semibold text-sm no-underline hover:bg-teal-deep transition-colors"
+                  >
+                    Review & Sign Agreement →
+                  </a>
+                </div>
+              )}
+              {booking.agreementStatus === 'signed' && (
+                <div className="bg-teal/10 border border-teal/30 rounded-sm p-4 mb-6">
+                  <span className="text-teal font-semibold text-sm">Agreement Signed ✓</span>
+                </div>
+              )}
+
               {/* Payment section */}
               {booking.paymentStatus === 'pending' && (
                 <div className="bg-amber/10 border border-amber rounded-sm p-6 mb-6">

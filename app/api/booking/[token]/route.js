@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server'
 import { findEventByToken } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
+import { sql } from '@/lib/db'
 
 function parseCustomerField(description, field) {
   if (!description) return ''
@@ -55,6 +56,23 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'This appointment has already passed.' }, { status: 410 })
   }
 
+  // Look up agreement status from DB
+  let agreementStatus = null
+  let agreementToken = null
+  try {
+    const db = sql()
+    const rows = await db`
+      SELECT sa.token, sa.signed_at
+      FROM signed_agreements sa
+      JOIN inspections i ON i.id = sa.inspection_id
+      WHERE i.token = ${token}
+    `
+    if (rows[0]) {
+      agreementToken = rows[0].token
+      agreementStatus = rows[0].signed_at ? 'signed' : 'pending'
+    }
+  } catch { /* DB may not be available */ }
+
   return NextResponse.json({
     service: parseCustomerField(description, 'Service'),
     name: parseCustomerField(description, 'Customer'),
@@ -69,5 +87,7 @@ export async function GET(_request, { params }) {
     paymentAmountCents: parseCustomerField(description, 'payment_amount_cents') || null,
     squareInvoiceUrl: parseCustomerField(description, 'square_invoice_url') || null,
     paidAt: parseCustomerField(description, 'paid_at') || null,
+    agreementStatus,
+    agreementToken,
   })
 }
