@@ -142,6 +142,20 @@ export async function GET(request) {
   parsedEmails.sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
   results.step4_uniqueAppointments = parsedEmails.length
 
+  // ---- Step 4b: Identify existing events that won't be recreated ----
+  const accDateSet = new Set(parsedEmails.map((e) => e.startISO.slice(0, 10)))
+  results.orphanedEvents = existingEvents
+    .filter((e) => {
+      const eventDate = (e.start?.dateTime || '').slice(0, 10)
+      return !accDateSet.has(eventDate)
+    })
+    .map((e) => ({
+      eventId: e.id,
+      summary: e.summary || '(no title)',
+      date: e.start?.dateTime,
+      description: (e.description || '').slice(0, 200),
+    }))
+
   // ---- Step 5: Create new events + DB records ----
   let inspectionCount = 0
 
