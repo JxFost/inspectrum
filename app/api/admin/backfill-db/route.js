@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { findEventsBetween } from '@/lib/google-calendar'
 import { parseEventDescription } from '@/lib/booking'
 import { upsertInspection } from '@/lib/db-inspections'
+import { upsertCustomer } from '@/lib/db-customers'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -45,7 +46,7 @@ export async function GET(request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
-  const results = { total: events.length, upserted: 0, skipped: 0, errors: 0, items: [] }
+  const results = { total: events.length, upserted: 0, skipped: 0, errors: 0, customersCreated: 0, items: [] }
 
   for (const event of events) {
     const startISO = event.start?.dateTime
@@ -91,6 +92,12 @@ export async function GET(request) {
 
     if (!dryRun) {
       try {
+        // Upsert customer record if email exists
+        if (parsed.email) {
+          await upsertCustomer({ email: parsed.email, name: parsed.customerName, phone: parsed.phone })
+          results.customersCreated++
+        }
+
         await upsertInspection(record)
         results.upserted++
         results.items.push({ eventId: event.id, name: parsed.customerName, status: 'upserted' })
