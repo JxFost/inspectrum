@@ -17,7 +17,15 @@ function verifyAdminSession(request) {
   return !isNaN(age) && age < 30 * 24 * 60 * 60 * 1000
 }
 
+export async function GET(request) {
+  return run(request)
+}
+
 export async function POST(request) {
+  return run(request)
+}
+
+async function run(request) {
   if (!verifyAdminSession(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
