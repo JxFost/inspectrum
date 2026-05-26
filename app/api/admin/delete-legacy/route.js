@@ -39,28 +39,42 @@ export async function GET(request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
-  // ACC events = the clean ones we want to keep
+  // Step 1: Find non-ACC events that overlap with ACC events
   const accEvents = events.filter((e) =>
     (e.description || '').includes('acc_source: true')
   )
-
-  // Legacy/old events = anything that's NOT an ACC event
-  const legacyEvents = events.filter((e) =>
+  const nonAccEvents = events.filter((e) =>
     !(e.description || '').includes('acc_source: true')
   )
 
-  // A legacy event is a duplicate if an ACC event overlaps its time window
-  // (start times within 4 hours of each other = same inspection)
-  function hasDuplicate(legacyEvent) {
-    const legacyStart = new Date(legacyEvent.start?.dateTime || 0).getTime()
+  function overlapsWithAcc(event) {
+    const start = new Date(event.start?.dateTime || 0).getTime()
     return accEvents.some((acc) => {
       const accStart = new Date(acc.start?.dateTime || 0).getTime()
-      return Math.abs(legacyStart - accStart) < 4 * 60 * 60 * 1000
+      return Math.abs(start - accStart) < 4 * 60 * 60 * 1000
     })
   }
 
-  const duplicates = legacyEvents.filter(hasDuplicate)
-  const kept = legacyEvents.filter((e) => !hasDuplicate(e))
+  const nonAccDuplicates = nonAccEvents.filter(overlapsWithAcc)
+  const kept = nonAccEvents.filter((e) => !overlapsWithAcc(e))
+
+  // Step 2: Find duplicate ACC events (same start time = ran rebuild twice)
+  // Group ACC events by start time, keep the first one, mark rest as dupes
+  const accByTime = {}
+  for (const e of accEvents) {
+    const key = (e.start?.dateTime || '').slice(0, 16) // match to the minute
+    if (!accByTime[key]) accByTime[key] = []
+    accByTime[key].push(e)
+  }
+  const accDuplicates = []
+  for (const group of Object.values(accByTime)) {
+    if (group.length > 1) {
+      // Keep the first, delete the rest
+      accDuplicates.push(...group.slice(1))
+    }
+  }
+
+  const duplicates = [...nonAccDuplicates, ...accDuplicates]
 
   const results = {
     dryRun,
