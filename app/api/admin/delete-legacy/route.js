@@ -39,12 +39,14 @@ export async function GET(request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
-  // Split into legacy (imported) and new (ACC-created) events
-  const legacyEvents = events.filter((e) =>
-    (e.description || '').includes("Imported from Harry's calendar")
-  )
+  // ACC events = the clean ones we want to keep
   const accEvents = events.filter((e) =>
     (e.description || '').includes('acc_source: true')
+  )
+
+  // Legacy/old events = anything that's NOT an ACC event
+  const legacyEvents = events.filter((e) =>
+    !(e.description || '').includes('acc_source: true')
   )
 
   // A legacy event is a duplicate if an ACC event overlaps its time window
