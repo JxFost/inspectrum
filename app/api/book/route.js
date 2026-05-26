@@ -19,6 +19,7 @@ import { computeDistance } from '@/lib/mileage'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { upsertInspection } from '@/lib/db-inspections'
+import { upsertCustomer } from '@/lib/db-customers'
 
 const MAX_FIELD_LENGTH = 500
 
@@ -197,6 +198,10 @@ export async function POST(request) {
     })
 
     const confirmationCode = extractConfirmationCode(event.id)
+
+    // Create/update customer record (non-blocking)
+    upsertCustomer({ email, name, phone })
+      .catch((err) => console.error('[db] customer upsert failed:', err.message))
 
     // Write to DB (non-blocking — don't fail the booking if DB write fails).
     upsertInspection({

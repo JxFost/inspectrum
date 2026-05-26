@@ -15,6 +15,7 @@ import { buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { upsertInspection } from '@/lib/db-inspections'
+import { upsertCustomer } from '@/lib/db-customers'
 
 export async function POST(request) {
   let body
@@ -82,6 +83,11 @@ export async function POST(request) {
     console.log(`[admin-block] created: ${name.split(' ')[0]}, ${isVacation ? 'block' : service.name}, event ${event.id}`)
 
     if (!isVacation) {
+      if (email) {
+        upsertCustomer({ email, name, phone })
+          .catch((err) => console.error('[db] customer upsert failed:', err.message))
+      }
+
       upsertInspection({
         googleEventId: event.id,
         inspectionNumber,

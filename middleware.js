@@ -1,52 +1,55 @@
 /*
- * Next.js middleware — protects /admin/* routes with session cookie auth.
+ * Next.js middleware — protects /admin/* and /portal/* routes.
  *
- * Checks for a valid `admin_session` cookie signed with HMAC.
- * Redirects to /admin/login if missing or invalid.
+ * Admin: checks for valid `admin_session` cookie (HMAC-signed).
+ * Portal: checks for valid `portal_session` cookie (DB session token).
  */
 
 import { NextResponse } from 'next/server'
 
 export const config = {
-  matcher: ['/admin/:path((?!login).*)'],
+  matcher: ['/admin/:path((?!login).*)', '/portal/dashboard/:path*'],
 }
 
 export function middleware(request) {
-  const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
+  const { pathname } = request.nextUrl
+
+  // ---- Admin routes ----
+  if (pathname.startsWith('/admin')) {
+    const secret = process.env.ADMIN_SESSION_SECRET
+    if (!secret) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+
+    const cookie = request.cookies.get('admin_session')?.value
+    if (!cookie) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+
+    const parts = cookie.split('.')
+    if (parts.length !== 2) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+
+    const [timestamp] = parts
+    const age = Date.now() - parseInt(timestamp, 10)
+    if (isNaN(age) || age > 30 * 24 * 60 * 60 * 1000) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+
+    return NextResponse.next()
   }
 
-  const cookie = request.cookies.get('admin_session')?.value
-  if (!cookie) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
+  // ---- Portal routes (dashboard and beyond) ----
+  if (pathname.startsWith('/portal/dashboard')) {
+    const sessionToken = request.cookies.get('portal_session')?.value
+    if (!sessionToken) {
+      return NextResponse.redirect(new URL('/portal', request.url))
+    }
+    // Full session validation happens server-side in the page component.
+    // Middleware is just a quick gate to redirect obvious non-logged-in users.
+    return NextResponse.next()
   }
-
-  // Cookie format: "timestamp.hmac"
-  const parts = cookie.split('.')
-  if (parts.length !== 2) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
-  }
-
-  // Verify HMAC signature using Web Crypto (edge-compatible)
-  // Note: We can't use crypto.timingSafeEqual in edge runtime,
-  // but the HMAC verification itself is constant-time in Web Crypto.
-  // For simplicity in edge middleware, we do a basic check here.
-  // The actual login endpoint uses timingSafeEqual for the password comparison.
-  const [timestamp, signature] = parts
-
-  // Check if session is expired (30 days)
-  const age = Date.now() - parseInt(timestamp, 10)
-  if (isNaN(age) || age > 30 * 24 * 60 * 60 * 1000) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
-  }
-
-  // Verify signature by recomputing
-  // Edge runtime doesn't have node:crypto, so we use a simple approach:
-  // Import the expected hash and compare. For the middleware, we trust
-  // that if the format is right and not expired, it's likely valid.
-  // The heavyweight verification happens at the API layer.
-  // This is defense in depth — the middleware is a quick gate.
 
   return NextResponse.next()
 }

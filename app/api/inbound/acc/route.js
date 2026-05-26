@@ -22,6 +22,7 @@ import { computeDistance } from '@/lib/mileage'
 import { insertEvent, findEventsBetween, deleteEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
 import { upsertInspection } from '@/lib/db-inspections'
+import { upsertCustomer } from '@/lib/db-customers'
 
 function log(action, detail) {
   // Privacy-safe logging: first name only, no full PII
@@ -214,6 +215,11 @@ export async function POST(request) {
       })
 
       log('created', `appointment for ${firstName}, event ${event.id}`)
+
+      if (parsed.clientEmail) {
+        upsertCustomer({ email: parsed.clientEmail, name: parsed.clientName, phone: parsed.clientPhone })
+          .catch((err) => console.error('[db] customer upsert failed:', err.message))
+      }
 
       upsertInspection({
         googleEventId: event.id,

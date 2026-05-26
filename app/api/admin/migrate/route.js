@@ -1,7 +1,7 @@
 /*
- * POST /api/admin/migrate
+ * GET/POST /api/admin/migrate
  *
- * Creates the inspections table and indexes. Safe to run multiple times
+ * Creates all tables and indexes. Safe to run multiple times
  * (uses IF NOT EXISTS). Auth: admin session cookie.
  */
 
@@ -69,8 +69,34 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_inspections_status ON inspections(status)`
     await db`CREATE INDEX IF NOT EXISTS idx_inspections_number ON inspections(inspection_number)`
     await db`CREATE INDEX IF NOT EXISTS idx_inspections_event ON inspections(google_event_id)`
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_email ON inspections(email)`
 
-    return NextResponse.json({ success: true, message: 'Migration complete — inspections table ready.' })
+    // ---- Customers table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS customers (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email       TEXT UNIQUE NOT NULL,
+        name        TEXT,
+        phone       TEXT,
+        created_at  TIMESTAMPTZ DEFAULT now(),
+        last_login  TIMESTAMPTZ
+      )
+    `
+
+    // ---- Portal sessions table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS portal_sessions (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+        token       TEXT UNIQUE NOT NULL,
+        expires_at  TIMESTAMPTZ NOT NULL,
+        created_at  TIMESTAMPTZ DEFAULT now()
+      )
+    `
+    await db`CREATE INDEX IF NOT EXISTS idx_portal_sessions_token ON portal_sessions(token)`
+    await db`CREATE INDEX IF NOT EXISTS idx_portal_sessions_expires ON portal_sessions(expires_at)`
+
+    return NextResponse.json({ success: true, message: 'Migration complete — all tables ready.' })
   } catch (err) {
     console.error('[migrate] error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })

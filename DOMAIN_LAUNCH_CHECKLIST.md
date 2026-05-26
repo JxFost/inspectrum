@@ -130,11 +130,13 @@ Caching: geocoded lat/lng stored in event description — each unique address co
 - [ ] `/api/inbound/acc` — ACC email pipeline alive (expect 401 without secret, not 5xx) (10 min)
 - [ ] `/api/square/webhook` — Square payment webhook reachable (expect 401, not 5xx) (10 min)
 - [ ] `/schedule` — booking page loads (customers land here from Google) (10 min)
+- [ ] Neon Postgres dashboard — check DB is reachable (Neon has its own status page: status.neon.tech)
 
 ### Nice to Have (catch silent failures)
 - [ ] `/api/cron/reminders` — reminder cron endpoint reachable (15 min)
 - [ ] `/api/cron/followup` — follow-up cron endpoint reachable (15 min)
 - [ ] `/api/cron/daily-digest` — daily digest cron reachable (15 min)
+- [ ] `/api/cron/db-sync` — nightly DB sync cron reachable (15 min)
 - [ ] SSL certificate expiry monitor on `evergreeninspections.com` (daily check, 14-day warning)
 
 ### Alert Configuration
