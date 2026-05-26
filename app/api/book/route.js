@@ -202,32 +202,35 @@ export async function POST(request) {
 
     const confirmationCode = extractConfirmationCode(event.id)
 
-    // Create/update customer record (non-blocking)
+    // Create customer, DB record, and agreement — then send email with agreement link
+    const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
+
     upsertCustomer({ email, name, phone })
       .catch((err) => console.error('[db] customer upsert failed:', err.message))
 
-    // Write to DB and create agreement (non-blocking)
-    const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
-    upsertInspection({
-      googleEventId: event.id,
-      inspectionNumber,
-      customerName: name,
-      email,
-      phone,
-      address,
-      service: service.name,
-      startAt: startISO,
-      endAt: endISO,
-      source: 'web',
-      distanceMiles: dist?.miles || null,
-      tripChargeCents: dist?.tripChargeCents || null,
-      geoLat: dist?.geoLat || null,
-      geoLng: dist?.geoLng || null,
-      token,
-      rawDescription: description,
-    }).then(async (row) => {
-      if (!row) return
-      try {
+    // DB insert + agreement must complete before email so we can include the agreement URL
+    let agreementUrl = null
+    try {
+      const row = await upsertInspection({
+        googleEventId: event.id,
+        inspectionNumber,
+        customerName: name,
+        email,
+        phone,
+        address,
+        service: service.name,
+        startAt: startISO,
+        endAt: endISO,
+        source: 'web',
+        distanceMiles: dist?.miles || null,
+        tripChargeCents: dist?.tripChargeCents || null,
+        geoLat: dist?.geoLat || null,
+        geoLng: dist?.geoLng || null,
+        token,
+        rawDescription: description,
+      })
+
+      if (row) {
         const agToken = await createAgreement({
           inspectionId: row.id,
           customerName: name,
@@ -235,13 +238,14 @@ export async function POST(request) {
           propertyAddress: address,
           radonAddendum: radonAddOn,
         })
-        console.log(`[agreement] created for ${name.split(' ')[0]}: ${siteUrl}/agreement/${agToken}`)
-      } catch (err) {
-        console.error('[agreement] creation failed:', err.message)
+        agreementUrl = `${siteUrl}/agreement/${agToken}`
+        console.log(`[agreement] created for ${name.split(' ')[0]}: ${agreementUrl}`)
       }
-    }).catch((err) => console.error('[db] booking insert failed:', err.message))
+    } catch (err) {
+      console.error('[db] booking insert or agreement failed:', err.message)
+    }
 
-    // Send booking receipt email (non-blocking — don't fail the booking if email fails).
+    // Send booking receipt email (non-blocking)
     const manageUrl = buildManageUrl(token)
     const gcalUrl = buildGCalUrl({ service: service.name, startISO, endISO, address })
 
@@ -258,6 +262,7 @@ export async function POST(request) {
         confirmationCode,
         manageUrl,
         gcalUrl,
+        agreementUrl,
       }),
     }).catch((err) => {
       console.error('Booking receipt email failed:', err)
