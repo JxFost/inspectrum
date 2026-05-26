@@ -1,13 +1,15 @@
 /*
  * GET /api/admin/rebuild?dryRun=true
  *
- * Nuclear rebuild: wipes the booking calendar + DB, then recreates everything
- * from ACC emails in Shirley's Gmail. This gives us clean, complete data
- * with full structured descriptions.
+ * Rebuild from ACC emails in Shirley's Gmail.
+ *
+ * Two modes:
+ *   ?mode=clean  — wipe calendar + DB first, then create (default)
+ *   ?mode=add    — keep existing events, only create from ACC emails
  *
  * Steps:
- * 1. Delete all existing events from booking calendar
- * 2. Truncate inspections + customers tables
+ * 1. (clean mode only) Delete all existing events from booking calendar
+ * 2. (clean mode only) Truncate inspections + customers tables
  * 3. Read ACC emails from Shirley's Gmail
  * 4. Deduplicate, parse, sort chronologically
  * 5. Create new events on booking calendar with full descriptions
@@ -44,10 +46,12 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
+  const mode = searchParams.get('mode') || 'add' // 'clean' or 'add'
   const limit = parseInt(searchParams.get('limit'), 10) || 500
 
   const results = {
     dryRun,
+    mode,
     step1_deleteCalendar: { deleted: 0, errors: 0 },
     step2_clearDB: false,
     step3_emailsFetched: 0,
@@ -58,41 +62,46 @@ export async function GET(request) {
     appointments: [],
   }
 
-  // ---- Step 1: Delete all existing events from booking calendar ----
-  let existingEvents
-  try {
-    existingEvents = await findEventsBetween(
-      '2026-01-01T00:00:00Z',
-      new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-    )
-    results.step1_deleteCalendar.found = existingEvents.length
+  // ---- Step 1: Delete all existing events from booking calendar (clean mode only) ----
+  let existingEvents = []
+  if (mode === 'clean') {
+    try {
+      existingEvents = await findEventsBetween(
+        '2026-01-01T00:00:00Z',
+        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+      )
+      results.step1_deleteCalendar.found = existingEvents.length
 
-    if (!dryRun) {
-      for (const event of existingEvents) {
-        try {
-          await deleteEvent(event.id)
-          results.step1_deleteCalendar.deleted++
-        } catch (err) {
-          results.step1_deleteCalendar.errors++
-          results.errors.push(`Delete event ${event.id}: ${err.message}`)
+      if (!dryRun) {
+        for (const event of existingEvents) {
+          try {
+            await deleteEvent(event.id)
+            results.step1_deleteCalendar.deleted++
+          } catch (err) {
+            results.step1_deleteCalendar.errors++
+            results.errors.push(`Delete event ${event.id}: ${err.message}`)
+          }
         }
       }
-    }
-  } catch (err) {
-    return NextResponse.json({ error: `Calendar fetch failed: ${err.message}` }, { status: 500 })
-  }
-
-  // ---- Step 2: Clear DB tables ----
-  if (!dryRun) {
-    try {
-      const db = sql()
-      await db`DELETE FROM portal_sessions`
-      await db`DELETE FROM inspections`
-      await db`DELETE FROM customers`
-      results.step2_clearDB = true
     } catch (err) {
-      results.errors.push(`Clear DB: ${err.message}`)
+      return NextResponse.json({ error: `Calendar fetch failed: ${err.message}` }, { status: 500 })
     }
+
+    // ---- Step 2: Clear DB tables (clean mode only) ----
+    if (!dryRun) {
+      try {
+        const db = sql()
+        await db`DELETE FROM portal_sessions`
+        await db`DELETE FROM inspections`
+        await db`DELETE FROM customers`
+        results.step2_clearDB = true
+      } catch (err) {
+        results.errors.push(`Clear DB: ${err.message}`)
+      }
+    }
+  } else {
+    results.step1_deleteCalendar = 'skipped (add mode)'
+    results.step2_clearDB = 'skipped (add mode)'
   }
 
   // ---- Step 3: Fetch ACC emails ----
@@ -142,19 +151,21 @@ export async function GET(request) {
   parsedEmails.sort((a, b) => new Date(a.startISO) - new Date(b.startISO))
   results.step4_uniqueAppointments = parsedEmails.length
 
-  // ---- Step 4b: Identify existing events that won't be recreated ----
-  const accDateSet = new Set(parsedEmails.map((e) => e.startISO.slice(0, 10)))
-  results.orphanedEvents = existingEvents
-    .filter((e) => {
-      const eventDate = (e.start?.dateTime || '').slice(0, 10)
-      return !accDateSet.has(eventDate)
-    })
-    .map((e) => ({
-      eventId: e.id,
-      summary: e.summary || '(no title)',
-      date: e.start?.dateTime,
-      description: (e.description || '').slice(0, 200),
-    }))
+  // ---- Step 4b: Identify existing events that won't be recreated (clean mode only) ----
+  if (mode === 'clean' && existingEvents.length > 0) {
+    const accDateSet = new Set(parsedEmails.map((e) => e.startISO.slice(0, 10)))
+    results.orphanedEvents = existingEvents
+      .filter((e) => {
+        const eventDate = (e.start?.dateTime || '').slice(0, 10)
+        return !accDateSet.has(eventDate)
+      })
+      .map((e) => ({
+        eventId: e.id,
+        summary: e.summary || '(no title)',
+        date: e.start?.dateTime,
+        description: (e.description || '').slice(0, 200),
+      }))
+  }
 
   // ---- Step 5: Create new events + DB records ----
   let inspectionCount = 0
