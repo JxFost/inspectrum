@@ -1,7 +1,7 @@
 # Local Database — Inspection Records Backup
 
-**Status:** Planning (future sprint)
-**Last updated:** 2026-05-24
+**Status:** Phases 1-3 complete, Phase 4-5 future
+**Last updated:** 2026-05-25
 
 ---
 
@@ -61,37 +61,39 @@ CREATE INDEX idx_inspections_number ON inspections(inspection_number);
 
 ## Implementation Steps
 
-### Phase 1: Setup
-- [ ] Choose provider (Neon vs Turso)
-- [ ] Add SDK (`@neondatabase/serverless` or `@libsql/client`)
-- [ ] Create database + run migration
-- [ ] Add connection string to env vars (`DATABASE_URL`)
-- [ ] Create `lib/db.js` — connection helper + basic query wrapper
+### Phase 1: Setup ✅
+- [x] Choose provider → Neon Postgres (via Vercel integration)
+- [x] Add SDK (`@neondatabase/serverless`)
+- [x] Create database + run migration (`/api/admin/migrate`)
+- [x] Add connection string to env vars (`DATABASE_URL`)
+- [x] Create `lib/db.js` — connection helper + `lib/db-inspections.js` — query helpers
 
-### Phase 2: Write Path
-- [ ] `/api/book` — insert on successful booking
-- [ ] `/api/inbound/acc` — insert on ACC event creation
-- [ ] `/api/admin/block` — insert on admin-created event
-- [ ] `/api/booking/cancel` — mark as cancelled (preserve record)
-- [ ] `/api/square/webhook` — update payment_status, payment_amount_cents
-- [ ] `/api/feedback` — update feedback_rating
+### Phase 2: Write Path ✅
+- [x] `/api/book` — insert on successful booking
+- [x] `/api/inbound/acc` — insert on ACC event creation
+- [x] `/api/admin/block` — insert on admin-created event
+- [x] `/api/booking/cancel` — mark as cancelled (preserve record)
+- [x] `/api/square/webhook` — update payment_status, payment_amount_cents
+- [x] `/api/feedback` — update feedback_rating
+- [x] `/api/inspection/finalize` — mark invoice created
 
-### Phase 3: Backfill
-- [ ] One-time script: fetch all calendar events → parse → bulk insert
-- [ ] Handle duplicates (upsert on google_event_id)
-- [ ] Verify counts match
+### Phase 3: Backfill ✅
+- [x] `/api/admin/backfill-db` — fetch calendar events → parse → upsert
+- [x] Handle duplicates (upsert on google_event_id)
+- [x] Backfill run completed 2026-05-25
 
-### Phase 4: Sync & Reconciliation
-- [ ] Periodic cron (daily?) compares DB records vs calendar events
-- [ ] Flag discrepancies: missing from calendar, missing from DB, field mismatches
-- [ ] Alert email if discrepancies found
-- [ ] Consider: what's the source of truth? (Calendar for scheduling, DB for records)
+### Phase 4: Sync & Reconciliation ✅
+- [x] Nightly cron at 2am MT (`/api/cron/db-sync`) — upserts today+future calendar events into DB
+- [x] Detects orphaned DB records (scheduled in DB but deleted from calendar) → marks as cancelled
+- [x] Sends alert email to Harry if calendar events were unexpectedly removed
+- [x] Source of truth decided: calendar for today/future, DB for past
 
-### Phase 5: Migrate Reads (optional)
-- [ ] Dashboard reads from DB instead of calendar API (faster, no rate limits)
-- [ ] Manage page reads from DB with calendar as fallback
-- [ ] CSV export from DB
-- [ ] Monthly report from DB
+### Phase 5: Migrate Reads (selective — past only)
+- [ ] Dashboard: past inspections read from DB, today + future from calendar (hybrid)
+- [ ] Manage page stays on calendar (needs real-time accuracy for cancels/reschedules)
+- [ ] CSV export: past from DB, current window from calendar
+- [ ] Monthly report from DB (always historical)
+- Calendar remains the live system for anything today or future — DB is the archive for anything past
 
 ---
 
