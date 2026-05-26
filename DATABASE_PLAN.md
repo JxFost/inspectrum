@@ -1,6 +1,6 @@
 # Local Database — Inspection Records Backup
 
-**Status:** Phases 1-3 complete, Phase 4-5 future
+**Status:** All phases complete ✅
 **Last updated:** 2026-05-25
 
 ---
@@ -88,11 +88,13 @@ CREATE INDEX idx_inspections_number ON inspections(inspection_number);
 - [x] Sends alert email to Harry if calendar events were unexpectedly removed
 - [x] Source of truth decided: calendar for today/future, DB for past
 
-### Phase 5: Migrate Reads (selective — past only)
-- [ ] Dashboard: past inspections read from DB, today + future from calendar (hybrid)
-- [ ] Manage page stays on calendar (needs real-time accuracy for cancels/reschedules)
-- [ ] CSV export: past from DB, current window from calendar
-- [ ] Monthly report from DB (always historical)
+### Phase 5: Migrate Reads (selective — past only) ✅
+- [x] Dashboard: `getInspectionsInWindow` now reads past from DB, today+future from calendar (hybrid)
+- [x] Manage page stays on calendar (needs real-time accuracy for cancels/reschedules)
+- [x] CSV export: uses same hybrid `getInspectionsInWindow`
+- [x] Monthly report reads from DB (always historical)
+- [x] YTD count reads from DB (`countInspections`)
+- [x] Falls back to calendar if DB read fails
 - Calendar remains the live system for anything today or future — DB is the archive for anything past
 
 ---

@@ -4,7 +4,7 @@
  */
 
 import { getInspectionsInWindow } from '@/lib/booking'
-import { findEventsBetween } from '@/lib/google-calendar'
+import { countInspections } from '@/lib/db-inspections'
 import InspectionsDashboard from './InspectionsDashboard'
 
 export const metadata = {
@@ -74,11 +74,9 @@ export default async function InspectionsPage({ searchParams }) {
     const prev = prevWindowFromRange(range)
     prevInspections = await getInspectionsInWindow({ from: prev.from, to: prev.to })
 
-    // YTD count — count events that have an inspection number (excludes cancelled,
-    // which are deleted from calendar, so gaps from cancellations are naturally excluded)
+    // YTD count from DB (excludes cancelled)
     const year = new Date().getFullYear()
-    const ytdEvents = await findEventsBetween(`${year}-01-01T00:00:00Z`, new Date().toISOString())
-    ytdCount = ytdEvents.filter((e) => e.description?.match(/inspection_number:\s*\d{4}-\d+/)).length
+    ytdCount = await countInspections(`${year}-01-01T00:00:00Z`, new Date().toISOString())
   } catch (err) {
     console.error('[admin-inspections] fetch error:', err)
     fetchError = err.message

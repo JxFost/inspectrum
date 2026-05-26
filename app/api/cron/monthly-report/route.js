@@ -7,8 +7,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { findEventsBetween } from '@/lib/google-calendar'
-import { parseEventDescription } from '@/lib/booking'
+import { getInspectionsFromDB } from '@/lib/db-inspections'
 import { sendEmail } from '@/lib/email/send'
 import { TIMEZONE } from '@/lib/working-hours'
 import { EMAIL_HEAD, emailLogoHeader } from '@/lib/email/templates/shared'
@@ -27,22 +26,27 @@ export async function GET(request) {
   const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1)
   const monthLabel = lastMonthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
-  let events
+  let dbRows
   try {
-    events = await findEventsBetween(lastMonthStart.toISOString(), lastMonthEnd.toISOString())
+    dbRows = await getInspectionsFromDB(lastMonthStart.toISOString(), lastMonthEnd.toISOString())
   } catch (err) {
-    console.error('[monthly-report] fetch error:', err)
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
+    console.error('[monthly-report] DB fetch error:', err)
+    return NextResponse.json({ error: 'Failed to fetch inspections' }, { status: 500 })
   }
 
-  // Parse all events
-  const inspections = events
-    .filter((e) => e.start?.dateTime)
-    .map((e) => {
-      const parsed = parseEventDescription(e.description)
-      return { startISO: e.start.dateTime, ...parsed }
-    })
-    .filter((i) => i.customerName && i.service !== 'Blocked Time')
+  // Map DB rows to the format the report expects
+  const inspections = dbRows
+    .filter((r) => r.customer_name && r.service !== 'Blocked Time')
+    .map((r) => ({
+      startISO: r.start_at?.toISOString?.() || r.start_at,
+      service: r.service,
+      customerName: r.customer_name,
+      address: r.address,
+      paymentStatus: r.payment_status,
+      paymentAmountCents: r.payment_amount_cents ? String(r.payment_amount_cents) : null,
+      invoiceAmountCents: r.invoice_amount_cents ? String(r.invoice_amount_cents) : null,
+      source: r.source,
+    }))
 
   const totalCount = inspections.length
 
