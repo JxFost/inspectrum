@@ -115,6 +115,14 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
     await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
 
+    // ---- Processed emails table (dedup for cron imports) ----
+    await db`
+      CREATE TABLE IF NOT EXISTS processed_emails (
+        gmail_message_id TEXT PRIMARY KEY,
+        processed_at     TIMESTAMPTZ DEFAULT now()
+      )
+    `
+
     return NextResponse.json({ success: true, message: 'Migration complete — all tables ready.' })
   } catch (err) {
     console.error('[migrate] error:', err)

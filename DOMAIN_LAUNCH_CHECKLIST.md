@@ -118,6 +118,17 @@ Caching: geocoded lat/lng stored in event description — each unique address co
 - [ ] ACC email → calendar event creation works
 - [ ] Square webhook → payment status update works
 - [ ] `/api/health` returns 200 (calendar connected)
+- [ ] Customer portal: login with magic link → dashboard shows inspections
+- [ ] Admin report upload: upload test PDF → customer sees download button in portal
+- [ ] "Report ready" notification email received with working download link
+- [ ] Vercel Blob storage configured (`BLOB_READ_WRITE_TOKEN`)
+
+## 11. Post-Launch (Future Work)
+
+- [ ] Add "Client Login" / portal link to site navigation
+- [ ] Send portal invitation emails to past customers
+- [ ] Wire up report delivery via `reports@evergreeninspections.com` (CloudMailin → auto-match)
+- [ ] CRM: customer list, tags, bulk email (see CUSTOMER_PORTAL_PLAN.md)
 
 ## 10. Uptime Monitoring (StatusBot)
 

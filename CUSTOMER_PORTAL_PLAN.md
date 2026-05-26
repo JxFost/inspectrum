@@ -1,7 +1,7 @@
 # Customer Portal — Plan
 
-**Status:** Planning (future sprint)
-**Last updated:** 2026-05-24
+**Status:** Phases 1-4 complete, Phase 5 polish pending
+**Last updated:** 2026-05-25
 
 ---
 
@@ -93,38 +93,38 @@ CREATE INDEX idx_reports_inspection ON inspection_reports(inspection_id);
 
 ## Implementation Steps
 
-### Phase 1: Database + Auth Foundation
-- [ ] Set up Postgres (Neon) — same as DATABASE_PLAN.md
-- [ ] Create customers + sessions tables
-- [ ] Build magic link auth flow:
-  - `/portal` — enter email
-  - `/api/portal/login` — send magic link via Resend
-  - `/api/portal/verify` — validate token, create session
-  - Middleware to protect `/portal/*` routes
-- [ ] Auto-create customer record at booking time (email as key)
+### Phase 1: Database + Auth Foundation ✅
+- [x] Neon Postgres (customers + portal_sessions tables)
+- [x] Magic link auth: `/portal` login, `/api/portal/login`, `/api/portal/verify`, `/api/portal/logout`
+- [x] Middleware protects `/portal/dashboard/*`
+- [x] Auto-create customer record on booking (web, ACC, admin endpoints)
+- [x] `lib/db-customers.js` — upsert, find, magic link, session helpers
 
-### Phase 2: Customer Dashboard
-- [ ] `/portal/dashboard` — list inspections for logged-in customer
-- [ ] Show: date, service, address, status (upcoming/completed), report available badge
-- [ ] Link to manage page functionality (cancel/reschedule) for upcoming
-- [ ] Mobile-friendly design matching site brand
+### Phase 2: Customer Dashboard ✅
+- [x] `/portal/dashboard` — shows upcoming + past inspections
+- [x] Date, service, address, status, payment status
+- [x] "Manage appointment" link for upcoming inspections
+- [x] Signed in as / sign out footer
 
-### Phase 3: Report Upload + Storage
-- [ ] Set up Vercel Blob (or R2)
-- [ ] Admin UI: upload PDF on inspection detail page (`/admin/inspections/[eventId]`)
-- [ ] Store file reference in `inspection_reports` table
-- [ ] Send "Your report is ready" email to customer with portal link
+### Phase 3: Report Upload + Storage ✅
+- [x] Vercel Blob for PDF storage (`@vercel/blob`)
+- [x] `inspection_reports` DB table
+- [x] `/admin/inspections/[eventId]` — inspection detail page with upload UI
+- [x] `/api/admin/upload-report` — handles file upload + DB record
+- [x] "Report ready" email template with download + portal links
+- [x] Optional customer notification on upload (checkbox)
 
-### Phase 4: Report Download
-- [ ] `/portal/inspections/[id]` — inspection detail with download button
-- [ ] Signed URL generation (time-limited, prevents hotlinking)
-- [ ] Download tracking (optional: log when customer views report)
+### Phase 4: Report Download ✅
+- [x] "Download Report" button on portal dashboard for completed inspections
+- [x] Reports queried and joined per customer from DB
+- [x] Direct download via Vercel Blob URL
 
-### Phase 5: Polish
-- [ ] "View all reports" page if customer has multiple inspections
+### Phase 5: Polish (future)
+- [ ] Download tracking (log when customer views report)
+- [ ] Share report link with real estate agent
 - [ ] Email notification preferences
 - [ ] Re-download receipt/invoice from portal
-- [ ] Optional: share report link with real estate agent
+- [ ] `/portal/inspections/[id]` — dedicated inspection detail page
 
 ---
 
