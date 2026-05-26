@@ -204,15 +204,23 @@ export async function GET(request) {
 
     results.matched++
 
-    // Check what fields are missing from the existing event
+    // Check what fields are missing or incomplete in the existing event
     const existing = parseEventDescription(match.description)
     const fieldsToUpdate = {}
     let needsUpdate = false
 
-    if (!existing.customerName && parsed.clientName) { fieldsToUpdate.customerName = parsed.clientName; needsUpdate = true }
+    // Upgrade name if existing is just a last name (single word) and ACC has full name
+    const existingNameWords = (existing.customerName || '').trim().split(/\s+/).length
+    if (parsed.clientName && (!existing.customerName || existingNameWords === 1)) {
+      fieldsToUpdate.customerName = parsed.clientName; needsUpdate = true
+    }
+    // Always fill missing contact info from ACC (most valuable for portal)
     if (!existing.phone && parsed.clientPhone) { fieldsToUpdate.phone = parsed.clientPhone; needsUpdate = true }
     if (!existing.email && parsed.clientEmail) { fieldsToUpdate.email = parsed.clientEmail; needsUpdate = true }
-    if (!existing.address && fullAddress) { fieldsToUpdate.address = fullAddress; needsUpdate = true }
+    // Upgrade address if existing is missing or incomplete (no zip)
+    if (fullAddress && (!existing.address || !existing.address.match(/\d{5}/))) {
+      fieldsToUpdate.address = fullAddress; needsUpdate = true
+    }
     if (!existing.sqft && parsed.squareFeet) { fieldsToUpdate.sqft = parsed.squareFeet; needsUpdate = true }
     if (!existing.service && parsed.inspectionType) {
       const service = mapACCServiceType(parsed.inspectionType)
