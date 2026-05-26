@@ -84,6 +84,9 @@ function CalendarIcon() {
 function ManageIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
 }
+function ViewIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+}
 
 export default function InspectionsDashboard({
   inspections, from, to, range, fetchError,
@@ -395,9 +398,9 @@ export default function InspectionsDashboard({
                             <InvoiceIcon />
                           </a>
                         )}
-                        {item.htmlLink && (
-                          <a href={item.htmlLink} target="_blank" rel="noopener noreferrer" title="Open in Google Calendar" className="text-charcoal/40 hover:text-teal transition-colors">
-                            <CalendarIcon />
+                        {item.eventId && (
+                          <a href={`/admin/inspections/${item.eventId}`} title="View details" className="text-charcoal/40 hover:text-teal transition-colors">
+                            <ViewIcon />
                           </a>
                         )}
                         {item.token && (
