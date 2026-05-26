@@ -39,16 +39,42 @@ export async function GET(request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
-  // Find legacy events — they have "Imported from Harry's calendar" in description
+  // Split into legacy (imported) and new (ACC-created) events
   const legacyEvents = events.filter((e) =>
     (e.description || '').includes("Imported from Harry's calendar")
   )
+  const accEvents = events.filter((e) =>
+    (e.description || '').includes('acc_source: true')
+  )
 
-  const results = { dryRun, found: legacyEvents.length, deleted: 0, dbDeleted: 0, errors: [], items: [] }
+  // Build a set of dates that have ACC events (the clean ones we want to keep)
+  const accDates = new Set(accEvents.map((e) => (e.start?.dateTime || '').slice(0, 10)))
+
+  // Only delete legacy events that have a duplicate ACC event on the same day
+  const duplicates = legacyEvents.filter((e) => {
+    const eventDate = (e.start?.dateTime || '').slice(0, 10)
+    return accDates.has(eventDate)
+  })
+  const kept = legacyEvents.filter((e) => {
+    const eventDate = (e.start?.dateTime || '').slice(0, 10)
+    return !accDates.has(eventDate)
+  })
+
+  const results = {
+    dryRun,
+    totalLegacy: legacyEvents.length,
+    duplicates: duplicates.length,
+    kept: kept.length,
+    deleted: 0,
+    dbDeleted: 0,
+    errors: [],
+    keptEvents: kept.map((e) => ({ summary: e.summary, date: e.start?.dateTime })),
+    items: [],
+  }
 
   const db = sql()
 
-  for (const event of legacyEvents) {
+  for (const event of duplicates) {
     const item = {
       eventId: event.id,
       summary: event.summary,
