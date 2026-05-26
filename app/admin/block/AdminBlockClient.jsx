@@ -19,6 +19,8 @@ export default function AdminBlockClient() {
     email: '',
     address: '',
     notes: '',
+    radonAddOn: false,
+    sewerScope: false,
     skipAvailability: false,
     sendEmail: false,
   })
@@ -58,6 +60,8 @@ export default function AdminBlockClient() {
           email: form.email,
           address: form.address,
           notes: form.notes,
+          radonAddOn: form.radonAddOn,
+          sewerScope: form.sewerScope,
           sendEmail: form.sendEmail,
         }),
       })
@@ -136,10 +140,20 @@ export default function AdminBlockClient() {
         <textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} className="input-style" rows={3} />
       </Field>
 
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={form.sendEmail} onChange={(e) => update('sendEmail', e.target.checked)} disabled={!form.email} className="accent-teal" />
-        <span className={`text-sm ${!form.email ? 'text-charcoal/40' : 'text-charcoal'}`}>Send confirmation email</span>
-      </label>
+      <div className="space-y-2 pt-2">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.radonAddOn} onChange={(e) => update('radonAddOn', e.target.checked)} className="accent-teal" />
+          <span className="text-sm text-charcoal">Radon Testing Add-On</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.sewerScope} onChange={(e) => update('sewerScope', e.target.checked)} className="accent-teal" />
+          <span className="text-sm text-charcoal">Sewer Scope Add-On</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.sendEmail} onChange={(e) => update('sendEmail', e.target.checked)} disabled={!form.email} className="accent-teal" />
+          <span className={`text-sm ${!form.email ? 'text-charcoal/40' : 'text-charcoal'}`}>Send confirmation email</span>
+        </label>
+      </div>
 
       {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
 

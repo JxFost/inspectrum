@@ -41,6 +41,8 @@ export async function POST(request) {
   const email = (body.email || '').trim()
   const address = (body.address || '').trim()
   const notes = (body.notes || '').trim()
+  const radonAddOn = body.radonAddOn === true
+  const sewerScope = body.sewerScope === true
   const sendConfirmation = body.sendEmail === true && email
 
   const endDate = new Date(new Date(startISO).getTime() + service.durationHours * 60 * 60 * 1000)
@@ -61,6 +63,8 @@ export async function POST(request) {
     phone,
     email,
     address,
+    radonAddOn,
+    sewerScope,
     source: 'admin',
     extra: notes ? `Notes: ${notes}` : null,
   })
