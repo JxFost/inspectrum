@@ -30,41 +30,87 @@ function verifyAdminSession(request) {
 
 /**
  * Match a parsed ACC email to an existing calendar event.
- * Strategy: match by client last name + date (within 1 day tolerance).
+ *
+ * Strategy (in priority order):
+ * 1. Same date + address street match (strongest signal)
+ * 2. Same date + last name match in summary/description
+ * 3. Same date only (if only one event that day)
+ *
+ * Shirley's events have abbreviated titles like "Insp - Morris" so we
+ * can't match on full client names — last name + date is the key.
  */
-function findMatch(accParsed, startISO, calendarEvents) {
-  if (!accParsed.clientName) return null
-
-  const accName = accParsed.clientName.toLowerCase().trim()
+function findMatch(accParsed, startISO, accAddress, calendarEvents) {
   const accDate = startISO ? new Date(startISO) : null
+  if (!accDate) return null
 
-  // Try exact name match in event description or summary
-  const candidates = calendarEvents.filter((e) => {
-    const desc = (e.description || '').toLowerCase()
-    const summary = (e.summary || '').toLowerCase()
-    // Check if client name appears in description or summary
-    return desc.includes(accName) || summary.includes(accName) ||
-      // Also try last name only (Shirley often only used last names)
-      accName.split(' ').some((part) => part.length > 2 && (summary.includes(part) || desc.includes(`customer: ${part}`)))
+  // Normalize the ACC street address for comparison
+  const accStreet = (accAddress || accParsed.address || '').toLowerCase().trim()
+  // Extract just the street number + name (first part before comma)
+  const accStreetShort = accStreet.split(',')[0].trim()
+
+  const accName = (accParsed.clientName || '').toLowerCase().trim()
+  const accLastName = accName.split(/\s+/).pop() || ''
+  // For names like "Tim & Christine Andersen", also grab the last word
+  const accNameParts = accName.split(/[\s&]+/).filter((p) => p.length > 2)
+
+  // Find events on the same day (within 24 hours)
+  const sameDayEvents = calendarEvents.filter((e) => {
+    const eventDate = e.start?.dateTime ? new Date(e.start.dateTime) : null
+    if (!eventDate) return false
+    return Math.abs(eventDate - accDate) < 24 * 60 * 60 * 1000
   })
 
-  if (candidates.length === 0) return null
-  if (candidates.length === 1) return candidates[0]
+  if (sameDayEvents.length === 0) return null
 
-  // Multiple matches — find closest by date
-  if (accDate) {
-    candidates.sort((a, b) => {
-      const da = Math.abs(new Date(a.start?.dateTime || 0) - accDate)
-      const db = Math.abs(new Date(b.start?.dateTime || 0) - accDate)
-      return da - db
-    })
-    // Only match if within 2 days
-    const closest = candidates[0]
-    const diff = Math.abs(new Date(closest.start?.dateTime || 0) - accDate)
-    if (diff < 2 * 24 * 60 * 60 * 1000) return closest
-  }
+  // Score each same-day event
+  const scored = sameDayEvents.map((e) => {
+    const desc = (e.description || '').toLowerCase()
+    const summary = (e.summary || '').toLowerCase()
+    const location = (e.location || '').toLowerCase()
+    let score = 0
 
-  return candidates[0]
+    // Address match (very strong)
+    if (accStreetShort && (
+      summary.includes(accStreetShort) ||
+      desc.includes(accStreetShort) ||
+      location.includes(accStreetShort)
+    )) {
+      score += 10
+    }
+
+    // Last name match
+    if (accLastName && accLastName.length > 2 && (
+      summary.includes(accLastName) ||
+      desc.includes(accLastName)
+    )) {
+      score += 5
+    }
+
+    // Any name part match (for "Insp - Morris" matching "Larry Morris")
+    for (const part of accNameParts) {
+      if (summary.includes(part) || desc.includes(part)) {
+        score += 2
+        break
+      }
+    }
+
+    // City match from summary (Shirley often put city in title)
+    const accCity = (accParsed.city || '').toLowerCase()
+    if (accCity && summary.includes(accCity)) {
+      score += 1
+    }
+
+    return { event: e, score }
+  })
+
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score)
+
+  // Return best match if score > 0, or the only same-day event
+  if (scored[0].score > 0) return scored[0].event
+  if (sameDayEvents.length === 1) return sameDayEvents[0]
+
+  return null
 }
 
 export async function GET(request) {
@@ -101,9 +147,37 @@ export async function GET(request) {
     return NextResponse.json({ error: `Calendar error: ${err.message}` }, { status: 500 })
   }
 
-  // 3. Parse each email and try to match
+  // 3. Parse each email, deduplicate, and try to match
+  //    ACC often sends multiple emails for the same appointment (updates, resends)
+  //    Deduplicate by client name + date
+  const parsedEmails = []
+  const seen = new Set()
+
+  for (const email of emails) {
+    const result = parseACCEmail({
+      subject: email.subject,
+      from: email.from,
+      html: email.html,
+      plainText: email.plain,
+    })
+
+    if (result.type !== 'appointment' && result.type !== 'reschedule') continue
+
+    const { parsed, startISO } = result
+    const fullAddress = [parsed.address, parsed.city, parsed.state, parsed.zip]
+      .filter(Boolean).join(', ')
+
+    // Dedupe key: client name + date (day only)
+    const dedupeKey = `${(parsed.clientName || '').toLowerCase()}|${(startISO || '').slice(0, 10)}`
+    if (seen.has(dedupeKey)) continue
+    seen.add(dedupeKey)
+
+    parsedEmails.push({ result, parsed, startISO, fullAddress, subject: email.subject })
+  }
+
   const results = {
     emailsFound: emails.length,
+    uniqueAppointments: parsedEmails.length,
     matched: 0,
     unmatched: 0,
     updated: 0,
@@ -113,32 +187,14 @@ export async function GET(request) {
     unmatchedEmails: [],
   }
 
-  for (const email of emails) {
-    // Parse the ACC email
-    const result = parseACCEmail({
-      subject: email.subject,
-      from: email.from,
-      html: email.html,
-      plainText: email.plain,
-    })
-
-    // Skip non-appointment types
-    if (result.type !== 'appointment' && result.type !== 'reschedule') {
-      results.skipped++
-      continue
-    }
-
-    const { parsed, startISO } = result
-    const fullAddress = [parsed.address, parsed.city, parsed.state, parsed.zip]
-      .filter(Boolean).join(', ')
-
+  for (const { parsed, startISO, fullAddress, subject } of parsedEmails) {
     // Try to match to an existing calendar event
-    const match = findMatch(parsed, startISO, calendarEvents)
+    const match = findMatch(parsed, startISO, fullAddress, calendarEvents)
 
     if (!match) {
       results.unmatched++
       results.unmatchedEmails.push({
-        subject: email.subject,
+        subject,
         clientName: parsed.clientName,
         date: startISO,
         address: fullAddress,
