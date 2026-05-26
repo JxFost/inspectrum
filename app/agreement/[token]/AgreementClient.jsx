@@ -126,24 +126,6 @@ export default function AgreementClient({ data }) {
           <p className="text-sm text-charcoal/60">Please review, initial, and sign below</p>
         </div>
 
-        {/* What to Expect */}
-        <div className="bg-paper border border-line rounded-sm p-6 sm:p-8 mb-6">
-          <p className="text-[0.7rem] uppercase tracking-wider text-amber font-semibold mb-4">What to Expect</p>
-          <p className="text-sm text-charcoal leading-relaxed mb-4">
-            Thank you for choosing Inspectrum Inspections. Here are a few things to know before your appointment:
-          </p>
-          <ul className="text-sm text-charcoal leading-relaxed space-y-2 list-none pl-0">
-            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">1.</span> <span><strong>Start times are approximate</strong> — we may be delayed slightly due to traffic or a previous inspection.</span></li>
-            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">2.</span> <span><strong>The inspection takes 3–4 hours</strong> for a standard home. The inspector will need to focus with minimal interruption during this time.</span></li>
-            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">3.</span> <span><strong>Planning to attend?</strong> You may want to arrive toward the end to avoid waiting. We'll do a full walk-through, explain our findings, and answer all your questions.</span></li>
-            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">4.</span> <span><strong>Your report will be delivered same day</strong> — a comprehensive, photo-rich report sent directly to your email.</span></li>
-            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">5.</span> <span><strong>Payment is due at completion.</strong> We accept credit cards, checks, cash, Venmo, and Zelle.</span></li>
-          </ul>
-          <p className="text-sm text-charcoal/60 mt-4">
-            Questions before your inspection? Call Harry at <a href="tel:3036970990" className="text-teal hover:text-amber no-underline font-medium">(303) 697-0990</a>.
-          </p>
-        </div>
-
         {/* Pre-filled info */}
         <div className="bg-paper border border-line rounded-sm p-6 mb-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -164,6 +146,24 @@ export default function AgreementClient({ data }) {
               <div className="text-ink font-medium">{data.service}</div>
             </div>
           </div>
+        </div>
+
+        {/* What to Expect */}
+        <div className="bg-paper border border-line rounded-sm p-6 sm:p-8 mb-6">
+          <p className="text-[0.7rem] uppercase tracking-wider text-amber font-semibold mb-4">What to Expect</p>
+          <p className="text-sm text-charcoal leading-relaxed mb-4">
+            Thank you for choosing Inspectrum Inspections. Here are a few things to know before your appointment:
+          </p>
+          <ul className="text-sm text-charcoal leading-relaxed space-y-2 list-none pl-0">
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">1.</span> <span><strong>Start times are approximate</strong> — we may be delayed slightly due to traffic or a previous inspection.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">2.</span> <span><strong>The inspection takes 3–4 hours</strong> for a standard home. The inspector will need to focus with minimal interruption during this time.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">3.</span> <span><strong>Planning to attend?</strong> You may want to arrive toward the end to avoid waiting. We'll do a full walk-through, explain our findings, and answer all your questions.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">4.</span> <span><strong>Your report will be delivered same day</strong> — a comprehensive, photo-rich report sent directly to your email.</span></li>
+            <li className="flex gap-2"><span className="text-teal font-bold shrink-0">5.</span> <span><strong>Payment is due at completion.</strong> We accept credit cards, checks, cash, Venmo, and Zelle.</span></li>
+          </ul>
+          <p className="text-sm text-charcoal/60 mt-4">
+            Questions before your inspection? Call Harry at <a href="tel:3036970990" className="text-teal hover:text-amber no-underline font-medium">(303) 697-0990</a>.
+          </p>
         </div>
 
         {/* Pricing */}
