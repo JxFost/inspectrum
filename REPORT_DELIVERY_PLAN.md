@@ -104,8 +104,9 @@ Update admin dashboard
 
 ### CloudMailin Setup
 
-- New forwarding address: `reports@evergreeninspections.com` → CloudMailin
-- CloudMailin webhook target: `POST /api/inbound/report?secret=REPORT_WEBHOOK_SECRET`
+- [x] Google Group created: `reports@evergreeninspections.com`
+- [x] CloudMailin inbound address created and added as group member
+- [ ] CloudMailin webhook target: `POST /api/inbound/report?secret=REPORT_WEBHOOK_SECRET` (set when endpoint is built)
 - JSON Normalized format (same as ACC pipeline)
 - Attachment size limit: CloudMailin supports up to 35MB (plenty for inspection PDFs)
 

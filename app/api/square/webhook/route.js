@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { updatePaymentStatusByInvoiceId } from '@/lib/booking'
+import { updatePaymentByInvoiceId } from '@/lib/db-inspections'
 
 function verifySignature(rawBody, receivedSig) {
   const secret = process.env.SQUARE_WEBHOOK_SECRET
@@ -67,6 +68,10 @@ export async function POST(request) {
           paid_at: new Date().toISOString(),
           ...(amountCents != null && { payment_amount_cents: String(amountCents) }),
         })
+        updatePaymentByInvoiceId(invoiceId, {
+          paymentStatus: 'paid',
+          paymentAmountCents: amountCents ? Number(amountCents) : null,
+        }).catch((err) => console.error('[db] payment update failed:', err.message))
         break
       }
 
@@ -74,6 +79,8 @@ export async function POST(request) {
         await updatePaymentStatusByInvoiceId(invoiceId, 'voided', {
           voided_at: new Date().toISOString(),
         })
+        updatePaymentByInvoiceId(invoiceId, { paymentStatus: 'voided' })
+          .catch((err) => console.error('[db] voided update failed:', err.message))
         break
       }
 
@@ -81,6 +88,8 @@ export async function POST(request) {
         await updatePaymentStatusByInvoiceId(invoiceId, 'refunded', {
           refunded_at: new Date().toISOString(),
         })
+        updatePaymentByInvoiceId(invoiceId, { paymentStatus: 'refunded' })
+          .catch((err) => console.error('[db] refund update failed:', err.message))
         break
       }
 

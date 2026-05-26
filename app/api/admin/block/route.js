@@ -14,6 +14,7 @@ import { computeDistance } from '@/lib/mileage'
 import { buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
+import { upsertInspection } from '@/lib/db-inspections'
 
 export async function POST(request) {
   let body
@@ -79,6 +80,27 @@ export async function POST(request) {
     const confirmationCode = extractConfirmationCode(event.id)
 
     console.log(`[admin-block] created: ${name.split(' ')[0]}, ${isVacation ? 'block' : service.name}, event ${event.id}`)
+
+    if (!isVacation) {
+      upsertInspection({
+        googleEventId: event.id,
+        inspectionNumber,
+        customerName: name,
+        email: email || null,
+        phone: phone || null,
+        address: address || null,
+        service: service.name,
+        startAt: startISO,
+        endAt: endISO,
+        source: 'admin',
+        distanceMiles: dist?.miles || null,
+        tripChargeCents: dist?.tripChargeCents || null,
+        geoLat: dist?.geoLat || null,
+        geoLng: dist?.geoLng || null,
+        token,
+        rawDescription: description,
+      }).catch((err) => console.error('[db] admin block insert failed:', err.message))
+    }
 
     // Optionally send confirmation email
     if (sendConfirmation) {

@@ -18,6 +18,7 @@ import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber
 import { computeDistance } from '@/lib/mileage'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
+import { upsertInspection } from '@/lib/db-inspections'
 
 const MAX_FIELD_LENGTH = 500
 
@@ -196,6 +197,26 @@ export async function POST(request) {
     })
 
     const confirmationCode = extractConfirmationCode(event.id)
+
+    // Write to DB (non-blocking — don't fail the booking if DB write fails).
+    upsertInspection({
+      googleEventId: event.id,
+      inspectionNumber,
+      customerName: name,
+      email,
+      phone,
+      address,
+      service: service.name,
+      startAt: startISO,
+      endAt: endISO,
+      source: 'web',
+      distanceMiles: dist?.miles || null,
+      tripChargeCents: dist?.tripChargeCents || null,
+      geoLat: dist?.geoLat || null,
+      geoLng: dist?.geoLng || null,
+      token,
+      rawDescription: description,
+    }).catch((err) => console.error('[db] booking insert failed:', err.message))
 
     // Send booking receipt email (non-blocking — don't fail the booking if email fails).
     const manageUrl = buildManageUrl(token)

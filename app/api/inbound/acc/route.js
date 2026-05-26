@@ -21,6 +21,7 @@ import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getN
 import { computeDistance } from '@/lib/mileage'
 import { insertEvent, findEventsBetween, deleteEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
+import { upsertInspection } from '@/lib/db-inspections'
 
 function log(action, detail) {
   // Privacy-safe logging: first name only, no full PII
@@ -213,6 +214,26 @@ export async function POST(request) {
       })
 
       log('created', `appointment for ${firstName}, event ${event.id}`)
+
+      upsertInspection({
+        googleEventId: event.id,
+        inspectionNumber,
+        customerName: parsed.clientName || 'ACC Client',
+        email: parsed.clientEmail || null,
+        phone: parsed.clientPhone || null,
+        address: fullAddress,
+        service: service.name,
+        startAt: startISO,
+        endAt: endISO,
+        source: 'acc',
+        distanceMiles: dist?.miles || null,
+        tripChargeCents: dist?.tripChargeCents || null,
+        geoLat: dist?.geoLat || null,
+        geoLng: dist?.geoLng || null,
+        token,
+        rawDescription: description,
+      }).catch((err) => console.error('[db] ACC insert failed:', err.message))
+
       return NextResponse.json({
         ok: true,
         action: 'created',

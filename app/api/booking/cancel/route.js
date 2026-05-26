@@ -10,6 +10,7 @@ import { findEventByToken, deleteEvent } from '@/lib/google-calendar'
 import { parseEventDescription } from '@/lib/booking'
 import { sendEmail } from '@/lib/email/send'
 import { TIMEZONE } from '@/lib/working-hours'
+import { markCancelledByToken } from '@/lib/db-inspections'
 
 export async function POST(request) {
   let body
@@ -54,6 +55,9 @@ export async function POST(request) {
       { status: 500 },
     )
   }
+
+  // Mark as cancelled in DB (preserves the record)
+  markCancelledByToken(token).catch((err) => console.error('[db] cancel update failed:', err.message))
 
   // Alert Harry immediately about the cancellation
   const alertTo = process.env.DIGEST_EMAIL || 'harry@evergreeninspections.com'

@@ -1,0 +1,70 @@
+/*
+ * POST /api/admin/migrate
+ *
+ * Creates the inspections table and indexes. Safe to run multiple times
+ * (uses IF NOT EXISTS). Auth: admin session cookie.
+ */
+
+import { NextResponse } from 'next/server'
+import { sql } from '@/lib/db'
+
+function verifyAdminSession(request) {
+  const cookie = request.cookies.get('admin_session')?.value
+  if (!cookie) return false
+  const parts = cookie.split('.')
+  if (parts.length !== 2) return false
+  const age = Date.now() - parseInt(parts[0], 10)
+  return !isNaN(age) && age < 30 * 24 * 60 * 60 * 1000
+}
+
+export async function POST(request) {
+  if (!verifyAdminSession(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const db = sql()
+
+  try {
+    await db`
+      CREATE TABLE IF NOT EXISTS inspections (
+        id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        google_event_id      TEXT UNIQUE,
+        inspection_number    TEXT,
+        customer_name        TEXT,
+        email                TEXT,
+        phone                TEXT,
+        address              TEXT,
+        service              TEXT,
+        start_at             TIMESTAMPTZ,
+        end_at               TIMESTAMPTZ,
+        source               TEXT,
+        status               TEXT DEFAULT 'scheduled',
+        payment_status       TEXT,
+        invoice_amount_cents INT,
+        payment_amount_cents INT,
+        square_invoice_id    TEXT,
+        distance_miles       REAL,
+        trip_charge_cents    INT,
+        geo_lat              REAL,
+        geo_lng              REAL,
+        token                TEXT UNIQUE,
+        feedback_rating      INT,
+        created_at           TIMESTAMPTZ DEFAULT now(),
+        updated_at           TIMESTAMPTZ DEFAULT now(),
+        cancelled_at         TIMESTAMPTZ,
+        raw_description      TEXT
+      )
+    `
+
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_start ON inspections(start_at)`
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_token ON inspections(token)`
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_status ON inspections(status)`
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_number ON inspections(inspection_number)`
+    await db`CREATE INDEX IF NOT EXISTS idx_inspections_event ON inspections(google_event_id)`
+
+    return NextResponse.json({ success: true, message: 'Migration complete — inspections table ready.' })
+  } catch (err) {
+    console.error('[migrate] error:', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

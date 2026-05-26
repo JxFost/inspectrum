@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server'
 import { findEventByToken, updateEventDescription } from '@/lib/google-calendar'
+import { updateFeedbackByToken } from '@/lib/db-inspections'
 
 const GOOGLE_REVIEW_URL = 'https://g.page/Inspectrum/review'
 
@@ -44,6 +45,9 @@ export async function GET(request) {
     } catch (err) {
       console.error('[feedback] failed to store rating:', err.message)
     }
+
+    updateFeedbackByToken(token, rating)
+      .catch((err) => console.error('[db] feedback update failed:', err.message))
   }
 
   // 4-5 stars: redirect to Google review

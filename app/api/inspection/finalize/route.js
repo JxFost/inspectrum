@@ -11,6 +11,7 @@ import { NextResponse } from 'next/server'
 import { getEvent } from '@/lib/google-calendar'
 import { parseEventDescription, markInvoiceCreated } from '@/lib/booking'
 import { createInvoice } from '@/lib/square'
+import { markInvoiceByEventId } from '@/lib/db-inspections'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -87,6 +88,11 @@ export async function POST(request) {
       customerId: result.customerId,
       amountCents: priceCents,
     })
+
+    markInvoiceByEventId(eventId, {
+      invoiceId: result.invoiceId,
+      amountCents: priceCents,
+    }).catch((err) => console.error('[db] invoice update failed:', err.message))
 
     const firstName = parsed.customerName?.split(' ')[0] || 'customer'
     console.log(`[square] invoice ${result.invoiceId} sent to ${firstName}, $${(priceCents / 100).toFixed(2)}`)
