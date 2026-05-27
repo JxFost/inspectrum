@@ -420,9 +420,9 @@ export default function InspectionsDashboard({
                       onClick={() => item.eventId && router.push(`/admin/inspections/${item.eventId}`)}
                       className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${
                         isOverdue ? 'bg-red-50 border-l-2 border-l-red-400'
-                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.06] border-l-2 border-l-amber'
+                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.08] border-l-2 border-l-amber'
                         : item.status === 'past' ? 'bg-charcoal/[0.04]'
-                        : item.status === 'today' ? 'bg-amber/[0.06]'
+                        : item.status === 'today' ? 'bg-amber/[0.04]'
                         : ''
                       }`}
                     >
@@ -444,7 +444,7 @@ export default function InspectionsDashboard({
                       )}
                       {item.agreementStatus === 'pending' && item.status !== 'past' && (
                         <Tooltip content="Agreement not yet signed">
-                          <span className="ml-1 text-amber text-xs font-bold">!</span>
+                          <span className="ml-1 text-amber-600 rounded-full py-1 px-2 bg-amber/20 text-xs font-bold">!</span>
                         </Tooltip>
                       )}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
