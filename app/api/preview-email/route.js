@@ -10,6 +10,7 @@ import { followupHtml } from '@/lib/email/templates/followup'
 import { reminderHtml } from '@/lib/email/templates/reminder'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { dailyDigestHtml } from '@/lib/email/templates/daily-digest'
+import { reportReadyHtml } from '@/lib/email/templates/report-ready'
 
 const SAMPLE = {
   customerName: 'Peter McDougall',
@@ -97,8 +98,16 @@ export async function GET(request) {
         ],
       })
       break
+    case 'report-ready':
+      html = reportReadyHtml({
+        firstName: 'Peter',
+        address: '1234 Fake Street, Evergreen, CO 80439',
+        downloadUrl: '#',
+        portalUrl: 'http://localhost:3000/portal',
+      })
+      break
     default:
-      return NextResponse.json({ error: 'Unknown template. Use: followup, reminder, receipt' }, { status: 400 })
+      return NextResponse.json({ error: 'Unknown template. Use: followup, reminder, receipt, digest, cancel-alert, monthly, report-ready' }, { status: 400 })
   }
 
   return new NextResponse(html, {
