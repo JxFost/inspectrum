@@ -75,6 +75,7 @@ export async function POST(request) {
   const waterType = trim(body.waterType, 50)
   const garageType = trim(body.garageType, 50)
   const occupied = trim(body.occupied, 10)
+  const outbuilding = trim(body.outbuilding, 50)
   const radonAddOn = body.radonAddOn === true
   const sewerScope = body.sewerScope === true
   const pets = body.pets === true
@@ -177,6 +178,7 @@ export async function POST(request) {
     yearBuilt,
     waterType,
     garageType,
+    outbuilding,
     occupied,
     radonAddOn,
     radonDropDate,

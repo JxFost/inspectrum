@@ -149,7 +149,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -246,6 +246,7 @@ export default function SchedulerClient() {
           waterType: details.waterType,
           garageType: details.garageType,
           occupied: details.occupied,
+          outbuilding: details.outbuilding,
           radonAddOn: details.radonAddOn,
           sewerScope: details.sewerScope,
           pets: details.pets,
@@ -296,7 +297,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -636,6 +637,17 @@ export default function SchedulerClient() {
                   </select>
                 </div>
 
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Outbuilding on property?</label>
+                  <select value={details.outbuilding} onChange={(e) => setDetails({ ...details, outbuilding: e.target.value })}
+                    className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                    <option value="">None</option>
+                    <option value="Structure only">Structure only (shed, barn, etc.)</option>
+                    <option value="With electricity">With electricity (no water)</option>
+                    <option value="Full utilities">Full utilities (electricity & water)</option>
+                  </select>
+                </div>
+
                 <div className="sm:col-span-2 bg-cream/50 border border-line rounded-sm p-4">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
@@ -807,6 +819,12 @@ export default function SchedulerClient() {
               : service?.id === 'mold' ? 'mold'
               : service?.id === 'commercial' ? 'commercial'
               : 'full'
+            const features = {}
+            if (details.garageType === 'Detached') features.detachedGarage = true
+            if (details.outbuilding === 'Structure only') features.outbuildingStructure = true
+            if (details.outbuilding === 'With electricity') features.outbuildingElecOnly = true
+            if (details.outbuilding === 'Full utilities') features.outbuildingFull = true
+
             const { total, breakdown, cityUnknown } = calculatePrice({
               sqft: details.sqftExact || details.sqftRange,
               yearBuilt: details.yearBuilt,
@@ -814,6 +832,7 @@ export default function SchedulerClient() {
               serviceType,
               radonAddOn: details.radonAddOn,
               sewerScope: details.sewerScope,
+              features,
             })
             return (
             <div>
@@ -859,6 +878,7 @@ export default function SchedulerClient() {
                 {details.yearBuilt && <SummaryRow label="Year Built" value={`${details.yearBuilt} (${new Date().getFullYear() - parseInt(details.yearBuilt)} yrs old)`} />}
                 {details.waterType && <SummaryRow label="Water Type" value={details.waterType} />}
                 {details.garageType && <SummaryRow label="Garage" value={details.garageType} />}
+                {details.outbuilding && <SummaryRow label="Outbuilding" value={details.outbuilding} />}
                 {details.occupied && <SummaryRow label="Occupied" value={details.occupied} />}
                 {details.isAgent && <SummaryRow label="Ordered By" value={details.agentType || 'Agent'} />}
                 {details.clientAttending && <SummaryRow label="Client Attending" value={details.clientAttending} />}
