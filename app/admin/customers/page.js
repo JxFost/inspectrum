@@ -18,8 +18,8 @@ export default async function CustomersPage() {
     FROM customers c
     LEFT JOIN inspections i ON LOWER(i.email) = LOWER(c.email) AND i.status != 'cancelled'
     LEFT JOIN inspection_reports ir ON ir.inspection_id = i.id
-    WHERE c.email IS NOT NULL AND c.email != ''
-      AND c.name IS NOT NULL AND c.name != ''
+    WHERE c.email IS NOT NULL AND c.email != '' AND c.email LIKE '%@%.%'
+      AND c.name IS NOT NULL AND c.name != '' AND LENGTH(c.name) < 50
     GROUP BY c.id
     ORDER BY c.name ASC
   `
