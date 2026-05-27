@@ -5,6 +5,7 @@
 
 import { getInspectionsInWindow } from '@/lib/booking'
 import { countInspections } from '@/lib/db-inspections'
+import { sql } from '@/lib/db'
 import InspectionsDashboard from './InspectionsDashboard'
 
 export const metadata = {
@@ -81,6 +82,30 @@ export default async function InspectionsPage({ searchParams }) {
     console.error('[admin-inspections] fetch error:', err)
     fetchError = err.message
   }
+
+  // Fetch agreement status for all inspections in this window
+  let agreementMap = {}
+  try {
+    const db = sql()
+    const eventIds = inspections.map((i) => i.eventId).filter(Boolean)
+    if (eventIds.length > 0) {
+      const agreements = await db`
+        SELECT i.google_event_id, sa.signed_at
+        FROM signed_agreements sa
+        JOIN inspections i ON i.id = sa.inspection_id
+        WHERE i.google_event_id = ANY(${eventIds})
+      `
+      for (const a of agreements) {
+        agreementMap[a.google_event_id] = a.signed_at ? 'signed' : 'pending'
+      }
+    }
+  } catch { /* DB may not be available */ }
+
+  // Merge agreement status into inspections
+  inspections = inspections.map((i) => ({
+    ...i,
+    agreementStatus: agreementMap[i.eventId] || null,
+  }))
 
   // Reverse for newest-first default
   inspections.reverse()

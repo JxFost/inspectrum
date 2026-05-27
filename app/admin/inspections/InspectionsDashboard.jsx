@@ -418,7 +418,13 @@ export default function InspectionsDashboard({
                     <tr
                       key={item.eventId}
                       onClick={() => item.eventId && router.push(`/admin/inspections/${item.eventId}`)}
-                      className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}
+                      className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${
+                        isOverdue ? 'bg-red-50 border-l-2 border-l-red-400'
+                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.06] border-l-2 border-l-amber'
+                        : item.status === 'past' ? 'bg-charcoal/[0.04]'
+                        : item.status === 'today' ? 'bg-amber/[0.06]'
+                        : ''
+                      }`}
                     >
                     <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell">
                       <Tooltip content={item.inspectionNumber}>
@@ -431,6 +437,16 @@ export default function InspectionsDashboard({
                     </td>
                     <td className="px-3 py-2 text-ink">
                       {item.customerName || '—'}
+                      {item.agreementStatus === 'signed' && (
+                        <Tooltip content="Agreement signed">
+                          <span className="ml-1 text-teal text-xs">✓</span>
+                        </Tooltip>
+                      )}
+                      {item.agreementStatus === 'pending' && item.status !== 'past' && (
+                        <Tooltip content="Agreement not yet signed">
+                          <span className="ml-1 text-amber text-xs font-bold">!</span>
+                        </Tooltip>
+                      )}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
                         <Tooltip content={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings`}>
                           <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full">
