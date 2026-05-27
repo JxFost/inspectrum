@@ -22,6 +22,12 @@ const CLIENT_EMAILS = [
     description: 'Sent 72 hours after the inspection with a Google review request.',
     trigger: 'Daily cron (5pm UTC / 11am MT)',
   },
+  {
+    id: 'report-ready',
+    name: 'Report Ready',
+    description: 'Sent when the report is ready to be viewed.',
+    trigger: 'On report completion',
+  }
 ]
 
 const INSPECTOR_EMAILS = [
@@ -46,7 +52,7 @@ const INSPECTOR_EMAILS = [
 ]
 
 function EmailCard({ t }) {
-  const hasPreview = ['receipt', 'reminder', 'followup', 'digest', 'cancel-alert', 'monthly'].includes(t.id)
+  const hasPreview = ['receipt', 'reminder', 'followup', 'report-ready', 'digest', 'cancel-alert', 'monthly'].includes(t.id)
   const Tag = hasPreview ? 'a' : 'div'
   const linkProps = hasPreview ? { href: `/api/preview-email?template=${t.id}`, target: '_blank', rel: 'noopener noreferrer' } : {}
 

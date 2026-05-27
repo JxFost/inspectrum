@@ -137,6 +137,22 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_agreements_token ON signed_agreements(token)`
     await db`CREATE INDEX IF NOT EXISTS idx_agreements_inspection ON signed_agreements(inspection_id)`
 
+    // ---- Pending (unmatched) reports table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS pending_reports (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        file_url        TEXT NOT NULL,
+        file_name       TEXT NOT NULL,
+        file_size_bytes INT,
+        recipient_email TEXT,
+        subject         TEXT,
+        gmail_message_id TEXT,
+        created_at      TIMESTAMPTZ DEFAULT now(),
+        resolved_at     TIMESTAMPTZ,
+        resolved_to     UUID REFERENCES inspections(id)
+      )
+    `
+
     // ---- Processed emails table (dedup for cron imports) ----
     await db`
       CREATE TABLE IF NOT EXISTS processed_emails (

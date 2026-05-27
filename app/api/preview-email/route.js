@@ -106,8 +106,25 @@ export async function GET(request) {
         portalUrl: 'http://localhost:3000/portal',
       })
       break
+    case 'assign-report':
+      html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
+          <h2 style="color:#1F2426;margin:0 0 12px;">Report Needs Assignment</h2>
+          <p style="font-size:14px;color:#3D3F40;margin:0 0 16px;">
+            A report PDF was found in your sent emails but couldn't be matched to a customer automatically.
+          </p>
+          <div style="background:#FAF7F1;border:1px solid #E2DDD5;border-radius:6px;padding:16px;margin-bottom:16px;">
+            <p style="margin:4px 0;font-size:14px;"><strong>File:</strong> Johnson_1234_Fake_St_Inspection.pdf</p>
+            <p style="margin:4px 0;font-size:14px;"><strong>Sent to:</strong> unknown@example.com</p>
+            <p style="margin:4px 0;font-size:14px;"><strong>Subject:</strong> Your Inspection Report</p>
+          </div>
+          <a href="#" style="display:inline-block;background-color:#2B7E8C;color:#FFFFFF;padding:12px 24px;border-radius:4px;font-size:14px;font-weight:600;text-decoration:none;">
+            Assign to Inspection →
+          </a>
+        </div>`
+      break
     default:
-      return NextResponse.json({ error: 'Unknown template. Use: followup, reminder, receipt, digest, cancel-alert, monthly, report-ready' }, { status: 400 })
+      return NextResponse.json({ error: 'Unknown template. Use: followup, reminder, receipt, digest, cancel-alert, monthly, report-ready, assign-report' }, { status: 400 })
   }
 
   return new NextResponse(html, {

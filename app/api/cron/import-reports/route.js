@@ -100,13 +100,50 @@ export async function GET(request) {
     }
 
     if (!matchedInspection) {
+      // Upload the PDF anyway and create a pending report for manual assignment
+      const attachment = pdfAttachments[0]
+      try {
+        const pdfBuffer = await downloadAttachment(email.id, attachment.attachmentId, inspectorEmail)
+        const blobPath = `reports/unmatched/${new Date().getFullYear()}/${attachment.filename}`
+        const blob = await put(blobPath, pdfBuffer, { access: 'public', contentType: 'application/pdf' })
+
+        const pending = await db`
+          INSERT INTO pending_reports (file_url, file_name, file_size_bytes, recipient_email, subject, gmail_message_id)
+          VALUES (${blob.url}, ${attachment.filename}, ${attachment.size}, ${recipientEmails[0] || null}, ${email.subject}, ${email.id})
+          RETURNING id
+        `
+
+        // Notify Harry
+        const alertTo = process.env.DIGEST_EMAIL || 'harry@evergreeninspections.com'
+        const assignUrl = `${siteUrl}/admin/reports/assign/${pending[0].id}`
+        sendEmail({
+          to: alertTo,
+          subject: `Report needs assignment — ${attachment.filename}`,
+          html: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
+              <h2 style="color:#1F2426;margin:0 0 12px;">Report Needs Assignment</h2>
+              <p style="font-size:14px;color:#3D3F40;margin:0 0 16px;">
+                A report PDF was found in your sent emails but couldn't be matched to a customer automatically.
+              </p>
+              <div style="background:#FAF7F1;border:1px solid #E2DDD5;border-radius:6px;padding:16px;margin-bottom:16px;">
+                <p style="margin:4px 0;font-size:14px;"><strong>File:</strong> ${attachment.filename}</p>
+                <p style="margin:4px 0;font-size:14px;"><strong>Sent to:</strong> ${recipientEmails.join(', ') || 'unknown'}</p>
+                <p style="margin:4px 0;font-size:14px;"><strong>Subject:</strong> ${email.subject}</p>
+              </div>
+              <a href="${assignUrl}" style="display:inline-block;background-color:#2B7E8C;color:#FFFFFF;padding:12px 24px;border-radius:4px;font-size:14px;font-weight:600;text-decoration:none;">
+                Assign to Inspection →
+              </a>
+            </div>
+          `,
+        }).catch((err) => console.error('[import-reports] notify failed:', err.message))
+
+        results.items.push({ subject: email.subject, to: toRaw, fileName: attachment.filename, status: 'pending-assignment' })
+      } catch (err) {
+        results.items.push({ subject: email.subject, to: toRaw, status: 'no-match-error', error: err.message })
+      }
+
       results.skipped++
       await db`INSERT INTO processed_emails (gmail_message_id) VALUES (${email.id}) ON CONFLICT DO NOTHING`
-      results.items.push({
-        subject: email.subject,
-        to: toRaw,
-        status: 'no-match',
-      })
       continue
     }
 
