@@ -3,6 +3,7 @@
 import { useState, useMemo, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import * as mileage from '@/lib/mileage'
+import Tooltip, { TooltipProvider } from '@/components/Tooltip'
 
 const PAGE_SIZE = 20
 
@@ -78,13 +79,11 @@ function ServiceIconPill({ service, radonAddOn, sewerScope }) {
   return (
     <div className="flex items-center gap-1">
       {icons.map((item, i) => (
-        <span
-          key={i}
-          title={item.label}
-          className={`inline-flex items-center justify-center w-6 h-6 rounded ${item.color} cursor-default`}
-        >
-          {item.icon}
-        </span>
+        <Tooltip key={i} content={item.label}>
+          <span className={`inline-flex items-center justify-center w-6 h-6 rounded ${item.color} cursor-default`}>
+            {item.icon}
+          </span>
+        </Tooltip>
       ))}
     </div>
   )
@@ -248,6 +247,7 @@ export default function InspectionsDashboard({
   const updateSource = (v) => { setSourceFilter(v); setPage(1) }
 
   return (
+    <TooltipProvider>
     <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -416,7 +416,11 @@ export default function InspectionsDashboard({
                       </tr>
                     )}
                     <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
-                    <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell" title={item.inspectionNumber}>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</td>
+                    <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell">
+                      <Tooltip content={item.inspectionNumber}>
+                        <span>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</span>
+                      </Tooltip>
+                    </td>
                     <td className="px-3 py-2">
                       <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
                       <div className="text-charcoal/60 text-[0.75rem]">{formatTime(item.startISO)}</div>
@@ -424,20 +428,26 @@ export default function InspectionsDashboard({
                     <td className="px-3 py-2 text-ink">
                       {item.customerName || '—'}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
-                        <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full" title={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings in this window`}>
-                          {customerCounts[item.customerName.toLowerCase().trim()]}x
-                        </span>
+                        <Tooltip content={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings`}>
+                          <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full">
+                            {customerCounts[item.customerName.toLowerCase().trim()]}x
+                          </span>
+                        </Tooltip>
                       )}
                       {item.feedbackRating && (
-                        <span className="ml-1 text-amber text-xs" title={`Customer rated ${item.feedbackRating}/5`}>
-                          {'★'.repeat(parseInt(item.feedbackRating))}
-                        </span>
+                        <Tooltip content={`Customer rated ${item.feedbackRating}/5`}>
+                          <span className="ml-1 text-amber text-xs">
+                            {'★'.repeat(parseInt(item.feedbackRating))}
+                          </span>
+                        </Tooltip>
                       )}
                     </td>
                     <td className="px-3 py-2 hidden md:table-cell">
-                      <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block" title={item.address || ''}>
-                        {truncateAddress(item.address)}
-                      </span>
+                      <Tooltip content={item.address} side="bottom">
+                        <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block">
+                          {truncateAddress(item.address)}
+                        </span>
+                      </Tooltip>
                     </td>
                     <td className="px-3 py-2 text-right hidden lg:table-cell">
                       <span
@@ -446,14 +456,10 @@ export default function InspectionsDashboard({
                             ? 'text-amber font-medium'
                             : 'text-charcoal/50'
                         }`}
-                        title={
-                          item.tripChargeCents
-                            ? `Trip charge: $${Math.round(parseInt(item.tripChargeCents) / 100)}`
-                            : ''
-                        }
                       >
-
-                        {item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}
+                        <Tooltip content={item.tripChargeCents ? `Trip charge: $${Math.round(parseInt(item.tripChargeCents) / 100)}` : null}>
+                          <span>{item.distanceMiles ? `${item.distanceMiles} mi` : 'TBD'}</span>
+                        </Tooltip>
                       </span>
                     </td>
                     <td className="px-3 py-2">
@@ -474,12 +480,11 @@ export default function InspectionsDashboard({
                       )}
                     </td>
                     <td className="px-3 py-2 hidden lg:table-cell">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${SOURCE_COLORS[item.source] || SOURCE_COLORS.unknown}`}
-                        title={item.source === 'unknown' ? 'Created before source tracking was added' : undefined}
-                      >
-                        {SOURCE_LABELS[item.source] || 'Unknown'}
-                      </span>
+                      <Tooltip content={item.source === 'unknown' ? 'Created before source tracking' : null}>
+                        <span className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${SOURCE_COLORS[item.source] || SOURCE_COLORS.unknown}`}>
+                          {SOURCE_LABELS[item.source] || 'Unknown'}
+                        </span>
+                      </Tooltip>
                     </td>
                     <td className="px-3 py-2 hidden lg:table-cell">
                       <span className={`text-[0.8rem] ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
@@ -487,24 +492,32 @@ export default function InspectionsDashboard({
                     <td className="px-3 py-2">
                       <div className="flex items-center justify-end gap-2">
                         {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
-                          <a href={`/admin/inspections/${item.eventId}/invoice`} title="Send Invoice" className="text-charcoal/40 hover:text-amber transition-colors">
-                            <SendInvoiceIcon />
-                          </a>
+                          <Tooltip content="Send Invoice">
+                            <a href={`/admin/inspections/${item.eventId}/invoice`} className="text-charcoal/40 hover:text-amber transition-colors">
+                              <SendInvoiceIcon />
+                            </a>
+                          </Tooltip>
                         )}
                         {item.squareInvoiceUrl && (
-                          <a href={item.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" title="View Invoice" className="text-charcoal/40 hover:text-amber transition-colors">
-                            <InvoiceIcon />
-                          </a>
+                          <Tooltip content="View Invoice">
+                            <a href={item.squareInvoiceUrl} target="_blank" rel="noopener noreferrer" className="text-charcoal/40 hover:text-amber transition-colors">
+                              <InvoiceIcon />
+                            </a>
+                          </Tooltip>
                         )}
                         {item.eventId && (
-                          <a href={`/admin/inspections/${item.eventId}`} title="View details" className="text-charcoal/40 hover:text-teal transition-colors">
-                            <ViewIcon />
-                          </a>
+                          <Tooltip content="View Details">
+                            <a href={`/admin/inspections/${item.eventId}`} className="text-charcoal/40 hover:text-teal transition-colors">
+                              <ViewIcon />
+                            </a>
+                          </Tooltip>
                         )}
                         {item.token && (
-                          <a href={`/manage?token=${item.token}`} target="_blank" rel="noopener noreferrer" title="Manage booking" className="text-charcoal/40 hover:text-teal transition-colors">
-                            <ManageIcon />
-                          </a>
+                          <Tooltip content="Manage Booking">
+                            <a href={`/manage?token=${item.token}`} target="_blank" rel="noopener noreferrer" className="text-charcoal/40 hover:text-teal transition-colors">
+                              <ManageIcon />
+                            </a>
+                          </Tooltip>
                         )}
                       </div>
                     </td>
@@ -581,6 +594,7 @@ export default function InspectionsDashboard({
         )}
       </div>
     </div>
+    </TooltipProvider>
   )
 }
 
