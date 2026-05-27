@@ -105,6 +105,12 @@ const SOURCE_COLORS = {
 }
 
 
+function truncateAddress(address) {
+  if (!address) return '—'
+  // Remove state + zip (", CO 80439" or ", CO, 80439")
+  return address.replace(/,?\s*CO\s*,?\s*\d{5}.*$/, '').trim() || address
+}
+
 const STATUS_COLORS = { past: 'text-charcoal/50', today: 'text-amber font-semibold', upcoming: 'text-teal font-semibold' }
 const STATUS_LABELS = { past: 'Past', today: 'Today', upcoming: 'Upcoming' }
 const TIMEZONE = 'America/Denver'
@@ -430,7 +436,7 @@ export default function InspectionsDashboard({
                     </td>
                     <td className="px-3 py-2 hidden md:table-cell">
                       <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block" title={item.address || ''}>
-                        {item.address ? (item.address.length > 40 ? item.address.slice(0, 40) + '…' : item.address) : '—'}
+                        {truncateAddress(item.address)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right hidden lg:table-cell">
