@@ -1,5 +1,6 @@
 import { SQFT_TIERS, CITY_SURCHARGES, FEATURE_PRICES, SERVICE_PRICES, DISCOUNTS } from '@/lib/pricing'
 import { SERVICES, ADD_ONS } from '@/lib/services'
+import { BASE_RADIUS_MILES, SURCHARGE_PER_MILE, MAX_SERVICE_RADIUS, DRIVING_FACTOR, HOME_ADDRESS } from '@/lib/mileage'
 
 export const metadata = {
   title: 'Pricing Table — Admin',
@@ -111,6 +112,22 @@ export default function PricingPage() {
           {SERVICES.map((s) => (
             <TableRow key={s.id} label={`${s.name} (${s.durationHours}h)`} value={s.price} />
           ))}
+        </Section>
+
+        {/* Mileage */}
+        <Section title="Mileage / Trip Charge">
+          <p className="text-xs text-charcoal/50 mb-3">Home base: {HOME_ADDRESS}</p>
+          <TableRow label="Base radius (no surcharge)" value={`${BASE_RADIUS_MILES} miles`} />
+          <TableRow label="Surcharge per mile beyond base" value={`$${SURCHARGE_PER_MILE.toFixed(2)}/mile`} />
+          <TableRow label="Maximum service radius" value={`${MAX_SERVICE_RADIUS} miles`} />
+          <TableRow label="Driving factor (straight-line multiplier)" value={`${DRIVING_FACTOR}x`} />
+          <div className="mt-3 pt-3 border-t border-line">
+            <p className="text-xs text-charcoal/50 mb-2">Example trip charges:</p>
+            <TableRow label={`${BASE_RADIUS_MILES + 10} miles`} value={`+$${(10 * SURCHARGE_PER_MILE).toFixed(0)}`} />
+            <TableRow label={`${BASE_RADIUS_MILES + 25} miles`} value={`+$${(25 * SURCHARGE_PER_MILE).toFixed(0)}`} />
+            <TableRow label={`${BASE_RADIUS_MILES + 50} miles`} value={`+$${(50 * SURCHARGE_PER_MILE).toFixed(0)}`} />
+          </div>
+          <p className="text-xs text-charcoal/40 mt-3 italic">Note: City-based surcharges (above) override mileage for known cities.</p>
         </Section>
 
         {/* Discounts */}

@@ -350,6 +350,7 @@ export default function Nav() {
               )}
             </span>
             <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
+            <NavItem href="/admin/customers" label="Customers" active={pathname === '/admin/customers'} onClick={close} />
             <NavItem href="/admin/pricing" label="Pricing" active={pathname === '/admin/pricing'} onClick={close} />
             <NavItem href="/admin/emails" label="Emails" active={pathname === '/admin/emails'} onClick={close} />
             <div className="hidden lg:block w-px h-5 bg-line" />
