@@ -23,6 +23,71 @@ const SERVICE_COLORS = {
   'Radon Testing Only': 'bg-amber/15 text-amber',
   'Mold Assessment': 'bg-purple-100 text-purple-700',
   'Pre-Listing Inspection': 'bg-blue-100 text-blue-700',
+  'Commercial Inspection': 'bg-blue-100 text-blue-700',
+  'Sewer Scope': 'bg-charcoal/10 text-charcoal',
+}
+
+// Service icons — compact SVGs for table cells
+function HomeIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+}
+function RadonIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+}
+function MoldIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+}
+function CommercialIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="9" y1="6" x2="9" y2="6.01" /><line x1="15" y1="6" x2="15" y2="6.01" /><line x1="9" y1="10" x2="9" y2="10.01" /><line x1="15" y1="10" x2="15" y2="10.01" /><line x1="9" y1="14" x2="9" y2="14.01" /><line x1="15" y1="14" x2="15" y2="14.01" /><path d="M9 18h6" /></svg>
+}
+function SewerIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
+}
+function PreListIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M9 12l2 2 4-4" /></svg>
+}
+
+function ServiceIconPill({ service, radonAddOn, sewerScope }) {
+  const icons = []
+
+  // Primary service icon
+  const svcColor = SERVICE_COLORS[service] || 'bg-cream text-charcoal'
+  const svcName = service || 'Inspection'
+  if (service?.includes('Commercial')) {
+    icons.push({ icon: <CommercialIcon />, color: SERVICE_COLORS['Commercial Inspection'], label: 'Commercial Inspection' })
+  } else if (service?.includes('Radon')) {
+    icons.push({ icon: <RadonIcon />, color: SERVICE_COLORS['Radon Testing Only'], label: 'Radon Testing' })
+  } else if (service?.includes('Mold')) {
+    icons.push({ icon: <MoldIcon />, color: SERVICE_COLORS['Mold Assessment'], label: 'Mold Assessment' })
+  } else if (service?.includes('Pre-Listing')) {
+    icons.push({ icon: <PreListIcon />, color: SERVICE_COLORS['Pre-Listing Inspection'], label: 'Pre-Listing Inspection' })
+  } else if (service?.includes('Sewer')) {
+    icons.push({ icon: <SewerIcon />, color: SERVICE_COLORS['Sewer Scope'], label: 'Sewer Scope' })
+  } else {
+    icons.push({ icon: <HomeIcon />, color: SERVICE_COLORS['Full Home Inspection'], label: svcName })
+  }
+
+  // Add-on icons
+  if (radonAddOn) {
+    icons.push({ icon: <RadonIcon />, color: SERVICE_COLORS['Radon Testing Only'], label: 'Radon Add-On' })
+  }
+  if (sewerScope) {
+    icons.push({ icon: <SewerIcon />, color: SERVICE_COLORS['Sewer Scope'], label: 'Sewer Scope Add-On' })
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      {icons.map((item, i) => (
+        <span
+          key={i}
+          title={item.label}
+          className={`inline-flex items-center justify-center w-6 h-6 rounded ${item.color} cursor-default`}
+        >
+          {item.icon}
+        </span>
+      ))}
+    </div>
+  )
 }
 
 const PAYMENT_COLORS = {
@@ -39,10 +104,6 @@ const SOURCE_COLORS = {
   unknown: 'bg-cream text-charcoal/40',
 }
 
-function shortServiceName(name) {
-  const map = { 'Full Home Inspection': 'Full', 'Radon Testing Only': 'Radon', 'Mold Assessment': 'Mold', 'Pre-Listing Inspection': 'Pre-List', 'Commercial Inspection': 'Commercial' }
-  return map[name] || name
-}
 
 const STATUS_COLORS = { past: 'text-charcoal/50', today: 'text-amber font-semibold', upcoming: 'text-teal font-semibold' }
 const STATUS_LABELS = { past: 'Past', today: 'Today', upcoming: 'Upcoming' }
@@ -390,10 +451,7 @@ export default function InspectionsDashboard({
                       </span>
                     </td>
                     <td className="px-3 py-2">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${SERVICE_COLORS[item.service] || 'bg-cream text-charcoal'}`}>
-                        <span className="md:hidden">{shortServiceName(item.service) || '?'}</span>
-                        <span className="hidden md:inline">{item.service || '?'}</span>
-                      </span>
+                      <ServiceIconPill service={item.service} radonAddOn={item.radonAddOn} sewerScope={item.sewerScope} />
                     </td>
                     <td className="px-3 py-2 text-right hidden sm:table-cell text-ink">
                       {formatCents(item.paymentAmountCents || item.invoiceAmountCents)}
