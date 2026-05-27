@@ -415,7 +415,11 @@ export default function InspectionsDashboard({
                         </td>
                       </tr>
                     )}
-                    <tr key={item.eventId} className={`border-b border-line/50 hover:bg-cream/50 ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}>
+                    <tr
+                      key={item.eventId}
+                      onClick={() => item.eventId && router.push(`/admin/inspections/${item.eventId}`)}
+                      className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${isOverdue ? 'bg-red-50 border-l-2 border-l-red-400' : item.status === 'past' ? 'bg-charcoal/[0.04]' : item.status === 'today' ? 'bg-amber/[0.06]' : ''}`}
+                    >
                     <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell">
                       <Tooltip content={item.inspectionNumber}>
                         <span>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</span>
@@ -442,7 +446,7 @@ export default function InspectionsDashboard({
                         </Tooltip>
                       )}
                     </td>
-                    <td className="px-3 py-2 hidden md:table-cell">
+                    <td className="px-3 py-2 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="group relative max-w-[200px]">
                         <Tooltip content={item.address} side="bottom">
                           <span className="text-charcoal/70 text-[0.8rem] truncate block">
@@ -501,7 +505,7 @@ export default function InspectionsDashboard({
                     <td className="px-3 py-2 hidden lg:table-cell">
                       <span className={`text-[0.8rem] ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
                           <Tooltip content="Send Invoice">
