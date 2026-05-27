@@ -24,15 +24,17 @@ export default async function DashboardPage() {
     SELECT
       id, google_event_id, inspection_number, customer_name,
       service, address, start_at, end_at, status,
-      payment_status, invoice_amount_cents, token
+      payment_status, invoice_amount_cents, payment_amount_cents,
+      token, raw_description
     FROM inspections
     WHERE email = ${customer.email}
       AND status != 'cancelled'
     ORDER BY start_at DESC
   `
 
-  // Fetch reports for this customer's inspections
   const inspectionIds = inspections.map((r) => r.id)
+
+  // Fetch reports
   let reports = []
   if (inspectionIds.length > 0) {
     reports = await db`
@@ -48,12 +50,39 @@ export default async function DashboardPage() {
     reportsByInspection[r.inspection_id].push({ fileUrl: r.file_url, fileName: r.file_name })
   }
 
+  // Fetch agreements
+  let agreements = []
+  if (inspectionIds.length > 0) {
+    agreements = await db`
+      SELECT inspection_id, token, signed_at
+      FROM signed_agreements
+      WHERE inspection_id = ANY(${inspectionIds})
+    `
+  }
+  const agreementByInspection = {}
+  for (const a of agreements) {
+    agreementByInspection[a.inspection_id] = {
+      token: a.token,
+      signedAt: a.signed_at?.toISOString?.() || a.signed_at,
+    }
+  }
+
+  // Fetch Square invoice URLs from raw descriptions
+  let invoiceUrls = {}
+  for (const row of inspections) {
+    if (row.raw_description) {
+      const match = row.raw_description.match(/square_invoice_url:\s*(.+)/)
+      if (match) invoiceUrls[row.id] = match[1].trim()
+    }
+  }
+
   const now = new Date()
   const serialized = inspections.map((row) => {
     const startAt = row.start_at?.toISOString?.() || row.start_at
     const endAt = row.end_at?.toISOString?.() || row.end_at
     const isPast = endAt ? new Date(endAt) < now : new Date(startAt) < now
 
+    const desc = row.raw_description || ''
     return {
       id: row.id,
       inspectionNumber: row.inspection_number,
@@ -64,8 +93,13 @@ export default async function DashboardPage() {
       status: isPast ? 'completed' : row.status,
       paymentStatus: row.payment_status,
       invoiceAmountCents: row.invoice_amount_cents,
+      paymentAmountCents: row.payment_amount_cents,
       token: row.token,
       reports: reportsByInspection[row.id] || [],
+      agreement: agreementByInspection[row.id] || null,
+      squareInvoiceUrl: invoiceUrls[row.id] || null,
+      radonAddOn: desc.includes('Radon Add-On: Yes'),
+      sewerScope: desc.includes('Sewer Scope: Yes'),
     }
   })
 

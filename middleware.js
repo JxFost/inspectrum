@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server'
 
 export const config = {
-  matcher: ['/admin/:path((?!login).*)', '/portal/dashboard/:path*'],
+  matcher: ['/admin/:path((?!login).*)', '/portal/dashboard/:path*', '/portal/inspections/:path*', '/portal/profile/:path*'],
 }
 
 export function middleware(request) {
@@ -40,14 +40,12 @@ export function middleware(request) {
     return NextResponse.next()
   }
 
-  // ---- Portal routes (dashboard and beyond) ----
-  if (pathname.startsWith('/portal/dashboard')) {
+  // ---- Portal routes (dashboard, inspections, profile) ----
+  if (pathname.startsWith('/portal/dashboard') || pathname.startsWith('/portal/inspections') || pathname.startsWith('/portal/profile')) {
     const sessionToken = request.cookies.get('portal_session')?.value
     if (!sessionToken) {
       return NextResponse.redirect(new URL('/portal', request.url))
     }
-    // Full session validation happens server-side in the page component.
-    // Middleware is just a quick gate to redirect obvious non-logged-in users.
     return NextResponse.next()
   }
 
