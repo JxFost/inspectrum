@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Button from '@/components/Button'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
-import { estimateTripCharge } from '@/lib/address-parser'
+import { calculatePrice } from '@/lib/pricing'
 
 const PHONE = process.env.NEXT_PUBLIC_OFFICE_PHONE || '(303) 697-0990'
 const PHONE_DIGITS = PHONE.replace(/\D/g, '')
@@ -803,12 +803,18 @@ export default function SchedulerClient() {
           )}
 
           {!confirmed && step === 6 && (() => {
-            const basePrice = service?.basePrice || 0
-            const radonPrice = details.radonAddOn ? 150 : 0
-            const sewerPrice = details.sewerScope ? 225 : 0
-            const trip = estimateTripCharge(details.placeLat, details.placeLng)
-            const tripCharge = trip?.tripChargeDollars || 0
-            const estimatedTotal = basePrice + radonPrice + sewerPrice + tripCharge
+            const serviceType = service?.id === 'radon' ? 'radon'
+              : service?.id === 'mold' ? 'mold'
+              : service?.id === 'commercial' ? 'commercial'
+              : 'full'
+            const { total, breakdown, cityUnknown } = calculatePrice({
+              sqft: details.sqftExact || details.sqftRange,
+              yearBuilt: details.yearBuilt,
+              city: details.city,
+              serviceType,
+              radonAddOn: details.radonAddOn,
+              sewerScope: details.sewerScope,
+            })
             return (
             <div>
               <h2 className="text-2xl mb-6 text-ink">One last look.</h2>
@@ -817,16 +823,26 @@ export default function SchedulerClient() {
               <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-6 mb-6">
                 <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-3">Estimated Cost</div>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-charcoal">{service.name}</span><span className="text-ink font-medium">${basePrice}</span></div>
-                  {details.radonAddOn && <div className="flex justify-between"><span className="text-charcoal">Radon Testing Add-On</span><span className="text-ink font-medium">$150</span></div>}
-                  {details.sewerScope && <div className="flex justify-between"><span className="text-charcoal">Sewer Scope Add-On</span><span className="text-ink font-medium">$225</span></div>}
-                  {tripCharge > 0 && <div className="flex justify-between"><span className="text-charcoal">Trip charge <span className="text-charcoal/50">({trip.miles} mi)</span></span><span className="text-amber font-medium">+${tripCharge}</span></div>}
-                  <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
-                    <span className="text-ink font-semibold">Estimated Total</span>
-                    <span className="text-teal font-serif text-xl font-semibold">${estimatedTotal}</span>
-                  </div>
+                  {breakdown.map((item, i) => (
+                    item.amount !== null && (
+                      <div key={i} className="flex justify-between">
+                        <span className="text-charcoal">{item.label}</span>
+                        <span className={`font-medium ${item.amount < 0 ? 'text-teal' : 'text-ink'}`}>
+                          {item.amount < 0 ? `-$${Math.abs(item.amount)}` : `$${item.amount}`}
+                        </span>
+                      </div>
+                    )
+                  ))}
+                  {cityUnknown && <div className="text-xs text-charcoal/50 italic">Location surcharge may apply</div>}
+                  {total != null && (
+                    <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
+                      <span className="text-ink font-semibold">Estimated Total</span>
+                      <span className="text-teal font-serif text-xl font-semibold">${total}</span>
+                    </div>
+                  )}
+                  {total === null && <div className="text-sm text-charcoal/60 italic">Custom quote — we'll follow up with pricing</div>}
                 </div>
-                <p className="text-[0.7rem] text-charcoal/50 mt-3">Final price may vary based on property size, age, and location. You'll receive an invoice after the inspection.</p>
+                <p className="text-[0.7rem] text-charcoal/50 mt-3">Final price may vary based on property details. You'll receive an invoice after the inspection.</p>
               </div>
 
               <div className="bg-paper p-8 rounded-sm border border-line space-y-4">
