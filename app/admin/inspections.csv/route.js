@@ -53,25 +53,37 @@ export async function GET(request) {
 
   const siteUrl = process.env.PUBLIC_SITE_URL || 'http://localhost:3000'
 
-  const headers = ['date', 'time', 'customer_name', 'customer_phone', 'customer_email', 'address', 'distance_miles', 'trip_charge_dollars', 'service', 'price_dollars', 'payment_status', 'source', 'status', 'manage_url', 'calendar_event_id']
+  const headers = [
+    'inspection_number', 'date', 'time', 'customer_name', 'customer_phone', 'customer_email',
+    'address', 'service', 'radon_add_on', 'sewer_scope', 'distance_miles', 'trip_charge_dollars',
+    'price_dollars', 'payment_status', 'feedback_rating', 'source', 'status',
+    'manage_url', 'calendar_event_id',
+  ]
 
-  const rows = inspections.map((i) => csvRow([
-    formatDate(i.startISO),
-    formatTime(i.startISO),
-    i.customerName || '',
-    i.phone || '',
-    i.email || '',
-    i.address || '',
-    i.distanceMiles || '',
-    i.tripChargeCents ? (parseInt(i.tripChargeCents) / 100).toFixed(2) : '',
-    i.service || '',
-    formatCents(i.paymentAmountCents || i.invoiceAmountCents),
-    i.paymentStatus || 'not_invoiced',
-    i.source,
-    i.status,
-    i.token ? `${siteUrl}/manage?token=${i.token}` : '',
-    i.eventId || '',
-  ]))
+  const rows = inspections.map((i) => {
+    const desc = i.rawDescription || ''
+    return csvRow([
+      i.inspectionNumber || '',
+      formatDate(i.startISO),
+      formatTime(i.startISO),
+      i.customerName || '',
+      i.phone || '',
+      i.email || '',
+      i.address || '',
+      i.service || '',
+      desc.includes('Radon Add-On: Yes') ? 'Yes' : '',
+      desc.includes('Sewer Scope: Yes') ? 'Yes' : '',
+      i.distanceMiles || '',
+      i.tripChargeCents ? (parseInt(i.tripChargeCents) / 100).toFixed(2) : '',
+      formatCents(i.paymentAmountCents || i.invoiceAmountCents),
+      i.paymentStatus || 'not_invoiced',
+      i.feedbackRating || '',
+      i.source || '',
+      i.status || '',
+      i.token ? `${siteUrl}/manage?token=${i.token}` : '',
+      i.eventId || '',
+    ])
+  })
 
   const csv = [csvRow(headers), ...rows].join('\r\n')
   const filename = `inspections-${from}-to-${to}.csv`
