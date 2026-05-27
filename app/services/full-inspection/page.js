@@ -67,7 +67,7 @@ const FAQ_ITEMS = [
   { q: 'When will I get the report?', a: "Same day, in nearly every case. You'll receive a detailed PDF with photos, observations, and prioritized recommendations. If we need an extra day for a particularly complex property, we'll let you know up front." },
   { q: 'Do you also do radon and mold testing?', a: (<p>Yes. <Link href="/services/radon">Radon testing</Link> and <Link href="/services/mold">mold assessments</Link> can be added to a full inspection or scheduled separately. We recommend radon testing for most Colorado homes given the elevated levels statewide.</p>) },
   { q: 'What if I have a question after I get the report?', a: "Call us. The free phone consultation that comes with every inspection doesn't expire. We've taken calls from clients years after the inspection — that's just part of the service." },
-  { q: 'How much does it cost?', a: "Pricing starts at $405 and varies based on square footage, age of the home, location, and any add-ons (radon, sewer scope, etc.). When you schedule, we'll give you an exact quote up front — no surprises." },
+  { q: 'How much does it cost?', a: "Pricing starts at $430 and varies based on square footage, age of the home, location, and any add-ons (radon, sewer scope, etc.). When you schedule, we'll give you an exact quote up front — no surprises." },
 ]
 
 function CheckCard({ iconPath, iconElement, title, items }) {
@@ -92,7 +92,7 @@ function CheckCard({ iconPath, iconElement, title, items }) {
 
 export default function FullInspectionPage() {
   const schemas = [
-    serviceJsonLd({ name: 'Full Home Inspection', description: metadata.description, url: '/services/full-inspection', price: '405' }),
+    serviceJsonLd({ name: 'Full Home Inspection', description: metadata.description, url: '/services/full-inspection', price: '430' }),
     breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Full Inspection', url: '/services/full-inspection' }]),
   ].filter(Boolean)
 
@@ -110,7 +110,7 @@ export default function FullInspectionPage() {
         secondaryCTA={{ label: '(303) 697-0990', href: 'tel:3036970990' }}
         stats={[
           { num: '3–4', em: 'hrs', label: 'Average inspection' },
-          { num: 'From', em: '$405', label: 'Pricing varies by sq ft' },
+          { num: 'From', em: '$430', label: 'Pricing varies by sq ft' },
           { num: 'Same', em: 'day', label: 'Detailed PDF report' },
           { num: 'Free', em: 'consult', label: 'Phone follow-up included' },
         ]}

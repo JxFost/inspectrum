@@ -575,11 +575,14 @@ export default function SchedulerClient() {
                       className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]"
                     >
                       <option value="">Select a range</option>
-                      <option value="Under 2,000 sq ft">Under 2,000 sq ft</option>
-                      <option value="2,000 – 3,000 sq ft">2,000 – 3,000 sq ft</option>
-                      <option value="3,000 – 4,000 sq ft">3,000 – 4,000 sq ft</option>
-                      <option value="4,000 – 5,000 sq ft">4,000 – 5,000 sq ft</option>
-                      <option value="5,000+ sq ft">5,000+ sq ft</option>
+                      <option value="500">Under 1,000 sq ft</option>
+                      <option value="1500">1,000 – 2,000 sq ft</option>
+                      <option value="2250">2,000 – 2,500 sq ft</option>
+                      <option value="2750">2,500 – 3,000 sq ft</option>
+                      <option value="3250">3,000 – 3,500 sq ft</option>
+                      <option value="3750">3,500 – 4,000 sq ft</option>
+                      <option value="4250">4,000 – 4,500 sq ft</option>
+                      <option value="5000">4,500+ sq ft</option>
                     </select>
                   )}
                   {knowsExactSqft && (
@@ -873,7 +876,7 @@ export default function SchedulerClient() {
                 <SummaryRow label="Phone" value={details.phone} />
                 <SummaryRow label="Address" value={fullAddress} />
                 {(knowsExactSqft ? details.sqftExact : details.sqftRange) && (
-                  <SummaryRow label="Square Footage" value={knowsExactSqft ? `${details.sqftExact} sq ft` : details.sqftRange} />
+                  <SummaryRow label="Square Footage" value={knowsExactSqft ? `${details.sqftExact} sq ft` : `~${parseInt(details.sqftRange).toLocaleString()} sq ft`} />
                 )}
                 {details.yearBuilt && <SummaryRow label="Year Built" value={`${details.yearBuilt} (${new Date().getFullYear() - parseInt(details.yearBuilt)} yrs old)`} />}
                 {details.waterType && <SummaryRow label="Water Type" value={details.waterType} />}
