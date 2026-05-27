@@ -52,34 +52,13 @@ Steps to go live:
 - [ ] Verify Google Search Console for new domain
 - [ ] Update Google Business Profile website URL
 
-## 5b. Google Maps Geocoding API (for mileage-based pricing)
+## 5b. Google Maps Geocoding API (optional — enhances mileage)
 
-Enable when ready to implement the mileage/trip charge system.
+The mileage system and pricing engine are fully built. City-based surcharges work without the Maps API (65+ Colorado cities mapped in `lib/pricing.js`). The Geocoding API adds driving distance calculation for unknown cities and the distance column on the dashboard.
 
-- [ ] In Google Cloud Console, enable the **Geocoding API** on the same project as Calendar
-- [ ] Create an API key (or reuse existing) restricted to Geocoding API
+- [ ] In Google Cloud Console, enable the **Geocoding API**
 - [ ] Add `GOOGLE_MAPS_API_KEY` to `.env.local` and Vercel env vars
-- [ ] Estimated cost: ~$0.10/month at current volume ($5 per 1,000 geocode requests)
-
-### Mileage system overview (not yet built)
-
-Constants to configure in `lib/mileage.js`:
-- `HOME_ADDRESS` = 2525 Witter Gulch Rd, Evergreen, CO 80439
-- `BASE_RADIUS_MILES` = 45 (no surcharge within this)
-- `SURCHARGE_PER_MILE` = $0.50 per mile beyond base radius
-- `MAX_SERVICE_RADIUS` = 100 miles (show "please call" beyond this)
-
-Touches these areas when implemented:
-- Booking form step 4: show distance + auto-calculate trip charge
-- Admin block form: same distance display
-- ACC inbound: auto-compute and store in event description
-- Invoice form: pre-populate suggested price with trip charge included
-- Dashboard: distance column/tooltip for route planning
-- Today's Agenda: distance next to each address
-- CSV export: distance_miles and trip_charge_dollars columns
-- Event description: new fields `distance_miles`, `trip_charge_cents`, `geo_lat`, `geo_lng`
-
-Caching: geocoded lat/lng stored in event description — each unique address costs one API call ever.
+- [ ] Estimated cost: ~$0.10/month at current volume
 
 ## 6. Analytics & SEO
 
