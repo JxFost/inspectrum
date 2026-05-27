@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { calculatePrice } from '@/lib/pricing'
+import AddressAutocomplete from '@/components/AddressAutocomplete'
 
 const SERVICES = [
   { id: 'full', name: 'Full Home Inspection', duration: 4 },
@@ -169,8 +170,18 @@ export default function AdminBlockClient() {
         </Field>
       </div>
 
+      <AddressAutocomplete
+        onPlaceSelect={(parsed) => {
+          const full = [parsed.street, parsed.city, parsed.state, parsed.zip].filter(Boolean).join(', ')
+          setForm((prev) => ({
+            ...prev,
+            address: full,
+            city: parsed.city || prev.city,
+          }))
+        }}
+      />
       <Field label="Property Address">
-        <input type="text" value={form.address} onChange={(e) => update('address', e.target.value)} className="input-style" />
+        <input type="text" value={form.address} onChange={(e) => update('address', e.target.value)} className="input-style" placeholder="Auto-filled from search above, or type manually" />
       </Field>
 
       <Field label="Notes">
