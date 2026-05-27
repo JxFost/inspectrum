@@ -43,8 +43,19 @@ function DetailRow({ label, value }) {
   )
 }
 
+const REPORT_TYPES = [
+  { value: 'inspection', label: 'Inspection Report' },
+  { value: 'radon', label: 'Radon Report' },
+  { value: 'sewer', label: 'Sewer Scope Report' },
+  { value: 'addendum', label: 'Addendum / Amendment' },
+  { value: 'other', label: 'Other' },
+]
+
+const REPORT_TYPE_LABELS = Object.fromEntries(REPORT_TYPES.map((t) => [t.value, t.label]))
+
 export default function InspectionDetail({ inspection, reports, agreement }) {
-  const [uploadState, setUploadState] = useState('idle') // idle | uploading | done | error
+  const [uploadState, setUploadState] = useState('idle')
+  const [reportType, setReportType] = useState('inspection')
   const [notify, setNotify] = useState(true)
   const [uploadResult, setUploadResult] = useState(null)
   const [errorMsg, setErrorMsg] = useState(null)
@@ -66,6 +77,7 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('inspectionId', inspection.inspectionId)
+    formData.append('reportType', reportType)
     formData.append('notify', notify ? 'true' : 'false')
 
     try {
@@ -89,6 +101,7 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
           fileUrl: data.fileUrl,
           fileName: data.fileName,
           fileSizeBytes: file.size,
+          reportType,
           uploadedAt: new Date().toISOString(),
           notifiedAt: data.notified ? new Date().toISOString() : null,
         },
@@ -167,9 +180,14 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
             {currentReports.map((r) => (
               <div key={r.id} className="flex items-center justify-between p-3 bg-cream rounded-sm border border-line">
                 <div>
-                  <a href={r.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-teal hover:text-amber no-underline">
-                    {r.fileName}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a href={r.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-teal hover:text-amber no-underline">
+                      {r.fileName}
+                    </a>
+                    <span className="text-[0.6rem] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-charcoal/10 text-charcoal/60">
+                      {REPORT_TYPE_LABELS[r.reportType] || 'Report'}
+                    </span>
+                  </div>
                   <div className="text-xs text-charcoal/50 mt-1">
                     {formatBytes(r.fileSizeBytes)} · Uploaded {new Date(r.uploadedAt).toLocaleDateString('en-US')}
                     {r.notifiedAt && ' · Customer notified'}
@@ -199,12 +217,23 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
             )}
 
             <div className="space-y-3">
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,application/pdf"
-                className="block w-full text-sm text-charcoal/70 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-teal file:text-white hover:file:bg-teal-deep file:cursor-pointer"
-              />
+              <div className="flex gap-3">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  className="flex-1 text-sm text-charcoal/70 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-teal file:text-white hover:file:bg-teal-deep file:cursor-pointer"
+                />
+                <select
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  className="px-3 py-2 border border-line rounded-sm text-sm text-ink bg-cream outline-none focus:border-teal"
+                >
+                  {REPORT_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
               <label className="flex items-center gap-2 text-sm text-charcoal/70 cursor-pointer">
                 <input
                   type="checkbox"

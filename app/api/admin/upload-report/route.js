@@ -35,6 +35,7 @@ export async function POST(request) {
   const formData = await request.formData()
   const file = formData.get('file')
   const inspectionId = formData.get('inspectionId')
+  const reportType = formData.get('reportType') || 'inspection'
   const notify = formData.get('notify') === 'true'
 
   if (!file || !inspectionId) {
@@ -75,13 +76,14 @@ export async function POST(request) {
   try {
     await db`
       INSERT INTO inspection_reports (
-        inspection_id, customer_email, file_url, file_name, file_size_bytes, uploaded_via
+        inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, uploaded_via
       ) VALUES (
         ${inspectionId},
         ${inspection.email || null},
         ${blob.url},
         ${file.name},
         ${file.size},
+        ${reportType},
         'admin'
       )
     `

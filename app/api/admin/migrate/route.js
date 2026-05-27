@@ -106,12 +106,15 @@ async function run(request) {
         file_name       TEXT NOT NULL,
         file_size_bytes INT,
         mime_type       TEXT DEFAULT 'application/pdf',
+        report_type     TEXT DEFAULT 'inspection',
         uploaded_at     TIMESTAMPTZ DEFAULT now(),
         uploaded_via    TEXT DEFAULT 'admin',
         notified_at     TIMESTAMPTZ,
         downloaded_at   TIMESTAMPTZ
       )
     `
+    // Add report_type column if it doesn't exist (safe for existing tables)
+    await db`ALTER TABLE inspection_reports ADD COLUMN IF NOT EXISTS report_type TEXT DEFAULT 'inspection'`.catch(() => {})
     await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
     await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
 

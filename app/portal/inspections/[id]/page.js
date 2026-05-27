@@ -12,6 +12,13 @@ export const metadata = {
 
 const TIMEZONE = 'America/Denver'
 const PHONE = '(303) 697-0990'
+const REPORT_TYPE_LABELS = {
+  inspection: 'Inspection Report',
+  radon: 'Radon Report',
+  sewer: 'Sewer Scope Report',
+  addendum: 'Addendum',
+  other: 'Report',
+}
 
 function formatDate(iso) {
   if (!iso) return ''
@@ -72,7 +79,7 @@ export default async function PortalInspectionPage({ params }) {
 
   // Fetch reports
   const reports = await db`
-    SELECT file_url, file_name, file_size_bytes, uploaded_at
+    SELECT file_url, file_name, file_size_bytes, report_type, uploaded_at
     FROM inspection_reports WHERE inspection_id = ${id}
     ORDER BY uploaded_at DESC
   `
@@ -218,7 +225,12 @@ export default async function PortalInspectionPage({ params }) {
                 {reports.map((r, i) => (
                   <div key={i} className="flex items-center justify-between p-3 bg-cream rounded-sm border border-line">
                     <div>
-                      <div className="text-sm font-medium text-ink">{r.file_name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium text-ink">{r.file_name}</div>
+                        <span className="text-[0.6rem] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-charcoal/10 text-charcoal/60">
+                          {REPORT_TYPE_LABELS[r.report_type] || 'Report'}
+                        </span>
+                      </div>
                       <div className="text-xs text-charcoal/50">
                         {r.file_size_bytes ? `${(r.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : ''} · {new Date(r.uploaded_at).toLocaleDateString('en-US')}
                       </div>

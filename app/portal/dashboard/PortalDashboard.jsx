@@ -7,6 +7,22 @@ const TIMEZONE = 'America/Denver'
 const PHONE = '(303) 697-0990'
 const PHONE_DIGITS = '3036970990'
 
+const REPORT_TYPE_LABELS = {
+  inspection: 'Inspection Report',
+  radon: 'Radon Report',
+  sewer: 'Sewer Scope Report',
+  addendum: 'Addendum',
+  other: 'Report',
+}
+
+const REPORT_TYPE_SHORT = {
+  inspection: 'Report',
+  radon: 'Radon',
+  sewer: 'Sewer Scope',
+  addendum: 'Addendum',
+  other: 'Document',
+}
+
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', {
     timeZone: TIMEZONE,
@@ -125,7 +141,7 @@ function InspectionCard({ insp, isUpcoming }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal text-white text-xs font-semibold rounded-sm no-underline hover:bg-teal-deep transition-colors"
             >
-              Download Report
+              {REPORT_TYPE_SHORT[r.reportType] || 'Report'} ↓
             </a>
           ))}
         </div>

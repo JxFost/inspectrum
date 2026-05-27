@@ -30,7 +30,7 @@ export default async function InspectionDetailPage({ params }) {
   let reports = []
   if (dbRecord) {
     reports = await db`
-      SELECT id, file_url, file_name, file_size_bytes, uploaded_at, notified_at, downloaded_at
+      SELECT id, file_url, file_name, file_size_bytes, report_type, uploaded_at, notified_at, downloaded_at
       FROM inspection_reports
       WHERE inspection_id = ${dbRecord.id}
       ORDER BY uploaded_at DESC
@@ -95,6 +95,7 @@ export default async function InspectionDetailPage({ params }) {
     fileUrl: r.file_url,
     fileName: r.file_name,
     fileSizeBytes: r.file_size_bytes,
+    reportType: r.report_type || 'inspection',
     uploadedAt: r.uploaded_at?.toISOString?.() || r.uploaded_at,
     notifiedAt: r.notified_at?.toISOString?.() || r.notified_at,
     downloadedAt: r.downloaded_at?.toISOString?.() || r.downloaded_at,

@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   let reports = []
   if (inspectionIds.length > 0) {
     reports = await db`
-      SELECT inspection_id, file_url, file_name
+      SELECT inspection_id, file_url, file_name, report_type
       FROM inspection_reports
       WHERE inspection_id = ANY(${inspectionIds})
       ORDER BY uploaded_at DESC
@@ -47,7 +47,7 @@ export default async function DashboardPage() {
   const reportsByInspection = {}
   for (const r of reports) {
     if (!reportsByInspection[r.inspection_id]) reportsByInspection[r.inspection_id] = []
-    reportsByInspection[r.inspection_id].push({ fileUrl: r.file_url, fileName: r.file_name })
+    reportsByInspection[r.inspection_id].push({ fileUrl: r.file_url, fileName: r.file_name, reportType: r.report_type || 'inspection' })
   }
 
   // Fetch agreements
