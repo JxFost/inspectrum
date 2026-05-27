@@ -31,24 +31,34 @@ function verifyAdminSession(request) {
  */
 function parseSquareEmail(email) {
   const text = email.plain || email.html || ''
+  const subject = email.subject || ''
 
-  // Try to find dollar amount
-  const amountMatch = text.match(/\$\s*([\d,]+(?:\.\d{2})?)/)?.[1]
-  const amountCents = amountMatch ? Math.round(parseFloat(amountMatch.replace(/,/g, '')) * 100) : null
+  // Try to find dollar amount — subject first (most reliable), then body
+  const subjectAmountMatch = subject.match(/\$\s*([\d,]+(?:\.\d{2})?)/)?.[1]
+  const bodyAmountMatch = text.match(/\$\s*([\d,]+(?:\.\d{2})?)/)?.[1]
+  const amountStr = subjectAmountMatch || bodyAmountMatch
+  const amountCents = amountStr ? Math.round(parseFloat(amountStr.replace(/,/g, '')) * 100) : null
 
-  // Try to find customer name
-  // Square emails often have "Payment from <name>" or "<name> paid"
-  const nameMatch = text.match(/(?:Payment from|paid by|from)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/i)?.[1]
+  // Try to find customer name from subject first
+  // Square subjects: "$1,000.05 payment received from Brennan Pogliano"
+  const subjectNameMatch = subject.match(/payment received from\s+(.+)/i)?.[1]
+  // Then try body
+  const bodyNameMatch = text.match(/(?:Payment from|paid by)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/i)?.[1]
     || text.match(/(?:Invoice to|Customer:?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/i)?.[1]
+  const nameMatch = subjectNameMatch || bodyNameMatch
 
   // Try to find customer email in the body
   const emailMatch = text.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/)?.[1]
-  // Filter out Square/Inspectrum emails
-  const customerEmail = emailMatch && !emailMatch.includes('square') && !emailMatch.includes('evergreeninspections')
+  // Filter out Square/Inspectrum/noreply emails
+  const customerEmail = emailMatch
+    && !emailMatch.includes('square')
+    && !emailMatch.includes('evergreeninspections')
+    && !emailMatch.includes('noreply')
     ? emailMatch.toLowerCase() : null
 
   // Try to find invoice ID
-  const invoiceMatch = text.match(/(?:Invoice|Invoice #|inv[_-])\s*([A-Za-z0-9-]+)/i)?.[1]
+  const invoiceMatch = subject.match(/#(\d+)/)?.[1]
+    || text.match(/(?:Invoice|Invoice #|inv[_-])\s*([A-Za-z0-9-]+)/i)?.[1]
 
   // Parse date from email headers
   const emailDate = email.date ? new Date(email.date) : null
@@ -96,11 +106,12 @@ export async function GET(request) {
     }
   }
 
-  // Deduplicate by message ID
+  // Deduplicate by subject (both inboxes get the same Square notification)
   const seen = new Set()
   allEmails = allEmails.filter((e) => {
-    if (seen.has(e.id)) return false
-    seen.add(e.id)
+    const key = (e.subject || '').trim().toLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key)
     return true
   })
 
@@ -139,7 +150,7 @@ export async function GET(request) {
       if (rows[0]) inspection = rows[0]
     }
 
-    // 2. Match by customer name + amount (if email didn't match)
+    // 2. Match by full customer name
     if (!inspection && parsed.customerName) {
       const nameLower = parsed.customerName.toLowerCase()
       const rows = await db`
@@ -151,6 +162,22 @@ export async function GET(request) {
         LIMIT 1
       `
       if (rows[0]) inspection = rows[0]
+    }
+
+    // 3. Match by last name only (Square sometimes uses first + last from card)
+    if (!inspection && parsed.customerName) {
+      const lastName = parsed.customerName.trim().split(/\s+/).pop().toLowerCase()
+      if (lastName.length > 2) {
+        const rows = await db`
+          SELECT id, inspection_number, customer_name, email, payment_status
+          FROM inspections
+          WHERE LOWER(customer_name) LIKE ${'%' + lastName + '%'}
+            AND status != 'cancelled'
+          ORDER BY start_at DESC
+          LIMIT 1
+        `
+        if (rows[0]) inspection = rows[0]
+      }
     }
 
     if (!inspection) {
