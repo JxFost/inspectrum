@@ -339,18 +339,18 @@ export default function Nav() {
         {/* Admin nav — replaces client nav when on admin pages */}
         {isOnAdminPage && pathname.startsWith('/admin') ? (
           <>
+            <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
+            <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
             <span className="relative w-full lg:w-auto">
-              <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
+              <NavItem href="/admin/invoices" label="Invoices" active={pathname === '/admin/invoices'} onClick={close} />
               {uninvoicedCount > 0 && (
                 <TooltipProvider>
-                  <Tooltip content={`${uninvoicedCount} past inspection${uninvoicedCount > 1 ? 's' : ''} without an invoice`} side="bottom">
+                  <Tooltip content={`${uninvoicedCount} uninvoiced inspection${uninvoicedCount > 1 ? 's' : ''}`} side="bottom">
                     <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-4 lg:bottom-4 bg-red-600 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center cursor-default">{uninvoicedCount}</span>
                   </Tooltip>
                 </TooltipProvider>
               )}
             </span>
-            <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />
-            <NavItem href="/admin/invoices" label="Invoices" active={pathname === '/admin/invoices'} onClick={close} />
             <NavItem href="/admin/customers" label="Customers" active={pathname === '/admin/customers'} onClick={close} />
             <NavItem href="/admin/pricing" label="Pricing" active={pathname === '/admin/pricing'} onClick={close} />
             <NavItem href="/admin/emails" label="Emails" active={pathname === '/admin/emails'} onClick={close} />
