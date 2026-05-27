@@ -443,11 +443,23 @@ export default function InspectionsDashboard({
                       )}
                     </td>
                     <td className="px-3 py-2 hidden md:table-cell">
-                      <Tooltip content={item.address} side="bottom">
-                        <span className="text-charcoal/70 text-[0.8rem] max-w-[200px] truncate block">
-                          {truncateAddress(item.address)}
-                        </span>
-                      </Tooltip>
+                      <div className="group relative max-w-[200px]">
+                        <Tooltip content={item.address} side="bottom">
+                          <span className="text-charcoal/70 text-[0.8rem] truncate block">
+                            {truncateAddress(item.address)}
+                          </span>
+                        </Tooltip>
+                        {item.address && (
+                          <a
+                            href={`https://maps.apple.com/?daddr=${encodeURIComponent(item.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-teal text-white text-[0.6rem] font-semibold px-2 py-1 rounded-sm no-underline whitespace-nowrap"
+                          >
+                            Directions →
+                          </a>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-right hidden lg:table-cell">
                       <span
