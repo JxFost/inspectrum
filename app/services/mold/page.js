@@ -96,7 +96,7 @@ function MoldHotZonesDiagram() {
 
 export default function MoldPage() {
   const schemas = [
-    serviceJsonLd({ name: 'Mold Assessment', description: metadata.description, url: '/services/mold', price: '250' }),
+    serviceJsonLd({ name: 'Mold Assessment', description: metadata.description, url: '/services/mold', price: '280' }),
     breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Mold Assessment', url: '/services/mold' }]),
   ].filter(Boolean)
 
@@ -114,7 +114,7 @@ export default function MoldPage() {
         secondaryCTA={{ label: '(303) 697-0990', href: 'tel:3036970990' }}
         stats={[
           { num: '1–2', em: 'hrs', label: 'Typical assessment time' },
-          { num: 'From', em: '$250', label: 'Add-on or standalone' },
+          { num: 'From', em: '$280', label: 'Add-on or standalone' },
           { num: 'Moisture', em: 'mapping', label: 'Thermal & meter readings' },
           { num: 'Same', em: 'day', label: 'Photo-documented report' },
         ]}

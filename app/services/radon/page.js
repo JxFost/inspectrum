@@ -83,7 +83,7 @@ function RadonDiagram() {
 
 export default function RadonPage() {
   const schemas = [
-    serviceJsonLd({ name: 'Radon Testing', description: metadata.description, url: '/services/radon', price: '150' }),
+    serviceJsonLd({ name: 'Radon Testing', description: metadata.description, url: '/services/radon', price: '125' }),
     breadcrumbJsonLd([{ name: 'Home', url: '/' }, { name: 'Services', url: '/#services' }, { name: 'Radon Testing', url: '/services/radon' }]),
   ].filter(Boolean)
 
@@ -101,7 +101,7 @@ export default function RadonPage() {
         secondaryCTA={{ label: '(303) 697-0990', href: 'tel:3036970990' }}
         stats={[
           { num: '48', em: 'hrs', label: 'Continuous monitor period' },
-          { num: 'From', em: '$150', label: 'Add-on or standalone' },
+          { num: 'From', em: '$125', label: 'Add-on or standalone' },
           { num: 'EPA', em: 'certified', label: 'Calibrated equipment' },
           { num: 'On-site', em: 'results', label: 'Hourly readings included' },
         ]}
