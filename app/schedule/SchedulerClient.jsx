@@ -361,9 +361,17 @@ export default function SchedulerClient() {
                 <div className="text-sm text-charcoal">{selectedSlot.label} · {service.durationHours} hr{service.durationHours > 1 ? 's' : ''}</div>
                 <div className="text-sm text-charcoal mt-1">{fullAddress}</div>
               </div>
-              <p className="text-sm text-charcoal/70 mb-6">
-                We sent a confirmation to <span className="font-medium text-ink">{details.email}</span> — check your spam folder if you don't see it.
-              </p>
+              <div className="bg-amber/[0.08] border border-amber/20 rounded-sm p-4 max-w-md mx-auto mb-6 text-left">
+                <p className="text-sm text-charcoal mb-2">
+                  We sent a confirmation to <span className="font-medium text-ink">{details.email}</span>
+                </p>
+                <p className="text-xs text-charcoal/60 mb-2">
+                  <span className="font-semibold text-amber">Check your spam or promotions folder</span> if you don't see it within a few minutes.
+                </p>
+                <p className="text-xs text-charcoal/60">
+                  Your email includes an <span className="font-semibold">Inspection Agreement</span> that needs to be signed before your appointment.
+                </p>
+              </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
                 <a href={gcalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-teal">Add to Google Calendar</a>
                 <a href={icsUrl} download="inspection.ics" className="btn" style={{ background: 'transparent', color: 'var(--color-ink)', border: '1px solid var(--color-line)' }}>

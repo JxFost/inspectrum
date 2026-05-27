@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import BrandLogo from './BrandLogo'
+import Tooltip, { TooltipProvider } from './Tooltip'
 
 const CalendarIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
@@ -341,7 +342,11 @@ export default function Nav() {
             <span className="relative w-full lg:w-auto">
               <NavItem href="/admin/inspections" label="Inspections" active={pathname.startsWith('/admin/inspections')} onClick={close} />
               {uninvoicedCount > 0 && (
-                <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-4 lg:bottom-4 bg-red-600 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center">{uninvoicedCount}</span>
+                <TooltipProvider>
+                  <Tooltip content={`${uninvoicedCount} past inspection${uninvoicedCount > 1 ? 's' : ''} without an invoice`} side="bottom">
+                    <span className="absolute -top-1 -right-1 lg:top-auto lg:-right-4 lg:bottom-4 bg-red-600 text-white text-[0.6rem] font-bold w-5 h-5 rounded-full flex items-center justify-center cursor-default">{uninvoicedCount}</span>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </span>
             <NavItem href="/admin/block" label="New Booking" active={pathname === '/admin/block'} onClick={close} />

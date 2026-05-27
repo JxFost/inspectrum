@@ -41,6 +41,12 @@ export async function POST(request) {
   const email = (body.email || '').trim()
   const address = (body.address || '').trim()
   const notes = (body.notes || '').trim()
+  const sqft = (body.sqft || '').toString().trim()
+  const yearBuilt = (body.yearBuilt || '').toString().trim()
+  const garageType = (body.garageType || '').trim()
+  const outbuilding = (body.outbuilding || '').trim()
+  const occupied = (body.occupied || '').trim()
+  const waterType = (body.waterType || '').trim()
   const radonAddOn = body.radonAddOn === true
   const sewerScope = body.sewerScope === true
   const sendConfirmation = body.sendEmail === true && email
@@ -63,6 +69,12 @@ export async function POST(request) {
     phone,
     email,
     address,
+    sqft,
+    yearBuilt,
+    waterType,
+    garageType,
+    outbuilding,
+    occupied,
     radonAddOn,
     sewerScope,
     source: 'admin',
