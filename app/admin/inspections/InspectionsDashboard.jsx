@@ -454,14 +454,65 @@ export default function InspectionsDashboard({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-6">
-            {currentPage > 1 ? (
-              <button type="button" onClick={() => setPage(currentPage - 1)} className="text-sm text-teal font-medium hover:text-amber cursor-pointer bg-transparent border-0">← Previous</button>
-            ) : <span />}
-            <span className="text-xs text-charcoal/50">Page {currentPage} of {totalPages}</span>
-            {currentPage < totalPages ? (
-              <button type="button" onClick={() => setPage(currentPage + 1)} className="text-sm text-teal font-medium hover:text-amber cursor-pointer bg-transparent border-0">Next →</button>
-            ) : <span />}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-6">
+            <span className="text-xs text-charcoal/50">
+              Showing {startIdx + 1}–{endIdx} of {total}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(1)}
+                disabled={currentPage === 1}
+                className="px-2 py-1 text-xs text-charcoal/60 hover:text-teal cursor-pointer bg-transparent border border-line rounded-sm disabled:opacity-30 disabled:cursor-default"
+              >
+                First
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-2 py-1 text-xs text-charcoal/60 hover:text-teal cursor-pointer bg-transparent border border-line rounded-sm disabled:opacity-30 disabled:cursor-default"
+              >
+                ←
+              </button>
+              {(() => {
+                const pages = []
+                let start = Math.max(1, currentPage - 2)
+                let end = Math.min(totalPages, start + 4)
+                if (end - start < 4) start = Math.max(1, end - 4)
+                for (let i = start; i <= end; i++) pages.push(i)
+                return pages.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 text-xs rounded-sm cursor-pointer border transition-colors ${
+                      p === currentPage
+                        ? 'bg-teal text-white border-teal font-bold'
+                        : 'bg-transparent text-charcoal/60 border-line hover:text-teal hover:border-teal'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))
+              })()}
+              <button
+                type="button"
+                onClick={() => setPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 text-xs text-charcoal/60 hover:text-teal cursor-pointer bg-transparent border border-line rounded-sm disabled:opacity-30 disabled:cursor-default"
+              >
+                →
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 text-xs text-charcoal/60 hover:text-teal cursor-pointer bg-transparent border border-line rounded-sm disabled:opacity-30 disabled:cursor-default"
+              >
+                Last
+              </button>
+            </div>
           </div>
         )}
       </div>
