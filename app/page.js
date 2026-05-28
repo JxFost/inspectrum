@@ -116,10 +116,14 @@ const SERVICES = [
 const PROCESS_STEPS = [
   { num: '01', title: 'Schedule', body: "Call or fill out the form. We'll find a time that works — often within 48 hours." },
   { num: '02', title: 'Inspect', body: 'We perform a complete analysis on-site. Plan on 1 hour per 1,000 sq ft, 3 hour minimum.' },
-  { num: '03', title: 'Walk Through', body: 'You join us at the end so you can see every concern with your own eyes — not just on paper.' },
-  { num: '04', title: 'Report & Consult', body: 'Same-day written report delivered, with a free phone consultation whenever you need it.' },
-  { num: '05', title: 'A Friend on Your Side', body: "Harry's not just your inspector — he's your neighbor down the street. Call anytime to chat about any aspect of the home you're buying, selling, or just curious about. Foundations, roofs, radon, systems — he'll talk your ear off." },
+  { num: '03', title: 'Walk Through & Report', body: 'You join us at the end so you can see every concern with your own eyes — and on paper. Get your report that day.' },
 ]
+
+const HIGHLIGHT_STEP = {
+  num: '04',
+  title: 'A Friend on Your Side',
+  body: "Harry's not just your inspector — he's your neighbor down the street. Call anytime to chat about any aspect of the home you're buying, selling, or just curious about. Foundations, roofs, radon, systems — he'll talk your ear off. That's not a service add-on. That's just Harry.",
+}
 
 // ---- Testimonials ----
 const GOOGLE_REVIEWS_URL =
@@ -388,14 +392,14 @@ export default function HomePage() {
           <div className="text-center max-w-[680px] mx-auto mb-16">
             <div className="section-eyebrow justify-center">How It Works</div>
             <h2 className="text-[clamp(2.4rem,5vw,4.2rem)] mb-4 text-ink">
-              Five steps. <em className="italic text-teal">No surprises.</em>
+              Four steps. <em className="italic text-teal">No surprises.</em>
             </h2>
             <p className="text-[1.1rem] text-charcoal leading-relaxed">
               From the call to the report, you'll always know exactly what's next.
             </p>
           </div>
           {/* Connected timeline grid (1px gap creates the divider lines) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-px bg-line border border-line">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-line border border-line">
             {PROCESS_STEPS.map((step) => (
               <div
                 key={step.num}
@@ -408,6 +412,22 @@ export default function HomePage() {
                 <p className="text-[0.9rem] text-charcoal leading-relaxed">{step.body}</p>
               </div>
             ))}
+          </div>
+
+          {/* Highlight step — Harry's personal touch */}
+          <div className="mt-8 bg-gradient-to-br from-teal-darker to-teal-deep text-cream rounded-sm p-10 md:p-14 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/[0.04] rounded-full -translate-y-1/2 translate-x-1/3" />
+            <div className="relative">
+              <div className="font-serif italic text-[0.85rem] text-amber mb-6 tracking-wider font-medium">
+                — Step {HIGHLIGHT_STEP.num}
+              </div>
+              <h4 className="text-[clamp(1.6rem,3vw,2.2rem)] mb-4 font-serif">{HIGHLIGHT_STEP.title}</h4>
+              <p className="text-[1.05rem] text-cream/80 leading-relaxed max-w-2xl">{HIGHLIGHT_STEP.body}</p>
+              <a href="tel:3036970990" className="inline-flex items-center gap-2 mt-6 text-amber font-semibold hover:text-white transition-colors no-underline">
+                (303) 697-0990 — Call Harry anytime
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
+              </a>
+            </div>
           </div>
         </div>
       </section>
