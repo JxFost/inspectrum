@@ -268,7 +268,7 @@ export default function InspectionsDashboard({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               CSV
             </a>
-            <a href="/admin/block" className="hidden md:inline-flex text-sm text-charcoal/60 hover:text-teal">+ New</a>
+            <a href="/admin/block" className="hidden text-sm text-charcoal/60 hover:text-teal">+ New</a>
           </div>
         </div>
 
@@ -287,7 +287,11 @@ export default function InspectionsDashboard({
                   ) : (
                     <span className="text-charcoal/40">Address TBD</span>
                   )}
-                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : ''}</span>
+                  {item.distanceMiles && (
+                    <span className="text-charcoal/50 text-sm ml-auto hidden sm:inline whitespace-nowrap">
+                      {item.distanceMiles} mi <span className="text-charcoal/50">· ~{Math.round(item.distanceMiles * 1.5)} min</span>
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -309,7 +313,11 @@ export default function InspectionsDashboard({
                   ) : (
                     <span className="text-charcoal/40">Address TBD</span>
                   )}
-                  <span className="text-charcoal/40 text-xs ml-auto hidden sm:inline">{item.distanceMiles ? `${item.distanceMiles} mi` : ''}</span>
+                  {item.distanceMiles && (
+                    <span className="text-charcoal/50 text-sm ml-auto hidden sm:inline whitespace-nowrap">
+                      {item.distanceMiles} mi <span className="text-charcoal/50">· ~{Math.round(item.distanceMiles * 1.5)} min</span>
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
