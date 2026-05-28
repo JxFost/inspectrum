@@ -198,3 +198,9 @@
     animation: none;
   }
 }
+
+gmp-place-autocomplete {
+  color-scheme: light;
+  background-color: var(--color-cream);
+  border: 1px solid var(--color-line);
+}
