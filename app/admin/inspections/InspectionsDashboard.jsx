@@ -316,27 +316,27 @@ export default function InspectionsDashboard({
           </div>
         )}
 
-        {/* Summary strip */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
-          {/* <StatCard label="Inspections" value={inspections.length} trend={trendArrow(inspections.length, prevTotal)} /> */}
+        {/* Summary strip — hidden for now */}
+        {false && <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
           <StatCard label="Completed" value={completed} trend={trendArrow(completed, prevCompleted)} />
           <StatCard label="Upcoming" value={upcoming} />
           <StatCard label="Collected" value={collected ? `$${Math.round(collected / 100).toLocaleString()}` : '$0'} trend={trendArrow(collected, prevCollected)} />
           <StatCard label="Outstanding" value={outstanding ? `$${Math.round(outstanding / 100).toLocaleString()}` : '$0'} />
           <StatCard label="Overdue" value={overdueCount} alert={overdueCount > 0} />
           <StatCard label="YTD Total" value={ytdCount} />
-        </div>
+        </div>}
 
-        {/* Search + source filters */}
+        {/* Search */}
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <input
             type="text"
             value={search}
             onChange={(e) => updateSearch(e.target.value)}
-            placeholder="Search name, address, or #..."
-            className="bg-paper border border-line px-3 py-2 text-sm text-ink rounded-sm outline-none focus:border-teal w-full sm:w-64"
+            placeholder="Search by name, address, or inspection number..."
+            className="bg-paper border border-line px-4 py-3 text-sm text-ink rounded-sm outline-none focus:border-teal w-full"
           />
-          <div className="flex gap-1">
+          {/* Source filters — hidden for now */}
+          {false && <div className="flex gap-1">
             {SOURCE_FILTERS.map((s) => (
               <button
                 key={s}
@@ -351,7 +351,7 @@ export default function InspectionsDashboard({
                 {SOURCE_LABELS[s]}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
 
         {/* Page relationship */}
