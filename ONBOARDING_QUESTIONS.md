@@ -80,6 +80,8 @@ Questions to go over before launch. Answers will determine final configuration.
 - [ ] **Commercial inspections** — different pricing structure? Longer duration? Different agreement?
 - [ ] **Pre-listing inspections** — are these priced differently from buyer inspections?
 - [ ] **Are there any services you offer that we haven't added?** (Well testing, septic, thermal imaging as standalone, etc.)
+- [ ] **Roof inspections** — should we advertise these as a standalone service, or is that off the table right now?
+- [ ] **Mold assessments** — do you actually offer this? Should we keep it on the booking form or remove it? Currently priced at $280 but should it be closer to $500? How often do you get mold requests?
 - [ ] **Do you do re-inspections?** Is there a fee? How should they be booked?
 
 ## Transition Plan

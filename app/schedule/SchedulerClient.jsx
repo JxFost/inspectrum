@@ -449,7 +449,7 @@ export default function SchedulerClient() {
                   )}
 
                   {!loadingSlots && !slotsError && selectedDate && slots.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 gap-4">
                       {slots.map((slot) => (
                         <button key={slot.startISO} type="button" onClick={() => setSelectedSlot(slot)}
                           className={[
