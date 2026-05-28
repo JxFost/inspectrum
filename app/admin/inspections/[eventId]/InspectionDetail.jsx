@@ -61,6 +61,8 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
   const [errorMsg, setErrorMsg] = useState(null)
   const [currentReports, setCurrentReports] = useState(reports)
   const fileRef = useRef(null)
+  const [deleteState, setDeleteState] = useState('idle') // idle | confirming | deleting | deleted
+  const [deleteError, setDeleteError] = useState(null)
 
   async function handleUpload() {
     const file = fileRef.current?.files?.[0]
@@ -262,7 +264,7 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 mb-12">
         <Link href="/admin/inspections" className="text-sm text-teal hover:text-amber no-underline font-semibold">
           ← Back to dashboard
         </Link>
@@ -270,6 +272,80 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
           Send Invoice
         </Link>
       </div>
+
+      {/* Remove inspection */}
+      {deleteState === 'deleted' ? (
+        <div className="bg-paper border border-line rounded-sm p-8 text-center">
+          <p className="text-sm text-charcoal mb-4">Inspection removed.</p>
+          <Link href="/admin/inspections" className="text-sm text-teal hover:text-amber no-underline font-semibold">
+            Back to dashboard
+          </Link>
+        </div>
+      ) : (
+        <div className="border-t border-line pt-8">
+          <div className="text-xs uppercase tracking-[0.28em] text-red-600 font-semibold mb-3">Danger Zone</div>
+          <p className="text-sm text-charcoal/60 mb-4">
+            Removing this inspection will delete it from the calendar and mark it as cancelled in the database. This cannot be undone.
+          </p>
+
+          {deleteState === 'idle' && (
+            <button
+              type="button"
+              onClick={() => setDeleteState('confirming')}
+              className="text-sm text-red-600 hover:text-red-800 cursor-pointer bg-transparent border border-red-200 rounded-sm px-4 py-2 transition-colors"
+            >
+              Remove this inspection
+            </button>
+          )}
+
+          {deleteState === 'confirming' && (
+            <div className="bg-red-50 border border-red-200 rounded-sm p-6">
+              <p className="text-sm text-ink font-medium mb-4">
+                Are you sure you want to remove this inspection for <strong>{inspection.customerName}</strong>?
+              </p>
+              {deleteError && (
+                <p className="text-sm text-red-600 mb-3">{deleteError}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setDeleteState('deleting')
+                    setDeleteError(null)
+                    try {
+                      const res = await fetch('/api/admin/delete-inspection', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: inspection.eventId }),
+                      })
+                      if (!res.ok) {
+                        const d = await res.json()
+                        setDeleteError(d.error || 'Failed to remove.')
+                        setDeleteState('confirming')
+                        return
+                      }
+                      setDeleteState('deleted')
+                    } catch {
+                      setDeleteError('Network error.')
+                      setDeleteState('confirming')
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-sm font-semibold text-sm cursor-pointer border-0 hover:bg-red-700 transition-colors"
+                >
+                  {deleteState === 'deleting' ? 'Removing...' : 'Yes, Remove It'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteState('idle')}
+                  className="px-4 py-2 bg-transparent border border-line text-ink rounded-sm font-semibold text-sm cursor-pointer hover:bg-paper transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }
