@@ -66,6 +66,9 @@ function buildICS({ service, startISO, endISO, address }) {
 function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  // Earliest bookable date: 2 days from now (no same-day or next-day bookings)
+  const earliest = new Date(today)
+  earliest.setDate(earliest.getDate() + 2)
   const year = viewMonth.getFullYear()
   const month = viewMonth.getMonth()
   const firstDay = new Date(year, month, 1).getDay()
@@ -93,9 +96,9 @@ function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service
       <div className="grid grid-cols-7 gap-1">
         {cells.map((date, i) => {
           if (!date) return <div key={i} />
-          const isPast = date < today
+          const isTooSoon = date < earliest
           const isSunday = date.getDay() === 0
-          const isDisabled = isPast || isSunday
+          const isDisabled = isTooSoon || isSunday
           const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString()
           return (
             <button
@@ -104,8 +107,8 @@ function Calendar({ selectedDate, onSelectDate, viewMonth, setViewMonth, service
                 'aspect-square flex items-center justify-center text-sm rounded-sm transition-all',
                 isSelected && 'bg-teal text-white font-semibold',
                 !isSelected && !isDisabled && 'bg-paper hover:bg-amber hover:text-white cursor-pointer',
-                !isSelected && isSunday && !isPast && 'text-charcoal/30 line-through cursor-not-allowed',
-                isPast && 'text-charcoal/20 cursor-not-allowed',
+                !isSelected && isSunday && !isTooSoon && 'text-charcoal/30 line-through cursor-not-allowed',
+                isTooSoon && 'text-charcoal/20 cursor-not-allowed',
               ].filter(Boolean).join(' ')}
             >
               {date.getDate()}
