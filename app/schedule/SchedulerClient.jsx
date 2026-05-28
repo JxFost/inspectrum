@@ -398,11 +398,12 @@ export default function SchedulerClient() {
           {!confirmed && step === 1 && (
             <div>
               <h2 className="text-2xl mb-6 text-ink">Which service?</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 {SERVICES.map((s) => (
                   <button key={s.id} type="button" onClick={() => { setService(s); setSelectedSlot(null) }}
                     className={[
                       'text-left p-6 rounded-sm border-2 bg-cream cursor-pointer transition-all',
+                      s.id === 'full' ? 'col-span-3' : 'col-span-1',
                       service?.id === s.id ? 'border-teal bg-paper shadow-[0_4px_12px_rgba(43,126,140,0.15)]' : 'border-line hover:border-teal/50',
                     ].join(' ')}>
                     <div className="font-serif text-lg font-medium text-ink mb-1">
