@@ -21,20 +21,23 @@ export function middleware(request) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
 
+    const loginUrl = new URL('/admin/login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+
     const cookie = request.cookies.get('admin_session')?.value
     if (!cookie) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return NextResponse.redirect(loginUrl)
     }
 
     const parts = cookie.split('.')
     if (parts.length !== 2) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return NextResponse.redirect(loginUrl)
     }
 
     const [timestamp] = parts
     const age = Date.now() - parseInt(timestamp, 10)
     if (isNaN(age) || age > 30 * 24 * 60 * 60 * 1000) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return NextResponse.redirect(loginUrl)
     }
 
     return NextResponse.next()

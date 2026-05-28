@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 export default function AdminLoginClient() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/admin/inspections'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -29,7 +30,9 @@ export default function AdminLoginClient() {
       }
 
       // Full page reload so middleware picks up the new cookie
-      window.location.href = '/admin/inspections'
+      // Redirect to original page if coming from a deep link
+      const target = redirectTo.startsWith('/admin') ? redirectTo : '/admin/inspections'
+      window.location.href = target
     } catch {
       setError('Network error. Please try again.')
       setLoading(false)

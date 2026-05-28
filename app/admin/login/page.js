@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import AdminLoginClient from './AdminLoginClient'
 
 export const metadata = {
@@ -10,7 +11,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-cream flex items-center justify-center px-5">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-serif text-ink mb-6 text-center">Admin Login</h1>
-        <AdminLoginClient />
+        <Suspense><AdminLoginClient /></Suspense>
       </div>
     </div>
   )
