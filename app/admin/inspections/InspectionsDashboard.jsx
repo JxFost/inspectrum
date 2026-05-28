@@ -253,7 +253,7 @@ export default function InspectionsDashboard({
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-serif text-ink">Inspections</h1>
+            <h1 className="text-2xl font-serif text-ink">Inspections <span className="text-charcoal/30 text-lg font-normal">— {ytdCount} YTD</span></h1>
             <p className="text-sm text-charcoal/60 mt-1">{formatWindowDate(from)} – {formatWindowDate(to)} <span className="text-charcoal/40"> — {inspections.length} Inspections</span></p>
           </div>
           <div className="flex items-center gap-3">
