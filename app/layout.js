@@ -227,6 +227,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
+        <meta name="color-scheme" content="light" />
         <link rel="author" href="https://evergreeninspections.com/llms.txt" type="text/plain" />
       </head>
       <body>
