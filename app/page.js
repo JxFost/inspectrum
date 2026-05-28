@@ -69,7 +69,7 @@ const SERVICES = [
     num: '02',
     href: '/services/full-inspection',
     title: 'Roof & Exterior',
-    body: 'Shingles, flashings, chimneys, vents, trim, gutters, drip edges, skylights, downspouts. Siding, windows, doors, and entryways.',
+    body: 'A thorough visual assessment of your roof and the entire building exterior — because what\'s on top matters just as much as what\'s inside.',
     linkLabel: 'Included in full',
     iconPath: 'M2 12l10-9 10 9M5 12v9h14v-9M9 21V14h6v7',
   },
