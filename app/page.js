@@ -114,10 +114,11 @@ const SERVICES = [
 
 // ---- Process timeline (4 steps) ----
 const PROCESS_STEPS = [
-  { num: '01', title: 'Schedule', body: "Call or fill out the form. We'll find a time that works — often within 24-48 hours." },
+  { num: '01', title: 'Schedule', body: "Call or fill out the form. We'll find a time that works — often within 48 hours." },
   { num: '02', title: 'Inspect', body: 'We perform a complete analysis on-site. Plan on 1 hour per 1,000 sq ft, 3 hour minimum.' },
   { num: '03', title: 'Walk Through', body: 'You join us at the end so you can see every concern with your own eyes — not just on paper.' },
   { num: '04', title: 'Report & Consult', body: 'Same-day written report delivered, with a free phone consultation whenever you need it.' },
+  { num: '05', title: 'A Friend on Your Side', body: "Harry's not just your inspector — he's your neighbor down the street. Call anytime to chat about any aspect of the home you're buying, selling, or just curious about. Foundations, roofs, radon, systems — he'll talk your ear off." },
 ]
 
 // ---- Testimonials ----
@@ -387,14 +388,14 @@ export default function HomePage() {
           <div className="text-center max-w-[680px] mx-auto mb-16">
             <div className="section-eyebrow justify-center">How It Works</div>
             <h2 className="text-[clamp(2.4rem,5vw,4.2rem)] mb-4 text-ink">
-              Four steps. <em className="italic text-teal">No surprises.</em>
+              Five steps. <em className="italic text-teal">No surprises.</em>
             </h2>
             <p className="text-[1.1rem] text-charcoal leading-relaxed">
               From the call to the report, you'll always know exactly what's next.
             </p>
           </div>
           {/* Connected timeline grid (1px gap creates the divider lines) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-line border border-line">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-px bg-line border border-line">
             {PROCESS_STEPS.map((step) => (
               <div
                 key={step.num}
