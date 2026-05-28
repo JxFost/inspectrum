@@ -389,7 +389,7 @@ export default function InspectionsDashboard({
                     </button>
                   </th>
                   <th className="text-left px-4 py-3 hidden lg:table-cell">Source</th>
-                  <th className="text-left px-4 py-3 hidden lg:table-cell">Status</th>
+                  {false && <th className="text-left px-4 py-3 hidden lg:table-cell">Status</th>}
                   <th className="text-right px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -420,7 +420,7 @@ export default function InspectionsDashboard({
                       onClick={() => item.eventId && router.push(`/admin/inspections/${item.eventId}`)}
                       className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${
                         isOverdue ? 'bg-red-50 border-l-2 border-l-red-400'
-                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.08] border-l-2 border-l-amber'
+                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.06] border-l-2 border-l-amber'
                         : item.status === 'past' ? 'bg-charcoal/[0.04]'
                         : item.status === 'today' ? 'bg-amber/[0.04]'
                         : ''
@@ -511,9 +511,9 @@ export default function InspectionsDashboard({
                         </span>
                       </Tooltip>
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
+                    {false && <td className="px-4 py-3 hidden lg:table-cell">
                       <span className={`text-sm ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
-                    </td>
+                    </td>}
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
