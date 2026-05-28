@@ -436,17 +436,10 @@ export default function InspectionsDashboard({
                       <div className="text-charcoal/60 text-sm">{formatTime(item.startISO)}</div>
                     </td>
                     <td className="px-4 py-3 text-ink">
-                      {item.customerName || '—'}
-                      {item.agreementStatus === 'signed' && (
-                        <Tooltip content="Agreement signed">
-                          <span className="ml-1 text-teal text-xs">✓</span>
-                        </Tooltip>
-                      )}
                       {item.agreementStatus === 'pending' && item.status !== 'past' && (
-                        <Tooltip content="Agreement not yet signed">
-                          <span className="ml-1 text-amber-600 rounded-full py-1 px-2 bg-amber/20 text-xs font-bold">✗</span>
-                        </Tooltip>
+                        <span className="block text-[0.6rem] uppercase tracking-wider font-semibold text-amber bg-amber/15 px-1.5 py-0.5 rounded w-fit mb-1">Agreement not signed</span>
                       )}
+                      {item.customerName || '—'}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
                         <Tooltip content={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings`}>
                           <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full">
