@@ -6,16 +6,49 @@ Questions to go over before launch. Answers will determine final configuration.
 
 ## Pricing
 
-- [ ] **Base prices** — currently set as:
-  - Full Home Inspection: $500
-  - Radon Testing Only: $150
-  - Mold Assessment: $280
-  - Pre-Listing Inspection: $400
-  - Sewer Scope Add-On: $225
-  - Are these correct? Do they vary by sqft, age, or other factors?
-- [ ] **How do you calculate the final price today?** Is it the base + add-ons, or do you quote per-property based on sqft/age/complexity?
-- [ ] **Trip charge** — currently $1.00/mile beyond 50 miles from Evergreen. Is 50 miles the right threshold? Is $1/mile right?
+We've built a full pricing engine based on the ACC fee schedule. Please verify these are still correct:
+
+- [ ] **Base inspection fee by square footage** (kitchen $25 included):
+  - Under 1,000 sqft: $430
+  - 1,001–1,999: $455
+  - 2,000–2,499: $480
+  - 2,500–2,999: $505
+  - 3,000–3,499: $555
+  - 3,500–3,999: $580
+  - 4,000–4,499: $605
+  - 4,500+: $655 + $50 per additional 500 sqft
+  - Are these still accurate? Any changes?
+- [ ] **Age surcharges:**
+  - 0–20 years: no surcharge
+  - 21–40 years: +$30
+  - 41–60 years: +$55
+  - 61+ years: +$80
+- [ ] **City surcharges** — we have 65+ Colorado cities mapped ($0–$100). Evergreen, Morrison, Idaho Springs = free. Denver = $25. Boulder = $75. Are these still right? Any cities missing or changed?
+- [ ] **Service add-ons (shown as separate line items):**
+  - Radon testing: $125 (or $150 with trip charge) — correct?
+  - Sewer scope: $200 — correct?
+- [ ] **Feature surcharges (rolled into inspection fee):**
+  - Additional kitchen: +$25
+  - Additional furnace (closet/basement): +$25
+  - Additional furnace (attic/crawl): +$50
+  - Detached garage: +$25
+  - Pool: +$50
+  - Lawn sprinklers: +$25
+  - Outbuilding (structure only): +$25
+  - Outbuilding (electricity only): +$25
+  - Outbuilding (full utilities): +$50
+- [ ] **Discounts:**
+  - Repeat client: -$25
+  - "Save inspection": -$50
+  - Are there any other discounts? Agent referral? Bundled services?
+- [ ] **Mileage** — $1.00/mile beyond 50 miles from Evergreen. Max 100 miles. Right?
+- [ ] **Standalone services:**
+  - Radon Testing Only: From $125
+  - Mold Assessment: From $280 — is this still offered? Should it be $500?
+  - Pre-Listing Inspection: same pricing as full inspection?
+  - Commercial: custom quote — how do you typically price these?
 - [ ] **Do prices change seasonally?** (e.g. busier months = higher rates?)
+- [ ] **Web booking discount** — should we offer $25 off for online bookings? (Saves ACC per-call fee)
 
 ## Scheduling & Calendar
 
@@ -35,6 +68,10 @@ Questions to go over before launch. Answers will determine final configuration.
 - [ ] **Tomorrow's schedule** — shows on the admin dashboard after 6pm. Is that the right cutoff time?
 - [ ] **How do you currently send inspection reports to customers?** Email from the inspection software directly? Or manually?
 - [ ] **Inspection software** — currently using **3D Inspection** (3dinspection.com). How does Harry send reports to customers from it? Email directly from the app, or export PDF and email manually? This determines how we auto-capture reports.
+- [ ] **Report delivery deep dive** — we're not seeing all reports come through Harry's sent email. Does 3D Inspection send reports from a different email address (e.g. noreply@3dinspection.com)? Does it CC Harry or send separately? We need to understand the exact flow so we can auto-capture them.
+  - If 3D sends from its own address, could Harry CC `reports@evergreeninspections.com` when sending? Or does the software have a CC/BCC field?
+  - How many report types per inspection? (Main report, radon, sewer scope, addendum?)
+  - Are radon reports generated in 3D Inspection or a separate tool?
 - [ ] **Do you send the report to the customer and the agent?** Should both get notified?
 
 ## Documents & Forms
