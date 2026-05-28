@@ -372,25 +372,25 @@ export default function InspectionsDashboard({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full bg-paper border border-line rounded-sm text-sm">
+            <table className="w-full bg-paper border border-line rounded-sm">
               <thead>
-                <tr className="border-b border-line text-[0.65rem] uppercase tracking-wider text-charcoal/50">
-                  <th className="text-left px-3 py-2.5 hidden md:table-cell">#</th>
-                  <th className="text-left px-3 py-2.5">Date & Time</th>
-                  <th className="text-left px-3 py-2.5">Customer</th>
-                  <th className="text-left px-3 py-2.5 hidden md:table-cell">Address</th>
-                  <th className="text-right px-3 py-2.5 hidden lg:table-cell">Dist.</th>
-                  <th className="text-left px-3 py-2.5">Service</th>
-                  <th className="text-right px-3 py-2.5 hidden sm:table-cell">Price</th>
-                  <th className="text-left px-3 py-2.5 hidden sm:table-cell">
-                    <button type="button" onClick={() => setSortByPayment(!sortByPayment)} className="text-charcoal/50 hover:text-teal transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0 text-[0.65rem] uppercase tracking-wider font-semibold">
+                <tr className="border-b border-line text-[0.7rem] uppercase tracking-wider text-charcoal/50">
+                  <th className="text-left px-4 py-3 hidden md:table-cell">#</th>
+                  <th className="text-left px-4 py-3">Date & Time</th>
+                  <th className="text-left px-4 py-3">Customer</th>
+                  <th className="text-left px-4 py-3 hidden md:table-cell">Address</th>
+                  <th className="text-right px-4 py-3 hidden lg:table-cell">Dist.</th>
+                  <th className="text-left px-4 py-3">Service</th>
+                  <th className="text-right px-4 py-3 hidden sm:table-cell">Price</th>
+                  <th className="text-left px-4 py-3 hidden sm:table-cell">
+                    <button type="button" onClick={() => setSortByPayment(!sortByPayment)} className="text-charcoal/50 hover:text-teal transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0 text-[0.7rem] uppercase tracking-wider font-semibold">
                       Payment
                       {sortByPayment && <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3 text-teal"><path d="M6 2l4 5H2z" /></svg>}
                     </button>
                   </th>
-                  <th className="text-left px-3 py-2.5 hidden lg:table-cell">Source</th>
-                  <th className="text-left px-3 py-2.5 hidden lg:table-cell">Status</th>
-                  <th className="text-right px-3 py-2.5">Actions</th>
+                  <th className="text-left px-4 py-3 hidden lg:table-cell">Source</th>
+                  <th className="text-left px-4 py-3 hidden lg:table-cell">Status</th>
+                  <th className="text-right px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -426,16 +426,16 @@ export default function InspectionsDashboard({
                         : ''
                       }`}
                     >
-                    <td className="px-3 py-2 text-charcoal/40 text-xs font-mono hidden md:table-cell">
+                    <td className="px-4 py-3 text-charcoal/40 text-xs font-mono hidden md:table-cell">
                       <Tooltip content={item.inspectionNumber}>
                         <span>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</span>
                       </Tooltip>
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="text-ink text-[0.8rem] font-medium">{formatDate(item.startISO)}</div>
-                      <div className="text-charcoal/60 text-[0.75rem]">{formatTime(item.startISO)}</div>
+                    <td className="px-4 py-3">
+                      <div className="text-ink text-sm font-medium">{formatDate(item.startISO)}</div>
+                      <div className="text-charcoal/60 text-sm">{formatTime(item.startISO)}</div>
                     </td>
-                    <td className="px-3 py-2 text-ink">
+                    <td className="px-4 py-3 text-ink">
                       {item.customerName || '—'}
                       {item.agreementStatus === 'signed' && (
                         <Tooltip content="Agreement signed">
@@ -444,7 +444,7 @@ export default function InspectionsDashboard({
                       )}
                       {item.agreementStatus === 'pending' && item.status !== 'past' && (
                         <Tooltip content="Agreement not yet signed">
-                          <span className="ml-1 text-amber-600 rounded-full py-1 px-2 bg-amber/20 text-xs font-bold">!</span>
+                          <span className="ml-1 text-amber-600 rounded-full py-1 px-2 bg-amber/20 text-xs font-bold">✗</span>
                         </Tooltip>
                       )}
                       {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
@@ -462,10 +462,10 @@ export default function InspectionsDashboard({
                         </Tooltip>
                       )}
                     </td>
-                    <td className="px-3 py-2 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="group relative max-w-[200px]">
                         <Tooltip content={item.address} side="bottom">
-                          <span className="text-charcoal/70 text-[0.8rem] truncate block">
+                          <span className="text-charcoal/70 text-sm truncate block">
                             {truncateAddress(item.address)}
                           </span>
                         </Tooltip>
@@ -481,9 +481,9 @@ export default function InspectionsDashboard({
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-right hidden lg:table-cell">
+                    <td className="px-4 py-3 text-right hidden lg:table-cell">
                       <span
-                        className={`text-[0.75rem] ${
+                        className={`text-sm ${
                           item.distanceMiles && parseInt(item.distanceMiles) > mileage.BASE_RADIUS_MILES
                             ? 'text-amber font-medium'
                             : 'text-charcoal/50'
@@ -494,13 +494,13 @@ export default function InspectionsDashboard({
                         </Tooltip>
                       </span>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3">
                       <ServiceIconPill service={item.service} radonAddOn={item.radonAddOn} sewerScope={item.sewerScope} />
                     </td>
-                    <td className="px-3 py-2 text-right hidden sm:table-cell text-ink">
+                    <td className="px-4 py-3 text-right hidden sm:table-cell text-ink">
                       {formatCents(item.paymentAmountCents || item.invoiceAmountCents)}
                     </td>
-                    <td className="px-3 py-2 hidden sm:table-cell">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       {isOverdue ? (
                         <span className="inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold bg-red-100 text-red-700">Overdue</span>
                       ) : item.paymentStatus ? (
@@ -511,17 +511,17 @@ export default function InspectionsDashboard({
                         <span className="text-[0.7rem] text-charcoal/40">Not invoiced</span>
                       )}
                     </td>
-                    <td className="px-3 py-2 hidden lg:table-cell">
+                    <td className="px-4 py-3 hidden lg:table-cell">
                       <Tooltip content={item.source === 'unknown' ? 'Created before source tracking' : null}>
                         <span className={`inline-block px-2 py-0.5 rounded text-[0.7rem] font-semibold ${SOURCE_COLORS[item.source] || SOURCE_COLORS.unknown}`}>
                           {SOURCE_LABELS[item.source] || 'Unknown'}
                         </span>
                       </Tooltip>
                     </td>
-                    <td className="px-3 py-2 hidden lg:table-cell">
-                      <span className={`text-[0.8rem] ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <span className={`text-sm ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
                     </td>
-                    <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
                           <Tooltip content="Send Invoice">
