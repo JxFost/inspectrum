@@ -262,26 +262,30 @@ export async function POST(request) {
     const manageUrl = buildManageUrl(token)
     const gcalUrl = buildGCalUrl({ service: service.name, startISO, endISO, address })
 
-    sendEmail({
-      to: email,
-      subject: `Your inspection is booked — ${service.name}`,
-      html: bookingReceiptHtml({
-        customerName: name,
-        service: service.name,
-        startISO,
-        endISO,
-        durationHours: service.durationHours,
-        address,
-        confirmationCode,
-        manageUrl,
-        gcalUrl,
-        agreementUrl,
-      }),
-      inspectionId: inspectionDbId,
-      template: 'booking-receipt',
-    }).catch((err) => {
+    // Await the email send — Vercel kills the function after response is returned,
+    // so fire-and-forget emails never actually send on serverless.
+    try {
+      await sendEmail({
+        to: email,
+        subject: `Your inspection is booked — ${service.name}`,
+        html: bookingReceiptHtml({
+          customerName: name,
+          service: service.name,
+          startISO,
+          endISO,
+          durationHours: service.durationHours,
+          address,
+          confirmationCode,
+          manageUrl,
+          gcalUrl,
+          agreementUrl,
+        }),
+        inspectionId: inspectionDbId,
+        template: 'booking-receipt',
+      })
+    } catch (err) {
       console.error('Booking receipt email failed:', err)
-    })
+    }
 
     return NextResponse.json({
       confirmationCode,
