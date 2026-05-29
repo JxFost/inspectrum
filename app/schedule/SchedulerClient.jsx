@@ -284,6 +284,7 @@ export default function SchedulerClient() {
       funnelCompleted.current = true
       trackBookingSubmit(service.name)
       setBooking(data)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
       setBookingError(`Network error. Please check your connection and try again, or call ${PHONE}.`)
     } finally {
