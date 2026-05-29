@@ -81,6 +81,9 @@ export async function POST(request) {
   const pets = body.pets === true
   const isAgent = body.isAgent === true
   const agentType = trim(body.agentType, 50)
+  const listingAgentName = trim(body.listingAgentName, 100)
+  const listingAgentPhone = trim(body.listingAgentPhone, 20)
+  const listingAgentEmail = trim(body.listingAgentEmail, 100)
   const clientAttending = trim(body.clientAttending, 10)
   const accessProvidedBy = trim(body.accessProvidedBy, 200)
   const referrer = trim(body.referrer, 200)
@@ -188,7 +191,13 @@ export async function POST(request) {
     orderedBy: isAgent ? agentType : null,
     clientAttending,
     accessProvidedBy,
-    extra: [referrer ? `referrer: ${referrer}` : null, utmSource ? `utm_source: ${utmSource}` : null].filter(Boolean).join('\n') || null,
+    extra: [
+      listingAgentName ? `Listing Agent: ${listingAgentName}` : null,
+      listingAgentPhone ? `Listing Agent Phone: ${listingAgentPhone}` : null,
+      listingAgentEmail ? `Listing Agent Email: ${listingAgentEmail}` : null,
+      referrer ? `referrer: ${referrer}` : null,
+      utmSource ? `utm_source: ${utmSource}` : null,
+    ].filter(Boolean).join('\n') || null,
     source: 'website',
   })
 

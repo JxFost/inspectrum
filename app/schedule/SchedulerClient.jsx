@@ -152,7 +152,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -255,6 +255,9 @@ export default function SchedulerClient() {
           pets: details.pets,
           isAgent: details.isAgent,
           agentType: details.agentType,
+          listingAgentName: details.listingAgentName,
+          listingAgentPhone: details.listingAgentPhone,
+          listingAgentEmail: details.listingAgentEmail,
           clientAttending: details.clientAttending,
           accessProvidedBy: (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
             ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
@@ -301,7 +304,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -516,14 +519,44 @@ export default function SchedulerClient() {
                     <span className="text-sm font-semibold text-ink">I am a real estate agent representing a client</span>
                   </label>
                   {details.isAgent && (
-                    <div className="ml-8 mt-3 flex flex-col gap-1.5">
-                      <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Agent Type</label>
-                      <select value={details.agentType} onChange={(e) => setDetails({ ...details, agentType: e.target.value })}
-                        className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
-                        <option value="">Select</option>
-                        <option value="Buyer's Agent">Buyer&apos;s Agent</option>
-                        <option value="Seller's Agent">Seller&apos;s Agent</option>
-                      </select>
+                    <div className="ml-8 mt-3 space-y-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Agent Type</label>
+                        <select value={details.agentType} onChange={(e) => setDetails({ ...details, agentType: e.target.value })}
+                          className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)]">
+                          <option value="">Select</option>
+                          <option value="Buyer's Agent">Buyer&apos;s Agent</option>
+                          <option value="Seller's Agent">Seller&apos;s Agent</option>
+                        </select>
+                      </div>
+                      {details.agentType === "Buyer's Agent" && (
+                        <div className="bg-cream/50 border border-line rounded-sm p-4 space-y-3">
+                          <div className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Listing Agent Contact</div>
+                          <input
+                            type="text"
+                            value={details.listingAgentName}
+                            onChange={(e) => setDetails({ ...details, listingAgentName: e.target.value })}
+                            placeholder="Listing agent name"
+                            className="w-full bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none"
+                          />
+                          <div className="grid grid-cols-2 gap-3">
+                            <input
+                              type="tel"
+                              value={details.listingAgentPhone}
+                              onChange={(e) => setDetails({ ...details, listingAgentPhone: e.target.value })}
+                              placeholder="Phone"
+                              className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none"
+                            />
+                            <input
+                              type="email"
+                              value={details.listingAgentEmail}
+                              onChange={(e) => setDetails({ ...details, listingAgentEmail: e.target.value })}
+                              placeholder="Email"
+                              className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -905,6 +938,7 @@ export default function SchedulerClient() {
                 {details.outbuilding && <SummaryRow label="Outbuilding" value={details.outbuilding} />}
                 {details.occupied && <SummaryRow label="Occupied" value={details.occupied} />}
                 {details.isAgent && <SummaryRow label="Ordered By" value={details.agentType || 'Agent'} />}
+                {details.listingAgentName && <SummaryRow label="Listing Agent" value={`${details.listingAgentName}${details.listingAgentPhone ? ` · ${details.listingAgentPhone}` : ''}${details.listingAgentEmail ? ` · ${details.listingAgentEmail}` : ''}`} />}
                 {details.clientAttending && <SummaryRow label="Client Attending" value={details.clientAttending} />}
                 {details.accessProvidedBy && <SummaryRow label="Access" value={
                   (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
