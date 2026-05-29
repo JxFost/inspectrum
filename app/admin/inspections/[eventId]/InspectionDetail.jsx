@@ -221,17 +221,17 @@ export default function InspectionDetail({ inspection, reports, agreement, email
             )}
 
             <div className="space-y-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   ref={fileRef}
                   type="file"
                   accept=".pdf,application/pdf"
-                  className="flex-1 text-sm text-charcoal/70 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-teal file:text-white hover:file:bg-teal-deep file:cursor-pointer"
+                  className="min-w-0 w-full sm:flex-1 text-sm text-charcoal/70 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-teal file:text-white hover:file:bg-teal-deep file:cursor-pointer"
                 />
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="px-3 py-2 border border-line rounded-sm text-sm text-ink bg-cream outline-none focus:border-teal"
+                  className="w-full sm:w-auto px-3 py-2 border border-line rounded-sm text-sm text-ink bg-cream outline-none focus:border-teal"
                 >
                   {REPORT_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
