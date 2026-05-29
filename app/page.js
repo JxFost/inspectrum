@@ -61,7 +61,7 @@ const SERVICES = [
     num: '01',
     href: '/services/full-inspection',
     title: 'Full Home Inspection',
-    body: 'Complete walkthrough of every major system: structure, roof, electrical, plumbing, HVAC, exterior, and interior. Verbal walk-through included.',
+    body: 'Complete walkthrough of every major system: structure, electrical, plumbing, HVAC, exterior, and interior. Verbal walk-through included.',
     linkLabel: 'Learn more',
     iconPath: 'M3 21h18M5 21V8l7-5 7 5v13M9 9h6M9 13h6M9 17h6',
   },
