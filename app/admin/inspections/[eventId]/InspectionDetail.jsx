@@ -136,17 +136,6 @@ export default function InspectionDetail({ inspection, reports, agreement, email
         </div>
       </div>
 
-      {/* Pricing */}
-      <div className="mb-8">
-        <PricingBlock
-          service={inspection.service}
-          radonAddOn={inspection.radonAddOn}
-          sewerScope={inspection.sewerScope}
-          tripChargeCents={inspection.tripChargeCents}
-          distanceMiles={inspection.distanceMiles}
-        />
-      </div>
-
       {/* Agreement */}
       <div className="bg-paper p-8 rounded-sm border border-line mb-8">
         <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Agreement</div>
@@ -171,6 +160,17 @@ export default function InspectionDetail({ inspection, reports, agreement, email
         ) : (
           <p className="text-sm text-charcoal/50">No agreement created for this inspection.</p>
         )}
+      </div>
+
+      {/* Pricing */}
+      <div className="mb-8">
+        <PricingBlock
+          service={inspection.service}
+          radonAddOn={inspection.radonAddOn}
+          sewerScope={inspection.sewerScope}
+          tripChargeCents={inspection.tripChargeCents}
+          distanceMiles={inspection.distanceMiles}
+        />
       </div>
 
       {/* Reports */}
