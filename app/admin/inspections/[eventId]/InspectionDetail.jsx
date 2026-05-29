@@ -53,7 +53,7 @@ const REPORT_TYPES = [
 
 const REPORT_TYPE_LABELS = Object.fromEntries(REPORT_TYPES.map((t) => [t.value, t.label]))
 
-export default function InspectionDetail({ inspection, reports, agreement }) {
+export default function InspectionDetail({ inspection, reports, agreement, emailLog = [] }) {
   const [uploadState, setUploadState] = useState('idle')
   const [reportType, setReportType] = useState('inspection')
   const [notify, setNotify] = useState(true)
@@ -63,6 +63,8 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
   const fileRef = useRef(null)
   const [deleteState, setDeleteState] = useState('idle') // idle | confirming | deleting | deleted
   const [deleteError, setDeleteError] = useState(null)
+  const [resendState, setResendState] = useState('idle') // idle | sending | sent | error
+  const [resendError, setResendError] = useState(null)
 
   async function handleUpload() {
     const file = fileRef.current?.files?.[0]
@@ -260,6 +262,75 @@ export default function InspectionDetail({ inspection, reports, agreement }) {
 
         {!inspection.inspectionId && (
           <p className="text-sm text-charcoal/50">This inspection is not in the database yet. Run a backfill to enable uploads.</p>
+        )}
+      </div>
+
+      {/* Emails */}
+      <div className="bg-paper p-8 rounded-sm border border-line mb-8">
+        <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">
+          Emails {emailLog.length > 0 && `(${emailLog.length})`}
+        </div>
+
+        {emailLog.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {emailLog.map((log) => (
+              <div key={log.id} className="flex items-center justify-between p-2 bg-cream rounded-sm text-sm">
+                <div>
+                  <span className="text-ink font-medium">{log.template || log.subject}</span>
+                  <span className="text-charcoal/40 text-xs ml-2">→ {log.toEmail}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+                    log.status === 'sent' ? 'bg-teal/15 text-teal'
+                    : log.status === 'failed' ? 'bg-red-100 text-red-700'
+                    : 'bg-charcoal/10 text-charcoal/50'
+                  }`}>
+                    {log.status === 'sent' ? 'Sent' : log.status === 'failed' ? 'Failed' : log.status}
+                  </span>
+                  <span className="text-xs text-charcoal/40">{new Date(log.sentAt).toLocaleDateString('en-US')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {emailLog.length === 0 && (
+          <p className="text-sm text-charcoal/50 mb-4">No emails logged for this inspection.</p>
+        )}
+
+        {inspection.email && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              disabled={resendState === 'sending'}
+              onClick={async () => {
+                setResendState('sending')
+                setResendError(null)
+                try {
+                  const res = await fetch('/api/admin/resend-confirmation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: inspection.eventId }),
+                  })
+                  if (!res.ok) {
+                    const d = await res.json()
+                    setResendError(d.error || 'Failed to send.')
+                    setResendState('idle')
+                    return
+                  }
+                  setResendState('sent')
+                  setTimeout(() => setResendState('idle'), 3000)
+                } catch {
+                  setResendError('Network error.')
+                  setResendState('idle')
+                }
+              }}
+              className="text-sm text-teal hover:text-amber cursor-pointer bg-transparent border border-teal rounded-sm px-3 py-1.5 font-semibold transition-colors disabled:opacity-50"
+            >
+              {resendState === 'sending' ? 'Sending...' : resendState === 'sent' ? 'Sent ✓' : 'Resend Confirmation Email'}
+            </button>
+            {resendError && <span className="text-xs text-red-600">{resendError}</span>}
+          </div>
         )}
       </div>
 

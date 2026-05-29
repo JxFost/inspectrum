@@ -156,6 +156,22 @@ async function run(request) {
       )
     `
 
+    // ---- Email log table ----
+    await db`
+      CREATE TABLE IF NOT EXISTS email_log (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        inspection_id   UUID REFERENCES inspections(id) ON DELETE CASCADE,
+        to_email        TEXT NOT NULL,
+        subject         TEXT,
+        template        TEXT,
+        resend_id       TEXT,
+        status          TEXT DEFAULT 'sent',
+        error           TEXT,
+        sent_at         TIMESTAMPTZ DEFAULT now()
+      )
+    `
+    await db`CREATE INDEX IF NOT EXISTS idx_email_log_inspection ON email_log(inspection_id)`
+
     // ---- Processed emails table (dedup for cron imports) ----
     await db`
       CREATE TABLE IF NOT EXISTS processed_emails (

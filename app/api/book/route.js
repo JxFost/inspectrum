@@ -212,6 +212,7 @@ export async function POST(request) {
 
     // DB insert + agreement must complete before email so we can include the agreement URL
     let agreementUrl = null
+    let inspectionDbId = null
     try {
       const row = await upsertInspection({
         googleEventId: event.id,
@@ -233,6 +234,7 @@ export async function POST(request) {
       })
 
       if (row) {
+        inspectionDbId = row.id
         const agToken = await createAgreement({
           inspectionId: row.id,
           customerName: name,
@@ -266,6 +268,8 @@ export async function POST(request) {
         gcalUrl,
         agreementUrl,
       }),
+      inspectionId: inspectionDbId,
+      template: 'booking-receipt',
     }).catch((err) => {
       console.error('Booking receipt email failed:', err)
     })

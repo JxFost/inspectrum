@@ -90,6 +90,28 @@ export default async function InspectionDetailPage({ params }) {
     }
   }
 
+  // Fetch email log
+  let emailLog = []
+  if (dbRecord) {
+    try {
+      const logs = await db`
+        SELECT id, to_email, subject, template, status, error, sent_at
+        FROM email_log
+        WHERE inspection_id = ${dbRecord.id}
+        ORDER BY sent_at DESC
+      `
+      emailLog = logs.map((l) => ({
+        id: l.id,
+        toEmail: l.to_email,
+        subject: l.subject,
+        template: l.template,
+        status: l.status,
+        error: l.error,
+        sentAt: l.sent_at?.toISOString?.() || l.sent_at,
+      }))
+    } catch { /* table may not exist yet */ }
+  }
+
   const serializedReports = reports.map((r) => ({
     id: r.id,
     fileUrl: r.file_url,
@@ -117,7 +139,7 @@ export default async function InspectionDetailPage({ params }) {
 
       <section className="bg-cream py-16 px-5 lg:px-8 min-h-[50vh]">
         <div className="max-w-[600px] mx-auto">
-          <InspectionDetail inspection={inspection} reports={serializedReports} agreement={agreement} />
+          <InspectionDetail inspection={inspection} reports={serializedReports} agreement={agreement} emailLog={emailLog} />
         </div>
       </section>
     </>
