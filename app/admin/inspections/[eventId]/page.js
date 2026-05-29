@@ -69,6 +69,10 @@ export default async function InspectionDetailPage({ params }) {
     sewerScope: (event?.description || '').includes('Sewer Scope: Yes'),
     tripChargeCents: parsed.tripChargeCents || (dbRecord?.trip_charge_cents ? String(dbRecord.trip_charge_cents) : null),
     distanceMiles: parsed.distanceMiles || (dbRecord?.distance_miles ? String(dbRecord.distance_miles) : null),
+    listingAgentName: (event?.description || '').match(/Listing Agent:\s*(.+)/)?.[1]?.trim() || null,
+    listingAgentPhone: (event?.description || '').match(/Listing Agent Phone:\s*(.+)/)?.[1]?.trim() || null,
+    listingAgentEmail: (event?.description || '').match(/Listing Agent Email:\s*(.+)/)?.[1]?.trim() || null,
+    orderedBy: (event?.description || '').match(/Ordered By:\s*(.+)/)?.[1]?.trim() || null,
   }
 
   // Fetch agreement status

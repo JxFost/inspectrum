@@ -136,6 +136,31 @@ export default function InspectionDetail({ inspection, reports, agreement, email
         </div>
       </div>
 
+      {/* Listing Agent */}
+      {(inspection.listingAgentName || inspection.orderedBy) && (
+        <div className="bg-paper p-8 rounded-sm border border-line mb-8">
+          <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Agent Info</div>
+          <div className="space-y-3">
+            {inspection.orderedBy && <DetailRow label="Ordered By" value={inspection.orderedBy} />}
+            {inspection.listingAgentName && <DetailRow label="Listing Agent" value={inspection.listingAgentName} />}
+            {inspection.listingAgentPhone && (
+              <DetailRow label="Phone" value={
+                <a href={`tel:${inspection.listingAgentPhone.replace(/[^+\d]/g, '')}`} className="text-teal hover:text-amber no-underline">
+                  {inspection.listingAgentPhone}
+                </a>
+              } />
+            )}
+            {inspection.listingAgentEmail && (
+              <DetailRow label="Email" value={
+                <a href={`mailto:${inspection.listingAgentEmail}`} className="text-teal hover:text-amber no-underline">
+                  {inspection.listingAgentEmail}
+                </a>
+              } />
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Agreement */}
       <div className="bg-paper p-8 rounded-sm border border-line mb-8">
         <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Agreement</div>
