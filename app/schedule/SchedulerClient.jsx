@@ -491,6 +491,7 @@ export default function SchedulerClient() {
               e.preventDefault()
               const errors = {}
               if (!details.name.trim()) errors.name = 'Name is required.'
+              else if (details.name.trim().split(/\s+/).length < 2) errors.name = 'Please enter your full name (first and last).'
               if (!details.email.trim()) errors.email = 'Email is required.'
               else if (!isValidEmail(details.email.trim())) errors.email = 'Please enter a valid email address.'
               if (!details.phone.trim()) errors.phone = 'Phone number is required.'

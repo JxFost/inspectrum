@@ -103,8 +103,8 @@ export async function POST(request) {
   }
 
   // Validate customer details.
-  if (!name) {
-    return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
+  if (!name || name.trim().split(/\s+/).length < 2) {
+    return NextResponse.json({ error: 'Please enter your full name (first and last).' }, { status: 400 })
   }
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Valid email is required.' }, { status: 400 })
