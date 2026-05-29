@@ -363,6 +363,13 @@ export default function SchedulerClient() {
                 <div className="text-sm text-charcoal">{formatDateLong(selectedDate)}</div>
                 <div className="text-sm text-charcoal">{selectedSlot.label} · {service.durationHours} hr{service.durationHours > 1 ? 's' : ''}</div>
                 <div className="text-sm text-charcoal mt-1">{fullAddress}</div>
+                {(details.radonAddOn || details.sewerScope || details.outbuilding) && (
+                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-line">
+                    {details.radonAddOn && <span className="text-xs bg-amber/15 text-amber px-2 py-1 rounded font-semibold">Radon Testing</span>}
+                    {details.sewerScope && <span className="text-xs bg-charcoal/10 text-charcoal px-2 py-1 rounded font-semibold">Sewer Scope</span>}
+                    {details.outbuilding && <span className="text-xs bg-teal/10 text-teal px-2 py-1 rounded font-semibold">Outbuilding: {details.outbuilding}</span>}
+                  </div>
+                )}
               </div>
               <div className="bg-amber/[0.08] border border-amber/20 rounded-sm p-4 max-w-md mx-auto mb-6 text-left">
                 <p className="text-sm text-charcoal mb-2">
