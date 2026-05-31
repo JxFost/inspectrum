@@ -135,16 +135,22 @@ export default function AdminSidebar() {
         {sidebar}
       </div>
 
-      {/* Mobile hamburger */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-ink text-cream p-2 rounded-sm border-0 cursor-pointer shadow-lg"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
-          {mobileOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
-        </svg>
-      </button>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-ink text-cream flex items-center justify-between px-4 py-3 shadow-lg">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="bg-transparent text-cream p-1 border-0 cursor-pointer"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+            {mobileOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
+          </svg>
+        </button>
+        <Link href="/admin/inspections" className="no-underline" onClick={() => setMobileOpen(false)}>
+          <span className="text-cream font-serif text-base font-semibold">Inspectrum <span className="text-amber">Admin</span></span>
+        </Link>
+        <div className="w-6" /> {/* spacer for centering */}
+      </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (
