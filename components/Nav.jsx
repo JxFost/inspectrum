@@ -187,6 +187,9 @@ export default function Nav() {
   const isContact = pathname === '/contact'
   // If user is on /admin/*, they're authenticated (middleware enforces this)
   const isOnAdminPage = pathname.startsWith('/admin')
+
+  // Admin pages use their own sidebar — don't render main nav
+  if (isOnAdminPage && pathname !== '/admin/login') return null
   const [uninvoicedCount, setUninvoicedCount] = useState(0)
 
   useEffect(() => {

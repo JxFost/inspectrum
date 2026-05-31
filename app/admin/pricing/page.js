@@ -41,7 +41,7 @@ export default function PricingPage() {
     .sort(([a], [b]) => a.localeCompare(b))
 
   return (
-    <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-serif text-ink mb-1">Current Pricing Table</h1>

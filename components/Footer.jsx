@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import BrandLogo from './BrandLogo'
 import { OFFICE_PHONE, OFFICE_EMAIL, OFFICE_ADDRESS } from '@/lib/constants'
 
@@ -12,6 +15,9 @@ function FooterLink({ href, external, children }) {
 }
 
 export default function Footer() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') return null
+
   return (
     <footer className="bg-charcoal-deep text-cream pt-20 pb-8 px-5 lg:px-8 border-t-[3px] border-teal">
       <div className="max-w-[1400px] mx-auto">

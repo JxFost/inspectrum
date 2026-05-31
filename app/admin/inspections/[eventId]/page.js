@@ -129,7 +129,7 @@ export default async function InspectionDetailPage({ params }) {
 
   return (
     <>
-      <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-32 pb-12 px-5 lg:px-8">
+      <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-8 pb-12 px-5 lg:px-8">
         <div className="max-w-[700px] mx-auto text-center">
           <div className="hero-eyebrow justify-center">Admin</div>
           <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] mb-2">

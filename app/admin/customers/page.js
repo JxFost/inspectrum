@@ -37,7 +37,7 @@ export default async function CustomersPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>

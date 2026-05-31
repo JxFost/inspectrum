@@ -18,7 +18,7 @@ export default async function AssignReportPage({ params }) {
 
   if (!report) {
     return (
-      <div className="bg-cream pt-32 pb-20 px-5 min-h-screen">
+      <div className="bg-cream pt-8 pb-20 px-5 min-h-screen">
         <div className="max-w-[600px] mx-auto text-center">
           <h1 className="text-2xl font-serif text-ink mb-4">Report not found.</h1>
           <a href="/admin/inspections" className="text-teal hover:text-amber">Back to dashboard</a>
@@ -29,7 +29,7 @@ export default async function AssignReportPage({ params }) {
 
   if (report.resolved_at) {
     return (
-      <div className="bg-cream pt-32 pb-20 px-5 min-h-screen">
+      <div className="bg-cream pt-8 pb-20 px-5 min-h-screen">
         <div className="max-w-[600px] mx-auto text-center">
           <div className="w-14 h-14 rounded-full bg-teal text-white flex items-center justify-center mx-auto mb-6 text-2xl">✓</div>
           <h1 className="text-2xl font-serif text-ink mb-4">Already assigned.</h1>
@@ -66,7 +66,7 @@ export default async function AssignReportPage({ params }) {
 
   return (
     <>
-      <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-32 pb-12 px-5 lg:px-8">
+      <header className="bg-gradient-to-br from-teal-darker to-teal-deep text-cream pt-8 pb-12 px-5 lg:px-8">
         <div className="max-w-[700px] mx-auto text-center">
           <div className="hero-eyebrow justify-center">Admin</div>
           <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] mb-2">

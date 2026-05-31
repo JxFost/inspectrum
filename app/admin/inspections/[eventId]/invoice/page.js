@@ -42,7 +42,7 @@ export default async function InvoicePage({ params }) {
     event = await getEvent(eventId)
   } catch (err) {
     return (
-      <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+      <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
         <div className="max-w-lg mx-auto">
           <h1 className="text-2xl font-serif text-ink mb-4">Event not found</h1>
           <p className="text-charcoal mb-6">Could not load this event. It may have been deleted.</p>
@@ -54,7 +54,7 @@ export default async function InvoicePage({ params }) {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+      <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
         <div className="max-w-lg mx-auto">
           <h1 className="text-2xl font-serif text-ink mb-4">Event not found</h1>
           <p className="text-charcoal mb-6">This event doesn't exist or has been cancelled.</p>
@@ -71,7 +71,7 @@ export default async function InvoicePage({ params }) {
   // Already invoiced?
   if (parsed.paymentStatus && parsed.paymentStatus !== 'none') {
     return (
-      <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+      <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
         <div className="max-w-lg mx-auto">
           <h1 className="text-2xl font-serif text-ink mb-4">Already invoiced</h1>
           <p className="text-charcoal mb-6">This inspection already has an invoice (status: {parsed.paymentStatus}).</p>
@@ -113,7 +113,7 @@ export default async function InvoicePage({ params }) {
   const tripCharge = parsed.tripChargeCents ? parseInt(parsed.tripChargeCents, 10) / 100 : 0
 
   return (
-    <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
       <div className="max-w-lg mx-auto">
         <a href="/admin/inspections" className="text-sm text-charcoal/60 hover:text-teal mb-6 inline-block">← Back to Inspections</a>
         <h1 className="text-2xl font-serif text-ink mb-6">Send Invoice</h1>

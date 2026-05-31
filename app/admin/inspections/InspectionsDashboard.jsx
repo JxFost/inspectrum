@@ -249,8 +249,8 @@ export default function InspectionsDashboard({
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-5 lg:px-8">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
