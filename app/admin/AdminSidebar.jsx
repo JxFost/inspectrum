@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Tooltip, { TooltipProvider } from '@/components/Tooltip'
+import BrandLogoWordmark from '@/components/BrandLogoWordmark'
 
 const NAV_ITEMS = [
   { href: '/admin/inspections', label: 'Inspections', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
@@ -48,14 +49,16 @@ export default function AdminSidebar() {
     <TooltipProvider>
       <div className={`flex flex-col h-full bg-ink text-cream ${collapsed ? 'w-16' : 'w-56'} transition-all duration-200`}>
         {/* Logo / brand */}
-        <div className={`p-4 border-b border-white/10 ${collapsed ? 'text-center' : ''}`}>
-          <Link href="/admin/inspections" className="no-underline">
-            {collapsed ? (
+        <div className={`px-4 border-b border-white/10 ${collapsed ? 'text-center' : ''}`}>
+          {collapsed ? (
+            <Link href="/admin/inspections" className="no-underline">
               <span className="text-amber font-serif text-xl font-bold">I</span>
-            ) : (
-              <span className="text-cream font-serif text-lg font-semibold">Inspectrum <span className="text-amber">Admin</span></span>
-            )}
-          </Link>
+            </Link>
+          ) : (
+            <div className="py-2">
+              <BrandLogoWordmark className="w-[120px]" />
+            </div>
+          )}
         </div>
 
         {/* Nav items */}
@@ -136,7 +139,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-ink text-cream flex items-center justify-between px-4 py-3 shadow-lg">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-ink text-cream flex items-center justify-between px-4 shadow-lg">
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -146,9 +149,9 @@ export default function AdminSidebar() {
             {mobileOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
           </svg>
         </button>
-        <Link href="/admin/inspections" className="no-underline" onClick={() => setMobileOpen(false)}>
-          <span className="text-cream font-serif text-base font-semibold">Inspectrum <span className="text-amber">Admin</span></span>
-        </Link>
+        <div onClick={() => setMobileOpen(false)}>
+          <BrandLogoWordmark className="w-[120px]" />
+        </div>
         <div className="w-6" /> {/* spacer for centering */}
       </div>
 
