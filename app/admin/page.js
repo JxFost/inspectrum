@@ -6,5 +6,5 @@ export const metadata = {
 }
 
 export default function AdminPage() {
-  redirect('/admin/inspections')
+  redirect('/admin/today')
 }

@@ -7,6 +7,7 @@ import Tooltip, { TooltipProvider } from '@/components/Tooltip'
 import BrandLogoWordmark from '@/components/BrandLogoWordmark'
 
 const NAV_ITEMS = [
+  { href: '/admin/today', label: 'Today', icon: 'M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2' },
   { href: '/admin/inspections', label: 'Inspections', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
   { href: '/admin/block', label: 'New Booking', icon: 'M12 4v16m8-8H4' },
   { href: '/admin/invoices', label: 'Invoices', icon: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8' },
@@ -27,10 +28,9 @@ function SidebarIcon({ d }) {
   )
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ collapsed, setCollapsed }) {
   const pathname = usePathname()
   const [uninvoicedCount, setUninvoicedCount] = useState(0)
-  const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
