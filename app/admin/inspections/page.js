@@ -127,6 +127,7 @@ export default async function InspectionsPage({ searchParams }) {
       prevCollected={prevCollected}
       prevTotal={prevInspections.length}
       ytdCount={ytdCount}
+      initialSearch={params.search || ''}
     />
   )
 }

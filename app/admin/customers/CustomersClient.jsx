@@ -41,6 +41,7 @@ export default function CustomersClient({ customers }) {
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden md:table-cell text-center">Reports</th>
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden lg:table-cell">Last Inspection</th>
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden lg:table-cell">Portal</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden sm:table-cell"></th>
             </tr>
           </thead>
           <tbody>
@@ -77,11 +78,19 @@ export default function CustomersClient({ customers }) {
                     <span className="text-charcoal/40">Never</span>
                   )}
                 </td>
+                <td className="px-4 py-3 text-xs hidden sm:table-cell">
+                  <a
+                    href={`/admin/inspections?search=${encodeURIComponent(c.email)}`}
+                    className="text-teal hover:text-amber no-underline font-semibold"
+                  >
+                    Inspections
+                  </a>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-charcoal/50">
+                <td colSpan={8} className="px-4 py-8 text-center text-sm text-charcoal/50">
                   {search ? 'No customers match your search.' : 'No customers yet.'}
                 </td>
               </tr>

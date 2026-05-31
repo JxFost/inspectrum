@@ -157,9 +157,10 @@ function ViewIcon() {
 export default function InspectionsDashboard({
   inspections, from, to, range, fetchError,
   prevCompleted, prevCollected, prevTotal, ytdCount,
+  initialSearch = '',
 }) {
   const router = useRouter()
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(initialSearch)
   const [sourceFilter, setSourceFilter] = useState('all')
   const [sortByPayment, setSortByPayment] = useState(false)
   const [page, setPage] = useState(1)
