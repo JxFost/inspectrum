@@ -168,6 +168,12 @@ export default function TodayClient({ inspections, todayLabel, tomorrowLabel }) 
         inspections={tomorrowItems}
         emptyMessage="Nothing scheduled for tomorrow."
       />
+
+      <div className="text-center pt-4">
+        <Link href="/admin/inspections" className="inline-flex items-center gap-2 text-sm text-teal font-semibold hover:text-amber no-underline transition-colors">
+          See all inspections →
+        </Link>
+      </div>
     </>
   )
 }

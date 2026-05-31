@@ -254,7 +254,7 @@ export default function InspectionsDashboard({
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-serif text-ink">Inspections <span className="text-charcoal/30 text-lg font-normal">— {ytdCount} YTD</span></h1>
+            <h1 className="text-2xl font-serif text-ink">Inspections <span className="text-charcoal/30 text-lg font-normal md:hidden">— {ytdCount} YTD</span></h1>
             <p className="text-sm text-charcoal/60 mt-1">{formatWindowDate(from)} – {formatWindowDate(to)} <span className="text-charcoal/40"> — {inspections.length} Inspections</span></p>
           </div>
           <div className="flex items-center gap-3">
@@ -325,8 +325,8 @@ export default function InspectionsDashboard({
           </div>
         )}
 
-        {/* Summary strip — hidden for now */}
-        {false && <div className="flex gap-3 mb-6 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
+        {/* Summary strip — shown for now */}
+        {true && <div className="gap-3 mb-6 overflow-x-auto pb-2 hidden md:flex sm:grid sm:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
           <StatCard label="Completed" value={completed} trend={trendArrow(completed, prevCompleted)} />
           <StatCard label="Upcoming" value={upcoming} />
           <StatCard label="Collected" value={collected ? `$${Math.round(collected / 100).toLocaleString()}` : '$0'} trend={trendArrow(collected, prevCollected)} />
