@@ -448,22 +448,33 @@ export default function InspectionsDashboard({
                       {item.agreementStatus === 'pending' && item.status !== 'past' && (
                         <span className="block text-[0.6rem] uppercase tracking-wider font-semibold text-amber bg-amber/15 px-1.5 py-0.5 rounded w-fit mb-1">Agreement not signed</span>
                       )}
-                      {item.customerName || '—'}
-                      {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
-                        <Tooltip content={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings`}>
-                          <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full">
-                            {customerCounts[item.customerName.toLowerCase().trim()]}x
-                          </span>
-                        </Tooltip>
-                      )}
-                      {item.feedbackRating && (
-                        <Tooltip content={`Customer rated ${item.feedbackRating}/5`}>
-                          <span className="ml-1 text-amber text-xs">
-                            {'★'.repeat(parseInt(item.feedbackRating))}
-                          </span>
-                        </Tooltip>
-                      )}
-                      <div className="sm:hidden text-xs text-charcoal/50 mt-1">{formatDate(item.startISO)} · {formatTime(item.startISO)}</div>
+                      <span className="hidden sm:inline">{item.customerName || '—'}</span>
+                      <span className="hidden sm:inline">
+                        {item.customerName && customerCounts[item.customerName.toLowerCase().trim()] > 1 && (
+                          <Tooltip content={`Repeat customer — ${customerCounts[item.customerName.toLowerCase().trim()]} bookings`}>
+                            <span className="ml-1 inline-flex items-center bg-teal/10 text-teal text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full">
+                              {customerCounts[item.customerName.toLowerCase().trim()]}x
+                            </span>
+                          </Tooltip>
+                        )}
+                        {item.feedbackRating && (
+                          <Tooltip content={`Customer rated ${item.feedbackRating}/5`}>
+                            <span className="ml-1 text-amber text-xs">
+                              {'★'.repeat(parseInt(item.feedbackRating))}
+                            </span>
+                          </Tooltip>
+                        )}
+                      </span>
+                      <div className="sm:hidden mt-1.5 space-y-0.5">
+                        <div className="text-xs text-charcoal/50">{formatDate(item.startISO)} · {formatTime(item.startISO)}</div>
+                        <div className="text-xs font-medium text-ink">{item.customerName || '—'}</div>
+                        {item.address && (
+                          <div className="text-xs text-charcoal/40">
+                            {truncateAddress(item.address)}
+                            {item.distanceMiles && ` · ${item.distanceMiles} mi · ~${Math.round(item.distanceMiles * 1.5)} min`}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="group relative max-w-[200px]">
