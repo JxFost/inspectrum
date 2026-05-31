@@ -46,8 +46,8 @@ export default async function InvoicesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-4 lg:px-6">
+      <div className="mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-serif text-ink mb-1">Invoices</h1>
           <p className="text-sm text-charcoal/60">{serialized.length} inspection{serialized.length !== 1 ? 's' : ''}</p>

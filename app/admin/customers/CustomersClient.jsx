@@ -27,26 +27,26 @@ export default function CustomersClient({ customers }) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by name, email, or phone..."
-        className="w-full sm:w-80 bg-paper border border-line px-3 py-2 text-sm text-ink rounded-sm outline-none focus:border-teal mb-4"
+        className="w-full bg-white border border-line px-4 py-3 shadow-sm text-sm text-ink rounded-sm outline-none focus:border-teal mb-4"
       />
 
-      <div className="bg-paper border border-line rounded-sm overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-line bg-cream/50">
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">Name</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">Email</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden sm:table-cell">Phone</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden md:table-cell text-center">Inspections</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden md:table-cell text-center">Reports</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden lg:table-cell">Last Inspection</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden lg:table-cell">Portal</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden sm:table-cell"></th>
+            <tr className="border-b border-line/60">
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Name</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Email</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden sm:table-cell">Phone</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden md:table-cell text-center">Inspections</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden md:table-cell text-center">Reports</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden lg:table-cell">Last Inspection</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden lg:table-cell">Portal</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden sm:table-cell"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((c) => (
-              <tr key={c.id} className="border-b border-line/50 hover:bg-cream/30 transition-colors">
+              <tr key={c.id} className="border-b border-line/30 hover:bg-white transition-colors">
                 <td className="px-4 py-3 text-sm text-ink font-medium">{c.name}</td>
                 <td className="px-4 py-3 text-sm">
                   <a href={`mailto:${c.email}`} className="text-teal hover:text-amber no-underline">{c.email}</a>

@@ -67,11 +67,11 @@ export default function InvoicesClient({ inspections }) {
     <>
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-paper border border-line rounded-sm p-4">
+        <div className="bg-white border border-line/30 rounded-sm p-4 shadow-sm">
           <div className="text-xs text-charcoal/50 uppercase tracking-wider font-semibold mb-1">Collected</div>
           <div className="text-xl font-semibold text-teal">${Math.round(totalPaid / 100).toLocaleString()}</div>
         </div>
-        <div className="bg-paper border border-line rounded-sm p-4">
+        <div className="bg-white border border-line/30 rounded-sm p-4 shadow-sm">
           <div className="text-xs text-charcoal/50 uppercase tracking-wider font-semibold mb-1">Outstanding</div>
           <div className="text-xl font-semibold text-amber">${Math.round(totalPending / 100).toLocaleString()}</div>
         </div>
@@ -79,7 +79,7 @@ export default function InvoicesClient({ inspections }) {
           <div className="text-xs text-charcoal/50 uppercase tracking-wider font-semibold mb-1">Overdue</div>
           <div className={`text-xl font-semibold ${overdueCount > 0 ? 'text-red-700' : 'text-charcoal/30'}`}>{overdueCount}</div>
         </div>
-        <div className="bg-paper border border-line rounded-sm p-4">
+        <div className="bg-white border border-line/30 rounded-sm p-4 shadow-sm">
           <div className="text-xs text-charcoal/50 uppercase tracking-wider font-semibold mb-1">Not Invoiced</div>
           <div className={`text-xl font-semibold ${uninvoicedCount > 0 ? 'text-charcoal' : 'text-charcoal/30'}`}>{uninvoicedCount}</div>
         </div>
@@ -92,7 +92,7 @@ export default function InvoicesClient({ inspections }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search name, email, address, or #..."
-          className="bg-paper border border-line px-3 py-2 text-sm text-ink rounded-sm outline-none focus:border-teal w-full sm:w-72"
+          className="bg-white border border-line px-4 py-3 shadow-sm text-sm text-ink rounded-sm outline-none focus:border-teal w-full"
         />
         <div className="flex gap-1">
           {STATUS_FILTERS.map((s) => (
@@ -113,22 +113,22 @@ export default function InvoicesClient({ inspections }) {
       </div>
 
       {/* Table */}
-      <div className="bg-paper border border-line rounded-sm overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-line bg-cream/50">
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">#</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">Date</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">Customer</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden md:table-cell">Service</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold text-right">Amount</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold">Status</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/60 font-semibold hidden sm:table-cell">Actions</th>
+            <tr className="border-b border-line/60">
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">#</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Date</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Customer</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden md:table-cell">Service</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold text-right">Amount</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Status</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden sm:table-cell">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((i) => (
-              <tr key={i.id} className="border-b border-line/50 hover:bg-cream/30 transition-colors">
+              <tr key={i.id} className="border-b border-line/30 hover:bg-white transition-colors">
                 <td className="px-4 py-3 text-xs font-mono text-charcoal/40">
                   {i.inspectionNumber ? i.inspectionNumber.split('-').pop() : '—'}
                 </td>

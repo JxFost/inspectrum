@@ -37,8 +37,8 @@ export default async function CustomersPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-cream pt-8 pb-12 px-5">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-4 lg:px-6">
+      <div className="mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-serif text-ink mb-1">Customers</h1>
