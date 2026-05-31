@@ -249,7 +249,7 @@ export default function InspectionsDashboard({
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-cream pt-8 pb-12 px-5 lg:px-8">
+    <div className="min-h-screen bg-cream pt-8 pb-12 px-4 lg:px-6">
       <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -261,7 +261,7 @@ export default function InspectionsDashboard({
             <select
               value={range}
               onChange={(e) => router.push(e.target.value === '2w' ? '/admin/inspections' : `/admin/inspections?range=${e.target.value}`)}
-              className="bg-cream border border-line px-3 py-1.5 text-sm text-ink rounded-sm outline-none focus:border-teal cursor-pointer"
+              className="bg-white border border-line px-3 py-1.5 text-sm text-ink rounded-sm outline-none focus:border-teal cursor-pointer shadow-sm"
             >
               {RANGE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
@@ -342,7 +342,7 @@ export default function InspectionsDashboard({
             value={search}
             onChange={(e) => updateSearch(e.target.value)}
             placeholder="Search by name, address, or inspection number..."
-            className="bg-paper border border-line px-4 py-3 text-sm text-ink rounded-sm outline-none focus:border-teal w-full"
+            className="bg-white border border-line px-4 py-3 text-sm text-ink rounded-sm outline-none focus:border-teal w-full shadow-sm"
           />
           {/* Source filters — hidden for now */}
           {false && <div className="flex gap-1">
@@ -381,9 +381,9 @@ export default function InspectionsDashboard({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full bg-paper border border-line rounded-sm">
+            <table className="w-full">
               <thead>
-                <tr className="border-b border-line text-[0.7rem] uppercase tracking-wider text-charcoal/50">
+                <tr className="border-b border-line/60 text-[0.7rem] uppercase tracking-wider text-charcoal/40">
                   <th className="text-left px-4 py-3 hidden md:table-cell">#</th>
                   <th className="text-left px-4 py-3">Date & Time</th>
                   <th className="text-left px-4 py-3">Customer</th>
@@ -427,11 +427,11 @@ export default function InspectionsDashboard({
                     <tr
                       key={item.eventId}
                       onClick={() => item.eventId && router.push(`/admin/inspections/${item.eventId}`)}
-                      className={`border-b border-line/50 hover:bg-cream/50 cursor-pointer ${
-                        isOverdue ? 'bg-red-50 border-l-2 border-l-red-400'
-                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.06] border-l-2 border-l-amber'
-                        : item.status === 'past' ? 'bg-charcoal/[0.04]'
-                        : item.status === 'today' ? 'bg-amber/[0.04]'
+                      className={`border-b border-line/30 hover:bg-white cursor-pointer transition-colors ${
+                        isOverdue ? 'bg-red-50/50 border-l-2 border-l-red-400'
+                        : item.agreementStatus === 'pending' && item.status !== 'past' ? 'bg-amber/[0.04] border-l-2 border-l-amber'
+                        : item.status === 'past' ? ''
+                        : item.status === 'today' ? 'bg-amber/[0.03]'
                         : ''
                       }`}
                     >
