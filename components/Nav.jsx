@@ -276,7 +276,9 @@ export default function Nav() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[76px] px-5 lg:px-8 flex justify-between items-center bg-cream/90 backdrop-blur-xl border-b border-line lg:bg-cream lg:backdrop-blur-none">
-      <div className="relative z-10 h-10 w-[170px] sm:w-[230px]">
+      <div className="relative z-10 h-10 w-[170px] sm:w-[230px] flex items-center">
+        {/* Favicon star on mobile */}
+        <img src="/favicon/favicon-32x32.png" alt="" className="sm:hidden w-6 h-6 mr-2 shrink-0" />
         <BrandLogo
           className="absolute left-0 top-1/2 rounded-sm"
           imageClassName="max-w-[68vw]"
