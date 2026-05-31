@@ -49,14 +49,14 @@ export default function AdminSidebar() {
     <TooltipProvider>
       <div className={`flex flex-col h-full bg-ink text-cream ${collapsed ? 'w-16' : 'w-56'} transition-all duration-200`}>
         {/* Logo / brand */}
-        <div className={`px-4 border-b border-white/10 ${collapsed ? 'text-center' : ''}`}>
+        <div className={`border-b border-white/10 ${collapsed ? 'text-center' : ''}`}>
           {collapsed ? (
-            <Link href="/admin/inspections" className="no-underline">
-              <span className="text-amber font-serif text-xl font-bold">I</span>
+            <Link href="/admin/inspections" className="no-underline px-4 py-2 flex items-center justify-center">
+              <img src="/favicon/favicon-32x32.png" alt="" className="w-10 h-8" />
             </Link>
           ) : (
-            <div className="py-2">
-              <BrandLogoWordmark className="w-[120px]" />
+            <div className="flex items-center px-4">
+              <BrandLogoWordmark className="w-[120px] mt-1" variant="wordmark-white" />
             </div>
           )}
         </div>
@@ -149,8 +149,8 @@ export default function AdminSidebar() {
             {mobileOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
           </svg>
         </button>
-        <div onClick={() => setMobileOpen(false)}>
-          <BrandLogoWordmark className="w-[120px]" />
+        <div onClick={() => setMobileOpen(false)} className="flex items-center justify-center mt-1">
+          <BrandLogoWordmark className="w-[120px]" variant="wordmark-white" />
         </div>
         <div className="w-6" /> {/* spacer for centering */}
       </div>
