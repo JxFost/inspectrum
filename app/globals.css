@@ -4,6 +4,13 @@
   color-scheme: light;
 }
 
+/* Prevent iOS zoom on input focus — inputs must be 16px+ */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 @theme {
   --color-teal: #2B7E8C;
   --color-teal-deep: #1F5C66;
