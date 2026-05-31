@@ -1,15 +1,16 @@
 /*
  * GET /api/cron/reminders
  *
- * Daily cron job (called by Vercel Cron) that sends 48-hour reminder emails.
+ * Daily cron job (called by Vercel Cron) that sends 24-hour reminder emails.
  *
- * Finds calendar events starting between 36 and 60 hours from now that have
+ * Finds calendar events starting between 12 and 36 hours from now that have
  * a booking_token but no "reminder_sent: true" marker. Sends each a reminder
  * email, then marks the event so it won't get a duplicate.
  *
+ * Also checks if the inspection agreement has been signed — if not, adds
+ * a prominent warning to the reminder email.
+ *
  * Idempotent: re-running won't double-send because of the marker check.
- * Pattern: send first, then mark — a failed marker write might cause one
- * duplicate, but that's better than missing reminders entirely.
  */
 
 import { NextResponse } from 'next/server'
@@ -17,6 +18,7 @@ import { findEventsBetween, updateEventDescription } from '@/lib/google-calendar
 import { extractToken, hasReminderMarker, appendReminderMarker, buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
 import { reminderHtml } from '@/lib/email/templates/reminder'
+import { sql } from '@/lib/db'
 
 function parseField(description, field) {
   if (!description) return ''
@@ -34,8 +36,8 @@ export async function GET(request) {
   }
 
   const now = new Date()
-  const windowStart = new Date(now.getTime() + 36 * 60 * 60 * 1000)
-  const windowEnd = new Date(now.getTime() + 60 * 60 * 60 * 1000)
+  const windowStart = new Date(now.getTime() + 12 * 60 * 60 * 1000)
+  const windowEnd = new Date(now.getTime() + 36 * 60 * 60 * 1000)
 
   let events
   try {
@@ -79,11 +81,31 @@ export async function GET(request) {
 
     const manageUrl = buildManageUrl(token)
 
+    // Check if agreement is signed
+    let agreementUrl = null
+    let agreementSigned = true
+    try {
+      const db = sql()
+      const rows = await db`
+        SELECT sa.token, sa.signed_at
+        FROM signed_agreements sa
+        JOIN inspections i ON i.id = sa.inspection_id
+        WHERE i.token = ${token}
+      `
+      if (rows[0]) {
+        agreementSigned = !!rows[0].signed_at
+        if (!agreementSigned) {
+          const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
+          agreementUrl = `${siteUrl}/agreement/${rows[0].token}`
+        }
+      }
+    } catch { /* DB may not be available */ }
+
     // Send the reminder.
     try {
       const { error } = await sendEmail({
         to: customerEmail,
-        subject: `Reminder: Your inspection is ${formatRelative(startISO)}`,
+        subject: `Reminder: Your inspection is ${formatRelative(startISO)}${!agreementSigned ? ' — Agreement needed' : ''}`,
         html: reminderHtml({
           customerName: customerName || 'there',
           service: service || 'Home Inspection',
@@ -91,6 +113,8 @@ export async function GET(request) {
           endISO,
           address: address || 'See confirmation email',
           manageUrl,
+          agreementUrl,
+          agreementSigned,
         }),
       })
 

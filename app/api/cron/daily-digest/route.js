@@ -12,6 +12,7 @@ import { sendEmail } from '@/lib/email/send'
 import { TIMEZONE } from '@/lib/working-hours'
 import { dailyDigestHtml } from '@/lib/email/templates/daily-digest'
 import { DRIVING_FACTOR } from '@/lib/mileage'
+import { sql } from '@/lib/db'
 
 export async function GET(request) {
   const authHeader = request.headers.get('authorization')
@@ -88,7 +89,41 @@ export async function GET(request) {
     day: 'numeric',
   })
 
-  const html = dailyDigestHtml({ dateLabel, inspections })
+  // Fetch action items from DB
+  let unsignedAgreements = []
+  let missingReports = []
+  try {
+    const db = sql()
+
+    // Unsigned agreements for upcoming inspections (next 7 days)
+    const sevenDaysOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    unsignedAgreements = await db`
+      SELECT i.customer_name, i.start_at, i.inspection_number
+      FROM signed_agreements sa
+      JOIN inspections i ON i.id = sa.inspection_id
+      WHERE sa.signed_at IS NULL
+        AND i.start_at >= ${now.toISOString()}
+        AND i.start_at <= ${sevenDaysOut}
+        AND i.status != 'cancelled'
+      ORDER BY i.start_at ASC
+    `
+
+    // Past inspections without reports (last 14 days)
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
+    missingReports = await db`
+      SELECT i.customer_name, i.start_at, i.inspection_number
+      FROM inspections i
+      LEFT JOIN inspection_reports ir ON ir.inspection_id = i.id
+      WHERE i.start_at >= ${fourteenDaysAgo}
+        AND i.start_at < ${now.toISOString()}
+        AND i.status != 'cancelled'
+        AND i.customer_name IS NOT NULL
+        AND ir.id IS NULL
+      ORDER BY i.start_at DESC
+    `
+  } catch { /* DB may not be available */ }
+
+  const html = dailyDigestHtml({ dateLabel, inspections, unsignedAgreements, missingReports })
   const digestTo = process.env.DIGEST_EMAIL || 'harry@evergreeninspections.com'
 
   try {

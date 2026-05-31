@@ -7,6 +7,7 @@
 
 import { getEvent } from '@/lib/google-calendar'
 import { parseEventDescription } from '@/lib/booking'
+import { calculatePrice } from '@/lib/pricing'
 import { TIMEZONE } from '@/lib/working-hours'
 import InvoiceForm from './InvoiceForm'
 
@@ -80,12 +81,36 @@ export default async function InvoicePage({ params }) {
     )
   }
 
-  // Determine suggested price from service name + trip charge
-  const priceMap = { 'Full Home Inspection': 450, 'Radon Testing Only': 150, 'Mold Assessment': 250, 'Pre-Listing Inspection': 400 }
-  const basePrice = priceMap[parsed.service] || 0
-  const tripCharge = parsed.tripChargeCents ? parseInt(parsed.tripChargeCents, 10) / 100 : 0
-  const suggestedPrice = basePrice ? basePrice + tripCharge : ''
+  // Calculate suggested price using the pricing engine
+  const desc = event.description || ''
+  const sqftMatch = desc.match(/Square Footage:\s*(\d+)/)
+  const ybMatch = desc.match(/Year Built:\s*(\d{4})/)
+  const cityMatch = (parsed.address || '').match(/,\s*([^,]+),\s*CO/)
+
+  const serviceType = parsed.service?.toLowerCase().includes('commercial') ? 'commercial'
+    : parsed.service?.toLowerCase().includes('radon') ? 'radon'
+    : parsed.service?.toLowerCase().includes('mold') ? 'mold'
+    : 'full'
+
+  const features = {}
+  if (desc.includes('Garage: Detached')) features.detachedGarage = true
+  if (desc.includes('Outbuilding: Structure only')) features.outbuildingStructure = true
+  if (desc.includes('Outbuilding: With electricity')) features.outbuildingElecOnly = true
+  if (desc.includes('Outbuilding: Full utilities')) features.outbuildingFull = true
+
+  const pricing = calculatePrice({
+    sqft: sqftMatch ? sqftMatch[1] : 0,
+    yearBuilt: ybMatch ? ybMatch[1] : null,
+    city: cityMatch ? cityMatch[1].trim() : null,
+    serviceType,
+    radonAddOn: desc.includes('Radon Add-On: Yes'),
+    sewerScope: desc.includes('Sewer Scope: Yes'),
+    features,
+  })
+
+  const suggestedPrice = pricing.total || ''
   const distanceMiles = parsed.distanceMiles
+  const tripCharge = parsed.tripChargeCents ? parseInt(parsed.tripChargeCents, 10) / 100 : 0
 
   return (
     <div className="min-h-screen bg-cream pt-32 pb-12 px-5">
@@ -112,6 +137,30 @@ export default async function InvoicePage({ params }) {
             <div className="flex justify-between"><span className="text-charcoal/60">Email</span><span className="text-ink font-medium">{parsed.email || 'No email on file'}</span></div>
           </div>
         </div>
+
+        {/* Pricing breakdown */}
+        {pricing.total && (
+          <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-5 mb-6">
+            <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-2">Suggested Price</div>
+            <div className="space-y-1.5 text-sm">
+              {pricing.breakdown.map((item, i) => (
+                item.amount !== null && (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-charcoal">{item.label}</span>
+                    <span className={`font-medium ${item.amount < 0 ? 'text-teal' : 'text-ink'}`}>
+                      {item.amount < 0 ? `-$${Math.abs(item.amount)}` : `$${item.amount}`}
+                    </span>
+                  </div>
+                )
+              ))}
+              <div className="border-t border-teal/20 pt-1.5 mt-1.5 flex justify-between">
+                <span className="text-ink font-semibold">Total</span>
+                <span className="text-teal font-semibold">${pricing.total}</span>
+              </div>
+            </div>
+            <p className="text-xs text-charcoal/40 mt-2">Pre-filled below. Adjust if needed.</p>
+          </div>
+        )}
 
         <InvoiceForm
           eventId={eventId}
