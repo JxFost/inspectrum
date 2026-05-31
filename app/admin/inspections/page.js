@@ -58,7 +58,7 @@ function prevWindowFromRange(range) {
 
 export default async function InspectionsPage({ searchParams }) {
   const params = await searchParams
-  const range = params.range || '1m'
+  const range = params.range || 'year'
   const win = windowFromRange(range)
   const from = params.from || win.from
   const to = params.to || win.to
