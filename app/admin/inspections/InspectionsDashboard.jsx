@@ -377,7 +377,7 @@ export default function InspectionsDashboard({
         {total === 0 ? (
           <div className="bg-paper border border-line rounded-sm p-12 text-center">
             <p className="text-charcoal/60 mb-2">{search ? 'No matching inspections.' : 'No inspections in this window.'}</p>
-            {!search && <p className="text-xs text-charcoal/40">Try a wider date range or different filters.</p>}
+            {!search && <p className="text-sm text-charcoal/40">Try a wider date range or different filters.</p>}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -441,8 +441,8 @@ export default function InspectionsDashboard({
                       </Tooltip>
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <div className="text-ink text-sm font-medium">{formatDate(item.startISO)}</div>
-                      <div className="text-charcoal/60 text-sm">{formatTime(item.startISO)}</div>
+                      <div className="text-ink text-base font-medium">{formatDate(item.startISO)}</div>
+                      <div className="text-charcoal/60 text-base">{formatTime(item.startISO)}</div>
                     </td>
                     <td className="px-4 py-3 text-ink">
                       {item.agreementStatus === 'pending' && item.status !== 'past' && (
@@ -467,9 +467,9 @@ export default function InspectionsDashboard({
                       </span>
                       <div className="sm:hidden mt-1.5 space-y-0.5">
                         <div className="text-xs text-charcoal/50">{formatDate(item.startISO)} · {formatTime(item.startISO)}</div>
-                        <div className="text-xs font-medium text-ink">{item.customerName || '—'}</div>
+                        <div className="text-sm font-medium text-ink">{item.customerName || '—'}</div>
                         {item.address && (
-                          <div className="text-xs text-charcoal/40">
+                          <div className="text-sm text-charcoal/40">
                             {truncateAddress(item.address)}
                             {item.distanceMiles && ` · ${item.distanceMiles} mi · ~${Math.round(item.distanceMiles * 1.5)} min`}
                           </div>
@@ -479,7 +479,7 @@ export default function InspectionsDashboard({
                     <td className="px-4 py-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="group relative max-w-[200px]">
                         <Tooltip content={item.address} side="bottom">
-                          <span className="text-charcoal/70 text-sm truncate block">
+                          <span className="text-charcoal/70 text-base truncate block">
                             {truncateAddress(item.address)}
                           </span>
                         </Tooltip>
@@ -511,7 +511,7 @@ export default function InspectionsDashboard({
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <ServiceIconPill service={item.service} radonAddOn={item.radonAddOn} sewerScope={item.sewerScope} />
                     </td>
-                    <td className="px-4 py-3 text-right hidden sm:table-cell text-ink">
+                    <td className="px-4 py-3 text-right hidden sm:table-cell text-ink text-base">
                       {formatCents(item.paymentAmountCents || item.invoiceAmountCents)}
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
