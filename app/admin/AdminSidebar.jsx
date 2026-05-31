@@ -40,6 +40,9 @@ export default function AdminSidebar() {
       .catch(() => {})
   }, [pathname])
 
+  // Don't render sidebar on login page
+  if (pathname === '/admin/login') return null
+
   const isActive = (href) => {
     if (href === '/admin/inspections') return pathname.startsWith('/admin/inspections')
     return pathname === href
@@ -56,7 +59,7 @@ export default function AdminSidebar() {
             </Link>
           ) : (
             <div className="flex items-center px-4">
-              <BrandLogoWordmark className="w-[120px] mt-1" variant="wordmark-white" />
+              <BrandLogoWordmark className="w-[120px] mt-1" variant="wordmark-white" href="/admin/inspections" />
             </div>
           )}
         </div>
