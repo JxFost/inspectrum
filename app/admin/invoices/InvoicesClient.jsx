@@ -117,8 +117,8 @@ export default function InvoicesClient({ inspections }) {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-line/60">
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">#</th>
-              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Date</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden sm:table-cell">#</th>
+              <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden sm:table-cell">Date</th>
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold">Customer</th>
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold hidden md:table-cell">Service</th>
               <th className="px-4 py-3 text-[0.65rem] uppercase tracking-wider text-charcoal/40 font-semibold text-right">Amount</th>
@@ -129,12 +129,13 @@ export default function InvoicesClient({ inspections }) {
           <tbody>
             {filtered.map((i) => (
               <tr key={i.id} className="border-b border-line/30 hover:bg-white transition-colors">
-                <td className="px-4 py-3 text-xs font-mono text-charcoal/40">
+                <td className="px-4 py-3 text-xs font-mono text-charcoal/40 hidden sm:table-cell">
                   {i.inspectionNumber ? i.inspectionNumber.split('-').pop() : '—'}
                 </td>
-                <td className="px-4 py-3 text-sm text-charcoal">{formatDate(i.startAt)}</td>
+                <td className="px-4 py-3 text-sm text-charcoal hidden sm:table-cell">{formatDate(i.startAt)}</td>
                 <td className="px-4 py-3">
                   <div className="text-sm text-ink font-medium">{i.customerName}</div>
+                  <div className="sm:hidden text-xs text-charcoal/50">{formatDate(i.startAt)}</div>
                   <div className="text-xs text-charcoal/50">{i.email}</div>
                 </td>
                 <td className="px-4 py-3 text-sm text-charcoal hidden md:table-cell">{i.service}</td>

@@ -385,11 +385,11 @@ export default function InspectionsDashboard({
               <thead>
                 <tr className="border-b border-line/60 text-[0.7rem] uppercase tracking-wider text-charcoal/40">
                   <th className="text-left px-4 py-3 hidden md:table-cell">#</th>
-                  <th className="text-left px-4 py-3">Date & Time</th>
+                  <th className="text-left px-4 py-3 hidden sm:table-cell">Date & Time</th>
                   <th className="text-left px-4 py-3">Customer</th>
                   <th className="text-left px-4 py-3 hidden md:table-cell">Address</th>
                   <th className="text-right px-4 py-3 hidden lg:table-cell">Dist.</th>
-                  <th className="text-left px-4 py-3">Service</th>
+                  <th className="text-left px-4 py-3 hidden sm:table-cell">Service</th>
                   <th className="text-right px-4 py-3 hidden sm:table-cell">Price</th>
                   <th className="text-left px-4 py-3 hidden sm:table-cell">
                     <button type="button" onClick={() => setSortByPayment(!sortByPayment)} className="text-charcoal/50 hover:text-teal transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0 text-[0.7rem] uppercase tracking-wider font-semibold">
@@ -399,7 +399,7 @@ export default function InspectionsDashboard({
                   </th>
                   <th className="text-left px-4 py-3 hidden lg:table-cell">Source</th>
                   {false && <th className="text-left px-4 py-3 hidden lg:table-cell">Status</th>}
-                  <th className="text-right px-4 py-3">Actions</th>
+                  <th className="text-right px-4 py-3 hidden sm:table-cell">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -440,7 +440,7 @@ export default function InspectionsDashboard({
                         <span>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</span>
                       </Tooltip>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <div className="text-ink text-sm font-medium">{formatDate(item.startISO)}</div>
                       <div className="text-charcoal/60 text-sm">{formatTime(item.startISO)}</div>
                     </td>
@@ -463,6 +463,7 @@ export default function InspectionsDashboard({
                           </span>
                         </Tooltip>
                       )}
+                      <div className="sm:hidden text-xs text-charcoal/50 mt-1">{formatDate(item.startISO)} · {formatTime(item.startISO)}</div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="group relative max-w-[200px]">
@@ -496,7 +497,7 @@ export default function InspectionsDashboard({
                         </Tooltip>
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <ServiceIconPill service={item.service} radonAddOn={item.radonAddOn} sewerScope={item.sewerScope} />
                     </td>
                     <td className="px-4 py-3 text-right hidden sm:table-cell text-ink">
@@ -523,7 +524,7 @@ export default function InspectionsDashboard({
                     {false && <td className="px-4 py-3 hidden lg:table-cell">
                       <span className={`text-sm ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
                     </td>}
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {item.status === 'past' && !item.squareInvoiceUrl && item.source !== 'acc' && item.customerName && (
                           <Tooltip content="Send Invoice">
