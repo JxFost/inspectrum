@@ -140,8 +140,42 @@ export default function AdminBlockClient() {
     )
   }
 
+  const pricingSidebar = (
+    <div className="lg:sticky lg:top-8">
+      {pricing.total != null ? (
+        <div className="bg-white border border-line/30 rounded-sm p-6 shadow-sm">
+          <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-3">Estimated Price</div>
+          <div className="space-y-2 text-sm">
+            {pricing.breakdown.map((item, i) => (
+              item.amount !== null && (
+                <div key={i} className="flex justify-between">
+                  <span className="text-charcoal">{item.label}</span>
+                  <span className={`font-medium ${item.amount < 0 ? 'text-teal' : 'text-ink'}`}>
+                    {item.amount < 0 ? `-$${Math.abs(item.amount)}` : `$${item.amount}`}
+                  </span>
+                </div>
+              )
+            ))}
+            {pricing.cityUnknown && <div className="text-xs text-charcoal/50 italic">Location surcharge may apply</div>}
+            <div className="border-t border-teal/20 pt-2 mt-2 flex justify-between">
+              <span className="text-ink font-semibold">Total</span>
+              <span className="text-teal font-serif text-2xl font-semibold">${pricing.total}</span>
+            </div>
+          </div>
+          <p className="text-xs text-charcoal/40 mt-3">Updates as you fill in details.</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-line/30 rounded-sm p-6 shadow-sm text-center">
+          <div className="text-xs uppercase tracking-wider text-charcoal/30 font-semibold mb-2">Estimated Price</div>
+          <p className="text-sm text-charcoal/40">Fill in service and property details to see pricing.</p>
+        </div>
+      )}
+    </div>
+  )
+
   return (
-    <form onSubmit={handleSubmit} className="bg-paper p-8 rounded-sm border border-line space-y-4">
+    <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-8 lg:items-start">
+    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-sm border border-line/30 shadow-sm space-y-4">
       <Field label="Service">
         <select value={form.service} onChange={(e) => update('service', e.target.value)} className="input-style">
           {SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.duration}h)</option>)}
@@ -249,30 +283,6 @@ export default function AdminBlockClient() {
         )}
       </div>
 
-      {/* Live pricing estimate */}
-      {pricing.total != null && (
-        <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-4">
-          <div className="text-xs uppercase tracking-wider text-teal font-semibold mb-2">Estimated Price</div>
-          <div className="space-y-1.5 text-sm">
-            {pricing.breakdown.map((item, i) => (
-              item.amount !== null && (
-                <div key={i} className="flex justify-between">
-                  <span className="text-charcoal">{item.label}</span>
-                  <span className={`font-medium ${item.amount < 0 ? 'text-teal' : 'text-ink'}`}>
-                    {item.amount < 0 ? `-$${Math.abs(item.amount)}` : `$${item.amount}`}
-                  </span>
-                </div>
-              )
-            ))}
-            {pricing.cityUnknown && <div className="text-xs text-charcoal/50 italic">Location surcharge may apply</div>}
-            <div className="border-t border-teal/20 pt-1.5 mt-1.5 flex justify-between">
-              <span className="text-ink font-semibold">Total</span>
-              <span className="text-teal font-semibold">${pricing.total}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-2 pt-2">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.radonAddOn} onChange={(e) => update('radonAddOn', e.target.checked)} className="accent-teal" />
@@ -314,6 +324,11 @@ export default function AdminBlockClient() {
         }
       `}</style>
     </form>
+    {/* Pricing sidebar — desktop only, shown below form on mobile */}
+    <div className="mt-6 lg:mt-0">
+      {pricingSidebar}
+    </div>
+    </div>
   )
 }
 
