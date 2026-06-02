@@ -119,8 +119,8 @@ export async function GET(request) {
 
   const statRow = (label, value) => `
     <tr>
-      <td style="padding:8px 0;font-size:14px;color:#3D3F40;">${label}</td>
-      <td style="padding:8px 0;font-size:14px;font-weight:600;color:#1F2426;text-align:right;">${value}</td>
+      <td style="padding:8px 16px;font-size:14px;color:#3D3F40;">${label}</td>
+      <td style="padding:8px 16px;font-size:14px;font-weight:600;color:#1F2426;text-align:right;">${value}</td>
     </tr>`
 
   const listSection = (title, items) => items.length === 0 ? '' : `

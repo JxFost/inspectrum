@@ -164,6 +164,9 @@ export default function InspectionsDashboard({
   const [sourceFilter, setSourceFilter] = useState('all')
   const [sortByPayment, setSortByPayment] = useState(false)
   const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState(new Set())
+  const [bulkAction, setBulkAction] = useState('')
+  const [bulkStatus, setBulkStatus] = useState('idle') // idle | processing | done
 
   // Filter + search
   const filtered = useMemo(() => {
@@ -363,6 +366,56 @@ export default function InspectionsDashboard({
           </div>}
         </div>
 
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div className="flex items-center gap-3 bg-white border border-teal/30 rounded-sm p-3 mb-4 shadow-sm">
+            <span className="text-sm text-ink font-medium">{selected.size} selected</span>
+            <select
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value)}
+              className="bg-cream border border-line px-3 py-1.5 text-sm text-ink rounded-sm outline-none"
+            >
+              <option value="">Choose action...</option>
+              <option value="mark_paid">Mark as Paid</option>
+              <option value="mark_report_sent">Mark Report Sent</option>
+            </select>
+            <button
+              type="button"
+              disabled={!bulkAction || bulkStatus === 'processing'}
+              onClick={async () => {
+                setBulkStatus('processing')
+                try {
+                  const res = await fetch('/api/admin/bulk-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventIds: [...selected], action: bulkAction }),
+                  })
+                  if (res.ok) {
+                    setBulkStatus('done')
+                    setSelected(new Set())
+                    setBulkAction('')
+                    setTimeout(() => { setBulkStatus('idle'); router.refresh() }, 1500)
+                  } else {
+                    setBulkStatus('idle')
+                  }
+                } catch {
+                  setBulkStatus('idle')
+                }
+              }}
+              className="px-4 py-1.5 bg-teal text-white text-sm font-semibold rounded-sm border-0 cursor-pointer hover:bg-teal-deep transition-colors disabled:opacity-50"
+            >
+              {bulkStatus === 'processing' ? 'Updating...' : bulkStatus === 'done' ? 'Done ✓' : 'Apply'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSelected(new Set()); setBulkAction('') }}
+              className="text-sm text-charcoal/50 hover:text-ink cursor-pointer bg-transparent border-0 ml-auto"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {/* Page relationship */}
         <p className="text-sm text-charcoal/50 mb-3">
           Showing {total === 0 ? 0 : startIdx + 1}–{endIdx} of {total} {sourceFilter !== 'all' ? `(${SOURCE_LABELS[sourceFilter]})` : ''}
@@ -384,6 +437,20 @@ export default function InspectionsDashboard({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-line/60 text-[0.7rem] uppercase tracking-wider text-charcoal/40">
+                  <th className="w-10 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.size > 0 && selected.size === pageItems.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelected(new Set(pageItems.map((i) => i.eventId).filter(Boolean)))
+                        } else {
+                          setSelected(new Set())
+                        }
+                      }}
+                      className="accent-teal w-4 h-4"
+                    />
+                  </th>
                   <th className="text-left px-4 py-3 hidden md:table-cell">#</th>
                   <th className="text-left px-4 py-3 hidden sm:table-cell">Date & Time</th>
                   <th className="text-left px-4 py-3">Customer</th>
@@ -435,6 +502,19 @@ export default function InspectionsDashboard({
                         : ''
                       }`}
                     >
+                    <td className="w-10 px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(item.eventId)}
+                        onChange={(e) => {
+                          const next = new Set(selected)
+                          if (e.target.checked) next.add(item.eventId)
+                          else next.delete(item.eventId)
+                          setSelected(next)
+                        }}
+                        className="accent-teal w-4 h-4"
+                      />
+                    </td>
                     <td className="px-4 py-3 text-charcoal/40 text-xs font-mono hidden md:table-cell">
                       <Tooltip content={item.inspectionNumber}>
                         <span>{item.inspectionNumber ? item.inspectionNumber.split('-').pop() : '—'}</span>
