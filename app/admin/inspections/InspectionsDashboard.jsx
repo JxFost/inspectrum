@@ -437,7 +437,7 @@ export default function InspectionsDashboard({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-line/60 text-[0.7rem] uppercase tracking-wider text-charcoal/40">
-                  <th className="w-10 px-3 py-3">
+                  <th className="w-10 px-3 py-3 hidden sm:table-cell">
                     <input
                       type="checkbox"
                       checked={selected.size > 0 && selected.size === pageItems.length}
@@ -502,7 +502,7 @@ export default function InspectionsDashboard({
                         : ''
                       }`}
                     >
-                    <td className="w-10 px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="w-10 px-3 py-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selected.has(item.eventId)}
