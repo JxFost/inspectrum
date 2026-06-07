@@ -2,6 +2,7 @@ import { Fraunces, Inter_Tight } from 'next/font/google'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { TESTIMONIALS } from '@/lib/testimonials'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -190,33 +191,22 @@ const localBusinessJsonLd = {
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Commercial Property Inspection' } },
     ],
   },
+  // Rating + reviews are derived from the real, on-page testimonials
+  // (lib/testimonials.js) so the structured data always reflects genuine
+  // reviews actually shown on the site — per Google's review-snippet policy.
   aggregateRating: {
     '@type': 'AggregateRating',
-    ratingValue: '5.0',
-    reviewCount: '47',
+    ratingValue: (TESTIMONIALS.reduce((sum, t) => sum + t.stars, 0) / TESTIMONIALS.length).toFixed(1),
+    reviewCount: String(TESTIMONIALS.length),
     bestRating: '5',
     worstRating: '1',
   },
-  review: [
-    {
-      '@type': 'Review',
-      author: { '@type': 'Person', name: 'Sarah K.' },
-      reviewRating: { '@type': 'Rating', ratingValue: '5' },
-      reviewBody: 'Thorough doesn\'t begin to describe it. Harry caught issues two other inspectors had missed. The walk-through afterward was the most educational hour of my home-buying process.',
-    },
-    {
-      '@type': 'Review',
-      author: { '@type': 'Person', name: 'Marcus B.' },
-      reviewRating: { '@type': 'Rating', ratingValue: '5' },
-      reviewBody: 'Twenty years of construction experience and it shows. He explained things in a way I actually understood — and the report was clear, photo-rich, and delivered same day.',
-    },
-    {
-      '@type': 'Review',
-      author: { '@type': 'Person', name: 'Jennifer W.' },
-      reviewRating: { '@type': 'Rating', ratingValue: '5' },
-      reviewBody: 'We\'ve used Inspectrum for three properties now. Always professional, always honest about what\'s a real problem versus what\'s normal wear. We won\'t go to anyone else.',
-    },
-  ],
+  review: TESTIMONIALS.map((t) => ({
+    '@type': 'Review',
+    author: { '@type': 'Person', name: t.author },
+    reviewRating: { '@type': 'Rating', ratingValue: String(t.stars), bestRating: '5', worstRating: '1' },
+    reviewBody: t.quote,
+  })),
 }
 
 export default function RootLayout({ children }) {
