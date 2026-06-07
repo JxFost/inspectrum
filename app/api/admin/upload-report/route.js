@@ -38,6 +38,8 @@ export async function POST(request) {
   const inspectionId = formData.get('inspectionId')
   const reportType = formData.get('reportType') || 'inspection'
   const notify = formData.get('notify') === 'true'
+  const summaryRaw = formData.get('summary')
+  const summary = typeof summaryRaw === 'string' && summaryRaw.trim() ? summaryRaw.trim().slice(0, 4000) : null
 
   if (!file || !inspectionId) {
     return NextResponse.json({ error: 'File and inspectionId required.' }, { status: 400 })
@@ -77,7 +79,7 @@ export async function POST(request) {
   try {
     await db`
       INSERT INTO inspection_reports (
-        inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, uploaded_via
+        inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, summary, uploaded_via
       ) VALUES (
         ${inspectionId},
         ${inspection.email || null},
@@ -85,6 +87,7 @@ export async function POST(request) {
         ${file.name},
         ${file.size},
         ${reportType},
+        ${summary},
         'admin'
       )
     `

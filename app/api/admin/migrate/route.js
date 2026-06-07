@@ -115,6 +115,8 @@ async function run(request) {
     `
     // Add report_type column if it doesn't exist (safe for existing tables)
     await db`ALTER TABLE inspection_reports ADD COLUMN IF NOT EXISTS report_type TEXT DEFAULT 'inspection'`.catch(() => {})
+    // Optional plain-English "key findings" summary surfaced to the customer in the portal
+    await db`ALTER TABLE inspection_reports ADD COLUMN IF NOT EXISTS summary TEXT`.catch(() => {})
     await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
     await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
 

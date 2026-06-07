@@ -56,6 +56,7 @@ const REPORT_TYPE_LABELS = Object.fromEntries(REPORT_TYPES.map((t) => [t.value, 
 export default function InspectionDetail({ inspection, reports, agreement, emailLog = [] }) {
   const [uploadState, setUploadState] = useState('idle')
   const [reportType, setReportType] = useState('inspection')
+  const [summary, setSummary] = useState('')
   const [notify, setNotify] = useState(true)
   const [uploadResult, setUploadResult] = useState(null)
   const [errorMsg, setErrorMsg] = useState(null)
@@ -82,6 +83,7 @@ export default function InspectionDetail({ inspection, reports, agreement, email
     formData.append('file', file)
     formData.append('inspectionId', inspection.inspectionId)
     formData.append('reportType', reportType)
+    formData.append('summary', summary)
     formData.append('notify', notify ? 'true' : 'false')
 
     try {
@@ -112,6 +114,7 @@ export default function InspectionDetail({ inspection, reports, agreement, email
         ...prev,
       ])
       fileRef.current.value = ''
+      setSummary('')
     } catch {
       setErrorMsg('Network error. Please try again.')
       setUploadState('idle')
@@ -262,6 +265,16 @@ export default function InspectionDetail({ inspection, reports, agreement, email
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-charcoal/60 uppercase tracking-wider mb-1.5">Key findings summary (optional)</label>
+                <textarea
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  rows={3}
+                  placeholder="A short, plain-English summary of the most important findings — shown to the customer in their portal."
+                  className="w-full px-3 py-2 border border-line rounded-sm text-sm text-ink bg-cream outline-none focus:border-teal resize-y"
+                />
               </div>
               <label className="flex items-center gap-2 text-sm text-charcoal/70 cursor-pointer">
                 <input

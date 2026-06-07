@@ -79,7 +79,7 @@ export default async function PortalInspectionPage({ params }) {
 
   // Fetch reports
   const reports = await db`
-    SELECT file_url, file_name, file_size_bytes, report_type, uploaded_at
+    SELECT file_url, file_name, file_size_bytes, report_type, summary, uploaded_at
     FROM inspection_reports WHERE inspection_id = ${id}
     ORDER BY uploaded_at DESC
   `
@@ -223,21 +223,29 @@ export default async function PortalInspectionPage({ params }) {
             {reports.length > 0 ? (
               <div className="space-y-3">
                 {reports.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-cream rounded-sm border border-line">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-ink">{r.file_name}</div>
-                        <span className="text-[0.6rem] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-charcoal/10 text-charcoal/60">
-                          {REPORT_TYPE_LABELS[r.report_type] || 'Report'}
-                        </span>
+                  <div key={i} className="p-3 bg-cream rounded-sm border border-line">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-medium text-ink">{r.file_name}</div>
+                          <span className="text-[0.6rem] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-charcoal/10 text-charcoal/60">
+                            {REPORT_TYPE_LABELS[r.report_type] || 'Report'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-charcoal/50">
+                          {r.file_size_bytes ? `${(r.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : ''} · {new Date(r.uploaded_at).toLocaleDateString('en-US')}
+                        </div>
                       </div>
-                      <div className="text-xs text-charcoal/50">
-                        {r.file_size_bytes ? `${(r.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : ''} · {new Date(r.uploaded_at).toLocaleDateString('en-US')}
-                      </div>
+                      <a href={r.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal text-white text-xs font-semibold rounded-sm no-underline hover:bg-teal-deep transition-colors">
+                        Download
+                      </a>
                     </div>
-                    <a href={r.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal text-white text-xs font-semibold rounded-sm no-underline hover:bg-teal-deep transition-colors">
-                      Download
-                    </a>
+                    {r.summary && (
+                      <div className="mt-3 pt-3 border-t border-line">
+                        <div className="text-[0.65rem] uppercase tracking-wider font-semibold text-teal mb-1">Key Findings</div>
+                        <p className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-line">{r.summary}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
