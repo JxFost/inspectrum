@@ -1,11 +1,22 @@
 // Generates /sitemap.xml automatically at build time.
 // Add new routes here when you add new pages.
 
+import { GUIDE_SLUGS } from '@/lib/guides'
+
 const BASE = 'https://evergreeninspections.com'
 
 export default function sitemap() {
   const lastModified = new Date()
+
+  // Homeowner guides hub + seasonal guide + every system guide (auto-included)
+  const guidePages = [
+    `${BASE}/guides`,
+    `${BASE}/guides/home-maintenance`,
+    ...GUIDE_SLUGS.map((slug) => `${BASE}/guides/${slug}`),
+  ].map((url) => ({ url, lastModified, changeFrequency: 'monthly', priority: 0.7 }))
+
   return [
+    ...guidePages,
     {
       url: `${BASE}/`,
       lastModified,
