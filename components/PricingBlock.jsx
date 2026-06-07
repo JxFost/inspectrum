@@ -17,7 +17,7 @@ import { calculatePrice } from '@/lib/pricing'
  * @param {number|string} [props.tripChargeCents] — legacy trip charge in cents
  * @param {number|string} [props.distanceMiles]
  */
-export default function PricingBlock({ service, sqft, yearBuilt, city, radonAddOn, sewerScope, tripChargeCents, distanceMiles }) {
+export default function PricingBlock({ service, sqft, yearBuilt, city, radonAddOn, sewerScope, features, tripChargeCents, distanceMiles }) {
   // Map service name to type
   const serviceType = service?.toLowerCase().includes('commercial') ? 'commercial'
     : service?.toLowerCase().includes('radon') ? 'radon'
@@ -31,6 +31,7 @@ export default function PricingBlock({ service, sqft, yearBuilt, city, radonAddO
     serviceType,
     radonAddOn,
     sewerScope,
+    features,
   })
 
   // If pricing engine returned nothing useful and we have legacy trip charge, show simple view

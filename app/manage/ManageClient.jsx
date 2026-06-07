@@ -238,12 +238,24 @@ export default function ManageClient() {
                 </div>
               )}
 
-              {/* Pricing block */}
+              {/* Pricing block — pass the same inputs the booking estimate uses
+                  (sqft, year, city, garage/outbuilding features) so the quote matches. */}
               <div className="mb-6">
                 <PricingBlock
                   service={booking.service}
+                  sqft={booking.sqft}
+                  yearBuilt={booking.yearBuilt}
+                  city={booking.city}
                   radonAddOn={booking.radonAddOn}
                   sewerScope={booking.sewerScope}
+                  features={(() => {
+                    const f = {}
+                    if (booking.garageType === 'Detached') f.detachedGarage = true
+                    if (booking.outbuilding === 'Structure only') f.outbuildingStructure = true
+                    if (booking.outbuilding === 'With electricity') f.outbuildingElecOnly = true
+                    if (booking.outbuilding === 'Full utilities') f.outbuildingFull = true
+                    return f
+                  })()}
                   tripChargeCents={booking.tripChargeCents}
                   distanceMiles={booking.distanceMiles}
                 />

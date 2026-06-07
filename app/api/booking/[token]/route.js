@@ -77,9 +77,22 @@ export async function GET(_request, { params }) {
   const serviceName = parseCustomerField(description, 'Service')
   const serviceId = SERVICES.find((s) => s.name === serviceName)?.id || null
 
+  // Pricing inputs (so the manage page quotes from the live pricing engine,
+  // matching the booking estimate). City is parsed from the stored address
+  // (format: "street, city, CO zip").
+  const fullAddress = event.location || parseCustomerField(description, 'Address')
+  const city = (fullAddress || '').split(',')[1]?.trim() || ''
+  const yearBuiltRaw = parseCustomerField(description, 'Year Built') // e.g. "1985 (40 yrs)"
+  const yearBuilt = (yearBuiltRaw.match(/\d{4}/) || [''])[0]
+
   return NextResponse.json({
     service: serviceName,
     serviceId,
+    sqft: parseCustomerField(description, 'Square Footage') || null,
+    yearBuilt: yearBuilt || null,
+    city: city || null,
+    garageType: parseCustomerField(description, 'Garage') || null,
+    outbuilding: parseCustomerField(description, 'Outbuilding') || null,
     name: parseCustomerField(description, 'Customer'),
     email: parseCustomerField(description, 'Email'),
     phone: parseCustomerField(description, 'Phone'),
