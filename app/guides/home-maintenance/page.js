@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import ServiceHero from '@/components/ServiceHero'
 import CTABanner from '@/components/CTABanner'
 import { breadcrumbJsonLd } from '@/lib/jsonld'
@@ -23,7 +24,7 @@ const SEASONS = [
     tagline: 'Thaw, water, and what winter left behind',
     intro:
       "Spring is when water shows you every shortcut the house took over winter. Snowmelt finds clogged gutters, tired caulk, and hairline foundation cracks fast — so this is the season to get ahead of water before it gets inside.",
-    photo: 'Spring: clean gutters and downspouts directing snowmelt away from the foundation',
+    photo: { src: '/guides/spring-guide-maintenance.png', alt: 'An inspector clearing a gutter of debris as spring snowmelt runs off, Colorado mountains in the background' },
     tasks: [
       { h: 'Clear gutters and downspouts', b: 'Flush out winter debris and confirm downspouts carry water at least 4–6 feet away from the foundation. This is the single best defense against a wet basement.' },
       { h: 'Inspect the roof', b: 'From the ground or with binoculars, look for missing or lifted shingles, damaged flashing, and granules in the gutters — all signs winter took a toll.' },
@@ -39,7 +40,7 @@ const SEASONS = [
     tagline: 'Heat, sun, and the great outdoors',
     intro:
       "Summer is the season for the exterior. Intense high-altitude sun is hard on finishes, decks, and roofing, and the long dry stretches make fire safety and a few quiet fire-prevention chores worth your attention.",
-    photo: 'Summer: a freshly sealed deck and trimmed vegetation pulled back from the siding',
+    photo: { src: '/guides/summer-guide-maintenance-person.png', alt: 'A homeowner staining and sealing a wood deck on a sunny summer day with the mountains behind' },
     tasks: [
       { h: 'Clean the dryer vent', b: "Lint buildup in the dryer duct is a leading cause of appliance house fires. Disconnect, vacuum the line, and clear the exterior vent flap." },
       { h: 'Inspect and reseal the deck', b: 'Check for loose boards, popped fasteners, and wobbly railings, then reseal. Mountain sun and snow cycles age decks faster than most owners expect.' },
@@ -55,7 +56,7 @@ const SEASONS = [
     tagline: 'Button the house up before the cold',
     intro:
       "Fall is preparation season. A few hours now — on the furnace, the gutters, and the outdoor plumbing — prevents the cold-weather emergencies we get the most frantic calls about.",
-    photo: 'Fall: a technician servicing the furnace and a fresh filter going in before heating season',
+    photo: { src: '/guides/fall-guide-maintenance.png', alt: 'A technician servicing a furnace and installing a fresh filter before heating season' },
     tasks: [
       { h: 'Service the heating system', b: 'Have the furnace or heat pump professionally serviced and put in a fresh filter. At altitude these systems run harder all winter — start the season clean.' },
       { h: 'Clean gutters after leaf drop', b: 'A second cleaning once the leaves are down keeps meltwater flowing and is your first line of defense against ice dams.' },
@@ -71,7 +72,7 @@ const SEASONS = [
     tagline: 'Protect against snow, ice, and frozen pipes',
     intro:
       "Winter maintenance is mostly vigilance — watching the roof, the pipes, and the heat. The goal is simply to catch snow load, ice, and freeze risk before any of them turn into damage.",
-    photo: 'Winter: clearing snow from a roof edge with a roof rake to head off ice dams',
+    photo: { src: '/guides/winter-guide-maintenance.png', alt: 'Clearing snow and ice from a roof edge with a roof rake to prevent ice dams' },
     tasks: [
       { h: 'Watch for ice dams', b: 'After heavy snow, rake the lower roof edge and keep gutters clear. Ice dams back meltwater up under the shingles and into the ceilings below.' },
       { h: 'Guard against frozen pipes', b: 'Keep the house at 55°F or above, open cabinet doors on exterior walls, and let faucets drip during deep cold snaps to keep water moving.' },
@@ -83,15 +84,16 @@ const SEASONS = [
   },
 ]
 
-function PhotoPlaceholder({ caption }) {
+function SeasonPhoto({ photo }) {
   return (
-    <div className="relative w-full aspect-[16/10] rounded-sm border border-line bg-gradient-to-br from-cream to-paper overflow-hidden flex flex-col items-center justify-center text-center px-6">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-9 h-9 text-charcoal/25 mb-3">
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <circle cx="12" cy="12" r="3.5" />
-        <path d="M8 5l1.5-2h5L16 5" />
-      </svg>
-      <span className="text-[0.7rem] uppercase tracking-[0.18em] text-charcoal/40 font-semibold">{caption}</span>
+    <div className="relative w-full aspect-[3/2] rounded-sm overflow-hidden bg-paper">
+      <Image
+        src={photo.src}
+        alt={photo.alt}
+        fill
+        sizes="(max-width: 1024px) 100vw, 50vw"
+        className="object-cover"
+      />
     </div>
   )
 }
@@ -159,7 +161,7 @@ export default function HomeMaintenanceGuide() {
                 <div className="section-eyebrow">{season.name}</div>
                 <h2 className="text-[clamp(2rem,4vw,3.2rem)] text-ink mb-4">{season.tagline}</h2>
                 <p className="text-[0.98rem] text-charcoal leading-[1.75] mb-6">{season.intro}</p>
-                <PhotoPlaceholder caption={season.photo} />
+                <SeasonPhoto photo={season.photo} />
               </div>
               <div className="grid grid-cols-1 gap-px bg-line border border-line rounded-sm overflow-hidden">
                 {season.tasks.map((t) => (
