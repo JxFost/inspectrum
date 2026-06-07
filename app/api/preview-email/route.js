@@ -23,6 +23,7 @@ const SAMPLE = {
   manageUrl: 'http://localhost:3000/manage?token=preview',
   gcalUrl: '#',
   agreementUrl: 'http://localhost:3000/agreement/preview-token',
+  radonAddOn: true,
 }
 
 function verifyAdmin(request) {

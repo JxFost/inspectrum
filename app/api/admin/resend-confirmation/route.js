@@ -57,6 +57,7 @@ export async function POST(request) {
   const confirmationCode = extractConfirmationCode(event.id)
   const manageUrl = parsed.token ? buildManageUrl(parsed.token) : null
   const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
+  const radonAddOn = (event.description || '').includes('Radon Add-On: Yes')
 
   // Find agreement URL
   let agreementUrl = null
@@ -100,6 +101,7 @@ export async function POST(request) {
       manageUrl: manageUrl || '#',
       gcalUrl,
       agreementUrl,
+      radonAddOn,
     }),
     inspectionId: inspectionDbId,
     template: 'booking-receipt-resend',

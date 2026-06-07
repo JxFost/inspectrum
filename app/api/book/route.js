@@ -279,6 +279,7 @@ export async function POST(request) {
           manageUrl,
           gcalUrl,
           agreementUrl,
+          radonAddOn,
         }),
         inspectionId: inspectionDbId,
         template: 'booking-receipt',

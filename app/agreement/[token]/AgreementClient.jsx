@@ -475,6 +475,15 @@ export default function AgreementClient({ data }) {
                 <p className="mb-3">Customer agrees and authorizes Inspectrum Inspections, Inc. to perform a test for Radon gas at the referenced property. Testing will be performed using a continuous monitor for a minimum of 48 hours in accordance with US EPA Testing Protocols.</p>
                 <p className="mb-3">Short-term testing is a screening for Radon gas at the time of testing only. The EPA's health risk assessments are based upon the "Annual Average Exposure," which may not always be measured with accuracy through a short-term test.</p>
                 <p className="mb-3"><strong>Closed-House Conditions</strong> must be maintained during the entire testing period — all windows closed and exterior doors closed except for entry and exit. Failure to maintain these conditions may produce artificially low test readings.</p>
+                <p className="mb-2 font-semibold text-ink">Please follow these guidelines so your test stays valid:</p>
+                <ul className="list-disc pl-5 mb-3 space-y-1.5">
+                  <li>Keep all windows closed and exterior doors shut (except for normal entry and exit) for 12 hours before the monitor is placed and through the full 48-hour test.</li>
+                  <li>Central heating and air conditioning can run normally. Do not run evaporative ("swamp") coolers or whole-house fans.</li>
+                  <li>In the room with the monitor, avoid ceiling fans, portable fans, and window AC units.</li>
+                  <li>Don't move, cover, or unplug the monitor. It records continuously and may look off or asleep, but it's still collecting data.</li>
+                  <li>If the home is occupied and these conditions aren't comfortable to maintain, let us and the buyer's agent know in advance so we can reschedule and avoid an unnecessary trip.</li>
+                </ul>
+                <p className="mb-0"><strong>If closed-house conditions aren't maintained,</strong> the test must be restarted (12 hours closed plus a 48-hour test), which can delay results past an inspection objection deadline.</p>
               </div>
               <label className="flex items-center gap-3 bg-amber/[0.08] border border-amber/30 rounded-sm p-3 mt-4 cursor-pointer">
                 <input

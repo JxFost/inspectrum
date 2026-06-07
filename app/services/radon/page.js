@@ -39,6 +39,18 @@ const STEPS = [
   { num: '03', title: 'Get your results', body: "We retrieve the monitor and produce a detailed report with hourly readings, average, and recommendations. If levels are elevated, we'll explain mitigation options." },
 ]
 
+// Client prep guidelines, following the ANSI/AARST protocol for measuring
+// radon in homes (closed-building conditions). Surfaced here as the canonical
+// reference, and linked from the booking confirmation + agreement addendum.
+const PREP_GUIDELINES = [
+  { title: 'Keep the home closed up', body: 'Keep all windows closed and exterior doors shut except for normal entry and exit — starting 12 hours before the monitor is placed and through the full 48-hour test. Open windows are the most common cause of an invalid test.' },
+  { title: 'Run HVAC normally — with two exceptions', body: 'Your central heating and air conditioning can run as usual. Do not run evaporative ("swamp") coolers or whole-house fans during the closed-house period, as they pull in outside air.' },
+  { title: 'Go easy on fans in the test room', body: 'In the room where the monitor sits, please avoid running ceiling fans, portable fans, or window AC units. Elsewhere in the home is fine.' },
+  { title: "Don't disturb the monitor", body: "Leave the device exactly where we place it. It records continuously and may look powered off or asleep, but it's still collecting data — please don't move, cover, or unplug it." },
+  { title: 'Occupied home? Tell us if conditions are tough', body: "If someone is living in the home and these conditions aren't comfortable to maintain, let us and the buyer's agent know in advance. We'd rather reschedule than make an unnecessary trip — no problem at all." },
+  { title: 'When we place the device', body: "We usually set the monitor at the time of your home inspection. If an earlier drop-off makes sense for timing, our office will reach out to arrange access." },
+]
+
 function RadonDiagram() {
   return (
     <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto max-h-[340px]">
@@ -164,6 +176,31 @@ export default function RadonPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="prepare" className="bg-paper py-24 px-5 lg:px-8 border-t border-line scroll-mt-24">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="section-eyebrow justify-center">Preparing For Your Test</div>
+            <h2 className="text-[clamp(2.2rem,4.5vw,3.6rem)] text-ink">
+              A few simple <em className="italic text-teal">conditions.</em>
+            </h2>
+            <p className="text-[0.95rem] text-charcoal leading-relaxed mt-4">
+              An accurate radon test depends on "closed-building conditions." Review these guidelines before your test so the results hold up — and let us know if anything won't work for your home.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-line border border-line">
+            {PREP_GUIDELINES.map((g) => (
+              <div key={g.title} className="bg-paper p-8">
+                <h4 className="text-[1.15rem] mb-2 text-ink">{g.title}</h4>
+                <p className="text-[0.9rem] text-charcoal leading-relaxed">{g.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[0.85rem] text-charcoal leading-relaxed mt-8 bg-amber/[0.08] border border-amber/30 rounded-sm p-5">
+            <strong className="text-ink">Why it matters:</strong> If closed-house conditions aren't maintained, the test has to be restarted — 12 hours of closed conditions followed by another 48-hour test. That can delay your results past an inspection objection deadline, so it's worth getting right the first time.
+          </p>
         </div>
       </section>
 
