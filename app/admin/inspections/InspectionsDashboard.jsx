@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import * as mileage from '@/lib/mileage'
 import Tooltip, { TooltipProvider } from '@/components/Tooltip'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE_OPTIONS = [20, 50, 100, 150]
+const DEFAULT_PAGE_SIZE = 20
 
 const RANGE_OPTIONS = [
   { value: '2w', label: '2 Weeks' },
@@ -164,6 +165,7 @@ export default function InspectionsDashboard({
   const [sourceFilter, setSourceFilter] = useState('all')
   const [sortByPayment, setSortByPayment] = useState(false)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selected, setSelected] = useState(new Set())
   const [bulkAction, setBulkAction] = useState('')
   const [bulkStatus, setBulkStatus] = useState('idle') // idle | processing | done
@@ -210,10 +212,10 @@ export default function InspectionsDashboard({
 
   // Pagination
   const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const startIdx = (currentPage - 1) * PAGE_SIZE
-  const endIdx = Math.min(startIdx + PAGE_SIZE, total)
+  const startIdx = (currentPage - 1) * pageSize
+  const endIdx = Math.min(startIdx + pageSize, total)
   const pageItems = filtered.slice(startIdx, endIdx)
 
   // Summary stats (always from full inspections list, not filtered)
@@ -656,11 +658,26 @@ export default function InspectionsDashboard({
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {total > 0 && (
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-6">
-            <span className="text-xs text-charcoal/50">
-              Showing {startIdx + 1}–{endIdx} of {total}
-            </span>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1.5 text-xs text-charcoal/50">
+                Display
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1) }}
+                  className="bg-transparent border border-line rounded-sm px-2 py-1 text-xs text-charcoal/70 cursor-pointer hover:border-teal focus:border-teal outline-none"
+                >
+                  {PAGE_SIZE_OPTIONS.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </label>
+              <span className="text-xs text-charcoal/50">
+                Showing {startIdx + 1}–{endIdx} of {total}
+              </span>
+            </div>
+            {totalPages > 1 && (
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -716,6 +733,7 @@ export default function InspectionsDashboard({
                 Last
               </button>
             </div>
+            )}
           </div>
         )}
       </div>
