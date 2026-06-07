@@ -18,6 +18,7 @@ import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber
 import { computeDistance } from '@/lib/mileage'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
+import { buildICS } from '@/lib/ics'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
 import { createAgreement } from '@/lib/db-agreements'
@@ -86,6 +87,10 @@ export async function POST(request) {
   const listingAgentEmail = trim(body.listingAgentEmail, 100)
   const clientAttending = trim(body.clientAttending, 10)
   const accessProvidedBy = trim(body.accessProvidedBy, 200)
+  // The client's own agent (buyer's side) — copied on confirmation + report.
+  // Distinct from the listing agent (seller's side), which we never CC on reports.
+  const clientAgentEmailRaw = trim(body.clientAgentEmail, 100)
+  const clientAgentEmail = isValidEmail(clientAgentEmailRaw) ? clientAgentEmailRaw : ''
   const referrer = trim(body.referrer, 200)
   const utmSource = trim(body.utmSource, 100)
   // Honeypot — bots that fill hidden fields get silently rejected.
@@ -191,6 +196,7 @@ export async function POST(request) {
     orderedBy: isAgent ? agentType : null,
     clientAttending,
     accessProvidedBy,
+    clientAgentEmail,
     extra: [
       listingAgentName ? `Listing Agent: ${listingAgentName}` : null,
       listingAgentPhone ? `Listing Agent Phone: ${listingAgentPhone}` : null,
@@ -262,11 +268,22 @@ export async function POST(request) {
     const manageUrl = buildManageUrl(token)
     const gcalUrl = buildGCalUrl({ service: service.name, startISO, endISO, address })
 
+    // Build an .ics attachment so non-Google calendar users can one-tap add it.
+    const icsContent = buildICS({
+      title: `Inspectrum Inspection — ${service.name}`,
+      startISO,
+      endISO,
+      location: address || 'Evergreen, CO',
+      description: `${service.name} with Inspectrum Inspections.\nConfirmation: ${confirmationCode}\nQuestions: (303) 697-0990`,
+      uid: confirmationCode,
+    })
+
     // Await the email send — Vercel kills the function after response is returned,
     // so fire-and-forget emails never actually send on serverless.
     try {
       await sendEmail({
         to: email,
+        cc: clientAgentEmail || undefined,
         subject: `Your inspection is booked — ${service.name}`,
         html: bookingReceiptHtml({
           customerName: name,
@@ -281,6 +298,7 @@ export async function POST(request) {
           agreementUrl,
           radonAddOn,
         }),
+        attachments: [{ filename: 'inspection.ics', content: Buffer.from(icsContent, 'utf-8') }],
         inspectionId: inspectionDbId,
         template: 'booking-receipt',
       })

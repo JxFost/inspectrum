@@ -15,6 +15,7 @@ import { put } from '@vercel/blob'
 import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 import { reportReadyHtml } from '@/lib/email/templates/report-ready'
+import { parseEventDescription } from '@/lib/booking'
 
 export async function GET(request) {
   const authHeader = request.headers.get('authorization')
@@ -86,7 +87,7 @@ export async function GET(request) {
       if (recipientEmail.endsWith('@evergreeninspections.com')) continue
 
       const inspections = await db`
-        SELECT i.id, i.inspection_number, i.customer_name, i.email, i.address, i.service
+        SELECT i.id, i.inspection_number, i.customer_name, i.email, i.address, i.service, i.raw_description
         FROM inspections i
         WHERE LOWER(i.email) = ${recipientEmail}
           AND i.status != 'cancelled'
@@ -208,8 +209,10 @@ export async function GET(request) {
       // Send customer notification
       if (matchedInspection.email) {
         try {
+          const agentCc = parseEventDescription(matchedInspection.raw_description).clientAgentEmail || undefined
           await sendEmail({
             to: matchedInspection.email,
+            cc: agentCc,
             subject: `Your Inspection Report is Ready — ${matchedInspection.address || 'Inspectrum'}`,
             html: reportReadyHtml({
               firstName: matchedInspection.customer_name?.split(' ')[0] || 'there',

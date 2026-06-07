@@ -158,7 +158,7 @@ export default function ContactClient({ officePhone = '(303) 697-0990', officeEm
             <div className="section-eyebrow">Reach Inspectrum</div>
             <h2 className="text-[2.5rem] mb-6 text-ink">Three ways to <em className="italic text-teal">connect.</em></h2>
             <p className="text-[1.05rem] text-charcoal mb-10 leading-relaxed">
-              Whichever's easiest. We're a small, local operation — so when you call, you'll likely talk to the person doing your inspection.
+              Whichever's easiest. We're a small, local operation — so when you call, you'll talk to a real person.
             </p>
 
             {CONTACT_METHODS.map((m, i) => (

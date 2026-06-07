@@ -152,7 +152,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -259,6 +259,7 @@ export default function SchedulerClient() {
           listingAgentPhone: details.listingAgentPhone,
           listingAgentEmail: details.listingAgentEmail,
           clientAttending: details.clientAttending,
+          clientAgentEmail: details.clientAgentEmail,
           accessProvidedBy: (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
             ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
             : details.accessProvidedBy,
@@ -304,7 +305,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -560,6 +561,18 @@ export default function SchedulerClient() {
                     </div>
                   )}
                 </div>
+                {!details.isAgent && (
+                  <div className="sm:col-span-2">
+                    <SchedField
+                      label="Your real estate agent's email (optional)"
+                      value={details.clientAgentEmail}
+                      onChange={(v) => setDetails({ ...details, clientAgentEmail: v })}
+                      type="email"
+                      placeholder="agent@example.com"
+                    />
+                    <p className="text-xs text-charcoal/50 mt-1.5">We&apos;ll copy your agent on your confirmation and final report.</p>
+                  </div>
+                )}
               </div>
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => goToStep(2)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>

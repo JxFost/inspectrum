@@ -17,6 +17,7 @@ import { put } from '@vercel/blob'
 import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 import { reportReadyHtml } from '@/lib/email/templates/report-ready'
+import { parseEventDescription } from '@/lib/booking'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -49,7 +50,7 @@ export async function POST(request) {
   // Look up the inspection
   const db = sql()
   const inspections = await db`
-    SELECT id, inspection_number, customer_name, email, address, service
+    SELECT id, inspection_number, customer_name, email, address, service, raw_description
     FROM inspections WHERE id = ${inspectionId}
   `
   const inspection = inspections[0]
@@ -96,8 +97,10 @@ export async function POST(request) {
   if (notify && inspection.email) {
     const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
     try {
+      const agentCc = parseEventDescription(inspection.raw_description).clientAgentEmail || undefined
       await sendEmail({
         to: inspection.email,
+        cc: agentCc,
         subject: `Your Inspection Report is Ready — ${inspection.address || 'Inspectrum'}`,
         html: reportReadyHtml({
           firstName: inspection.customer_name?.split(' ')[0] || 'there',
