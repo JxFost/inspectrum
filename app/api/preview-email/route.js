@@ -11,6 +11,7 @@ import { reminderHtml } from '@/lib/email/templates/reminder'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { dailyDigestHtml } from '@/lib/email/templates/daily-digest'
 import { reportReadyHtml } from '@/lib/email/templates/report-ready'
+import { maintenanceReminderHtml } from '@/lib/email/templates/maintenance-reminder'
 
 const SAMPLE = {
   customerName: 'Peter McDougall',
@@ -54,6 +55,12 @@ export async function GET(request) {
       break
     case 'receipt':
       html = bookingReceiptHtml(SAMPLE)
+      break
+    case 'radon-retest':
+      html = maintenanceReminderHtml({ type: 'radon', customerName: SAMPLE.customerName, address: SAMPLE.address })
+      break
+    case 'annual-maintenance':
+      html = maintenanceReminderHtml({ type: 'annual', customerName: SAMPLE.customerName, address: SAMPLE.address })
       break
     case 'cancel-alert':
       html = `

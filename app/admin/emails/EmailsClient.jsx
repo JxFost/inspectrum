@@ -27,6 +27,18 @@ const CLIENT_EMAILS = [
     description: 'Sent when a report is uploaded. Includes download link and portal link.',
     trigger: 'On report upload',
   },
+  {
+    id: 'radon-retest',
+    name: 'Radon Retest Reminder',
+    description: 'Re-engagement nudge ~2 years after a radon inspection (EPA retest cadence).',
+    trigger: 'Daily cron (10am MT)',
+  },
+  {
+    id: 'annual-maintenance',
+    name: 'Annual Maintenance Check-In',
+    description: 'Seasonal home-maintenance reminder ~1 year after any inspection.',
+    trigger: 'Daily cron (10am MT)',
+  },
 ]
 
 const ADMIN_EMAILS = [
