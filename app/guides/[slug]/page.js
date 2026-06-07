@@ -136,19 +136,6 @@ export default async function GuidePage({ params }) {
               <strong className="text-ink">This guide is for general education.</strong> It reflects what we look for during a home inspection, not a substitute for a licensed professional. If you have a specific concern, please contact {guide.proType} — and of course, we’re always happy to take a look during an inspection.
             </p>
           </div>
-
-          {guide.related?.length > 0 && (
-            <div className="mt-8">
-              <div className="text-[0.7rem] uppercase tracking-[0.2em] text-charcoal/50 font-semibold mb-3">Keep reading</div>
-              <div className="flex flex-wrap gap-2">
-                {guide.related.map((r) => (
-                  <a key={r.href} href={r.href} className="px-4 py-2 rounded-sm border border-line bg-paper text-sm text-ink no-underline hover:border-teal hover:text-teal transition-colors">
-                    {r.label} →
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </section>
 

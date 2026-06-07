@@ -37,14 +37,27 @@ export default function MoreReading({ currentHref }) {
             <Link
               key={p.href}
               href={p.href}
-              className="group block rounded-sm border border-line bg-cream p-6 no-underline hover:border-teal hover:-translate-y-0.5 transition-all"
+              className="group block rounded-sm border border-line bg-cream overflow-hidden no-underline hover:border-teal hover:-translate-y-0.5 transition-all"
             >
-              <div className="text-[0.7rem] uppercase tracking-[0.2em] text-amber font-semibold mb-2">{p.eyebrow}</div>
-              <h3 className="text-[1.2rem] text-ink mb-2 group-hover:text-teal transition-colors">{p.title}</h3>
-              <p className="text-sm text-charcoal/75 leading-relaxed line-clamp-3">{p.blurb}</p>
-              <span className="inline-block text-sm font-semibold text-teal mt-3">Read →</span>
+              {p.image && (
+                <div className="relative w-full aspect-[16/10] overflow-hidden bg-paper">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.image} alt={p.title} className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              )}
+              <div className="p-6">
+                <div className="text-[0.7rem] uppercase tracking-[0.2em] text-amber font-semibold mb-2">{p.eyebrow}</div>
+                <h3 className="text-[1.2rem] text-ink mb-2 group-hover:text-teal transition-colors">{p.title}</h3>
+                <p className="text-sm text-charcoal/75 leading-relaxed line-clamp-3">{p.blurb}</p>
+                <span className="inline-block text-sm font-semibold text-teal mt-3">Read →</span>
+              </div>
             </Link>
           ))}
+        </div>
+        <div className="mt-8 text-center">
+          <Link href="/guides" className="text-sm font-semibold text-teal hover:text-amber no-underline transition-colors">
+            View all guides →
+          </Link>
         </div>
       </div>
     </section>
