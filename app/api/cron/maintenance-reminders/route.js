@@ -73,10 +73,11 @@ export async function GET(request) {
   let annualRows = []
   try {
     annualRows = await db`
-      SELECT id, customer_name, email, address, start_at
+      SELECT id, customer_name, email, address, start_at, raw_description
       FROM inspections
       WHERE status != 'cancelled'
         AND email IS NOT NULL
+        AND start_at >= '2026-01-01'
         AND start_at <= now() - interval '1 year'
         AND start_at >= now() - interval '1 year' - interval '30 days'
         AND id NOT IN (
@@ -91,9 +92,19 @@ export async function GET(request) {
     results.errors++
   }
 
+  // Annual maintenance is 2026-clients-onward only (the SQL floor excludes 2025
+  // and earlier). Additionally skip admin-created records and any whose address
+  // doesn't look like real data — it must contain both a number and a word.
+  const hasRealAddress = (addr) => /\d/.test(addr || '') && /[a-zA-Z]{2,}/.test(addr || '')
+  const annualEligible = annualRows.filter((r) => {
+    if ((r.raw_description || '').includes('source: admin')) return false
+    if (!hasRealAddress(r.address)) return false
+    return true
+  })
+
   const batches = [
     { rows: radonRows, type: 'radon', template: 'radon-retest', subject: 'Time to retest your home for radon' },
-    { rows: annualRows, type: 'annual', template: 'annual-maintenance', subject: 'Your annual home-maintenance check-in' },
+    { rows: annualEligible, type: 'annual', template: 'annual-maintenance', subject: 'Your annual home-maintenance check-in' },
   ]
 
   for (const batch of batches) {
