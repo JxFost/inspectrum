@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import ServiceHero from '@/components/ServiceHero'
 import CTABanner from '@/components/CTABanner'
+import MoreReading from '@/components/MoreReading'
 import { breadcrumbJsonLd } from '@/lib/jsonld'
 
 export const metadata = {
@@ -182,6 +183,8 @@ export default function HomeMaintenanceGuide() {
           </div>
         </section>
       ))}
+
+      <MoreReading currentHref="/guides/home-maintenance" />
 
       <CTABanner
         eyebrow="A Second Set of Eyes"

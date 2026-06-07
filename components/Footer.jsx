@@ -57,7 +57,7 @@ export default function Footer() {
             <FooterLink href="/#about">About</FooterLink>
             <FooterLink href="/about/harry">Meet Harry</FooterLink>
             <FooterLink href="/#process">Process</FooterLink>
-            <FooterLink href="/guides/home-maintenance">Maintenance Guide</FooterLink>
+            <FooterLink href="/guides">Homeowner Guides</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/schedule">Schedule</FooterLink>
           </div>
