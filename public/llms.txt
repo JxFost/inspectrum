@@ -45,6 +45,25 @@ Individual system inspections, warranty walkthroughs, builder follow-ups. Hourly
 - Radon Testing: https://evergreeninspections.com/services/radon
 - Mold Assessment: https://evergreeninspections.com/services/mold
 - Commercial: https://evergreeninspections.com/services/commercial
+- Homeowner Guides: https://evergreeninspections.com/guides
+
+## Homeowner Guides
+
+Free, plain-English guides written from an inspector's perspective — what we check, the problems we find most, and what homeowners can maintain themselves. Each includes a reminder to consult a licensed professional for specific concerns.
+
+- Seasonal Home Maintenance (spring/summer/fall/winter checklist, Front Range-specific): https://evergreeninspections.com/guides/home-maintenance
+- Plumbing — supply lines, drains, water heater, leaks, winterizing: https://evergreeninspections.com/guides/plumbing
+- Electrical — panels, GFCI/AFCI, aluminum wiring, safety: https://evergreeninspections.com/guides/electrical
+- Roof & Gutters — shingles, flashing, hail damage, ice dams, drainage: https://evergreeninspections.com/guides/roof-and-gutters
+- HVAC & Furnace — heating/cooling, filters, servicing, CO safety, altitude strain: https://evergreeninspections.com/guides/hvac
+- Outdoor Safety & Yard — decks, grading, drainage, defensible space: https://evergreeninspections.com/guides/outdoor-safety
+- Energy Efficiency & Summer Heat — insulation, air sealing, high-altitude solar gain: https://evergreeninspections.com/guides/energy-efficiency
+- Foundation & Structure — cracks, settlement, expansive soils, bowing walls: https://evergreeninspections.com/guides/foundation-and-structure
+- Moisture, Mold & Air Quality — water intrusion, ventilation, humidity: https://evergreeninspections.com/guides/moisture-and-mold
+- Crawlspaces & Basements — moisture, vapor barriers, sump pumps, structure: https://evergreeninspections.com/guides/crawlspaces-and-basements
+- Pests & Wood-Destroying Organisms — termites, carpenter ants, rodents, entry points: https://evergreeninspections.com/guides/pests
+- Older & Historic Homes — knob-and-tube, galvanized plumbing, era-specific materials: https://evergreeninspections.com/guides/older-homes
+- Mountain Living — wells, septic, wood heat, snow load, wildfire, power resilience (Evergreen/foothills): https://evergreeninspections.com/guides/mountain-living
 
 ## About the Inspector
 
