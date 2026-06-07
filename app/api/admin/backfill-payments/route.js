@@ -16,6 +16,7 @@
 import { NextResponse } from 'next/server'
 import { searchEmails } from '@/lib/gmail'
 import { sql } from '@/lib/db'
+import { parseBackfillFrom } from '@/lib/backfill-window'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -81,6 +82,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
   const limit = parseInt(searchParams.get('limit'), 10) || 200
+  const { fromGmail, toGmail } = parseBackfillFrom(searchParams)
 
   const db = sql()
   const inspectorEmail = process.env.INSPECTOR_GMAIL_ADDRESS
@@ -96,7 +98,7 @@ export async function GET(request) {
   for (const { email: delegate, label } of queries) {
     try {
       const emails = await searchEmails(
-        'from:squareup.com OR from:square.com subject:(payment OR invoice OR receipt OR paid) after:2026/01/01',
+        `from:squareup.com OR from:square.com subject:(payment OR invoice OR receipt OR paid) ${fromGmail}${toGmail ? ' ' + toGmail : ''}`,
         limit,
         delegate
       )

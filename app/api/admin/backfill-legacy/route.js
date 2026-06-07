@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { insertEvent } from '@/lib/google-calendar'
 import { buildEventDescription } from '@/lib/booking'
+import { parseBackfillFrom } from '@/lib/backfill-window'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -127,8 +128,9 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
 
-  const timeMin = '2026-01-01T00:00:00Z'
-  const timeMax = new Date().toISOString()
+  const { fromISO, toISO } = parseBackfillFrom(searchParams)
+  const timeMin = fromISO
+  const timeMax = toISO || new Date().toISOString()
 
   let events
   try {
@@ -163,9 +165,10 @@ export async function GET(request) {
     return aStart.localeCompare(bStart)
   })
 
-  // Assign inspection numbers sequentially starting at 2026-001
-  // Only inspections get numbers (not radon set/pickup)
-  let inspectionCount = 0
+  // Assign inspection numbers sequentially per year (e.g. 2025-001, 2026-001).
+  // Events are already sorted chronologically, so per-year counters stay in order.
+  // Only inspections get numbers (not radon set/pickup).
+  const yearCounts = {}
   const results = []
 
   for (const event of legacyEvents) {
@@ -177,11 +180,12 @@ export async function GET(request) {
 
     // Inspections and sewer scopes get numbered; radon set/pickup don't
     const isCountable = parsed.type === 'inspection' || parsed.type === 'sewer-scope'
-    if (isCountable) inspectionCount++
-
-    const inspectionNumber = isCountable
-      ? `2026-${String(inspectionCount).padStart(3, '0')}`
-      : null
+    let inspectionNumber = null
+    if (isCountable) {
+      const yr = String(new Date(startISO).getUTCFullYear())
+      yearCounts[yr] = (yearCounts[yr] || 0) + 1
+      inspectionNumber = `${yr}-${String(yearCounts[yr]).padStart(3, '0')}`
+    }
 
     let serviceName
     let summary
@@ -259,7 +263,8 @@ export async function GET(request) {
     dryRun,
     totalEventsScanned: events.length,
     legacyMatched: legacyEvents.length,
-    inspectionsCounted: inspectionCount,
+    inspectionsCounted: Object.values(yearCounts).reduce((a, b) => a + b, 0),
+    inspectionsByYear: yearCounts,
     results,
     unmatchedContainingInsp: unmatchedInspEvents,
   })

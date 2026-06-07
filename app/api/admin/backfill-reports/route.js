@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { searchEmails, downloadAttachment } from '@/lib/gmail'
 import { put } from '@vercel/blob'
 import { sql } from '@/lib/db'
+import { parseBackfillFrom } from '@/lib/backfill-window'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -32,6 +33,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
   const limit = parseInt(searchParams.get('limit'), 10) || 200
+  const { fromGmail, toGmail } = parseBackfillFrom(searchParams)
 
   const inspectorEmail = process.env.INSPECTOR_GMAIL_ADDRESS
   if (!inspectorEmail) {
@@ -44,7 +46,7 @@ export async function GET(request) {
   let emails
   try {
     emails = await searchEmails(
-      'in:sent has:attachment filename:pdf after:2026/01/01',
+      `in:sent has:attachment filename:pdf ${fromGmail}${toGmail ? ' ' + toGmail : ''}`,
       limit,
       inspectorEmail
     )
@@ -117,7 +119,11 @@ export async function GET(request) {
       try {
         const pdfBuffer = await downloadAttachment(email.id, attachment.attachmentId, inspectorEmail)
         const fileName = `${matchedInspection.inspection_number || 'report'}_${attachment.filename}`
-        const blobPath = `reports/${new Date().getFullYear()}/${fileName}`
+        // Bucket historical reports by their inspection's year (e.g. "2025-001" -> 2025)
+        const inspYear = /^(\d{4})-/.test(matchedInspection.inspection_number || '')
+          ? matchedInspection.inspection_number.slice(0, 4)
+          : new Date().getFullYear()
+        const blobPath = `reports/${inspYear}/${fileName}`
 
         const blob = await put(blobPath, pdfBuffer, { access: 'public', contentType: 'application/pdf' })
 

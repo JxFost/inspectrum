@@ -19,6 +19,7 @@ import { parseEventDescription, mapACCServiceType } from '@/lib/booking'
 import { findEventsBetween, updateEventDescription } from '@/lib/google-calendar'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
+import { parseBackfillFrom } from '@/lib/backfill-window'
 
 /**
  * Fetch events from Harry's personal calendar.
@@ -161,12 +162,13 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
   const limit = parseInt(searchParams.get('limit'), 10) || 200
+  const { fromISO, toISO, fromGmail, toGmail } = parseBackfillFrom(searchParams)
 
   // 1. Fetch ACC emails from Shirley's inbox
   let emails
   try {
     emails = await searchEmails(
-      'from:theinspectorsoffice.com subject:(Appointment OR Reschedule) after:2026/01/01',
+      `from:theinspectorsoffice.com subject:(Appointment OR Reschedule) ${fromGmail}${toGmail ? ' ' + toGmail : ''}`,
       limit
     )
   } catch (err) {
@@ -175,9 +177,8 @@ export async function GET(request) {
   }
 
   // 2. Fetch events from BOTH calendars for matching
-  const year = new Date().getFullYear()
-  const timeMin = `${year}-01-01T00:00:00Z`
-  const timeMax = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+  const timeMin = fromISO
+  const timeMax = toISO || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
 
   let calendarEvents
   try {

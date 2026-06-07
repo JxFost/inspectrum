@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server'
 import { findEventsBetween } from '@/lib/google-calendar'
+import { parseBackfillFrom } from '@/lib/backfill-window'
 import { parseEventDescription } from '@/lib/booking'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
@@ -33,10 +34,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const dryRun = searchParams.get('dryRun') !== 'false'
 
-  const year = new Date().getFullYear()
-  const timeMin = `${year}-01-01T00:00:00Z`
+  const { fromISO, toISO } = parseBackfillFrom(searchParams)
+  const timeMin = fromISO
   const future = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-  const timeMax = future.toISOString()
+  const timeMax = toISO || future.toISOString()
 
   let events
   try {
