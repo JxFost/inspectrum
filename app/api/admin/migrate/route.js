@@ -120,6 +120,16 @@ async function run(request) {
     await db`CREATE INDEX IF NOT EXISTS idx_reports_inspection ON inspection_reports(inspection_id)`
     await db`CREATE INDEX IF NOT EXISTS idx_reports_email ON inspection_reports(customer_email)`
 
+    // Marketing-email opt-outs (maintenance reminders etc.). Transactional
+    // emails are exempt and never check this list.
+    await db`
+      CREATE TABLE IF NOT EXISTS email_unsubscribes (
+        email           TEXT PRIMARY KEY,
+        category        TEXT DEFAULT 'marketing',
+        unsubscribed_at TIMESTAMPTZ DEFAULT now()
+      )
+    `
+
     // ---- Signed agreements table ----
     await db`
       CREATE TABLE IF NOT EXISTS signed_agreements (

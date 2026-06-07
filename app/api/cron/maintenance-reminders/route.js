@@ -18,6 +18,7 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 import { maintenanceReminderHtml } from '@/lib/email/templates/maintenance-reminder'
+import { unsubscribeUrl } from '@/lib/email/unsubscribe'
 
 const BATCH_LIMIT = 100
 
@@ -104,7 +105,8 @@ export async function GET(request) {
           await sendEmail({
             to: row.email,
             subject: batch.subject,
-            html: maintenanceReminderHtml({ type: batch.type, customerName: row.customer_name, address: row.address }),
+            html: maintenanceReminderHtml({ type: batch.type, customerName: row.customer_name, address: row.address, unsubscribeUrl: unsubscribeUrl(row.email) }),
+            marketing: true,
             inspectionId: row.id,
             template: batch.template,
           })

@@ -57,10 +57,10 @@ export async function GET(request) {
       html = bookingReceiptHtml(SAMPLE)
       break
     case 'radon-retest':
-      html = maintenanceReminderHtml({ type: 'radon', customerName: SAMPLE.customerName, address: SAMPLE.address })
+      html = maintenanceReminderHtml({ type: 'radon', customerName: SAMPLE.customerName, address: SAMPLE.address, unsubscribeUrl: '#unsubscribe-preview' })
       break
     case 'annual-maintenance':
-      html = maintenanceReminderHtml({ type: 'annual', customerName: SAMPLE.customerName, address: SAMPLE.address })
+      html = maintenanceReminderHtml({ type: 'annual', customerName: SAMPLE.customerName, address: SAMPLE.address, unsubscribeUrl: '#unsubscribe-preview' })
       break
     case 'cancel-alert':
       html = `
