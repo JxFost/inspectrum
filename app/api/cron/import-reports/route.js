@@ -100,6 +100,27 @@ export async function GET(request) {
     }
 
     if (!matchedInspection) {
+      // Only flag RECENT unmatched reports for manual assignment. Older ones are
+      // foregone — we mark them processed (so they're never re-flagged) and skip
+      // the upload + pending record + assignment email. This prevents a flood of
+      // assignment emails if historical sent mail ever comes into the scan window.
+      const TWO_MONTHS_MS = 60 * 24 * 60 * 60 * 1000
+      const emailDate = email.date ? new Date(email.date) : null
+      const isRecent =
+        emailDate && !isNaN(emailDate.getTime()) && Date.now() - emailDate.getTime() <= TWO_MONTHS_MS
+
+      if (!isRecent) {
+        results.skipped++
+        results.items.push({
+          subject: email.subject,
+          to: toRaw,
+          status: 'skipped-old-unmatched',
+          date: email.date || null,
+        })
+        await db`INSERT INTO processed_emails (gmail_message_id) VALUES (${email.id}) ON CONFLICT DO NOTHING`
+        continue
+      }
+
       // Upload the PDF anyway and create a pending report for manual assignment
       const attachment = pdfAttachments[0]
       try {
