@@ -48,6 +48,18 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
+      url: `${BASE}/what-to-expect`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE}/faq`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${BASE}/about/harry`,
       lastModified,
       changeFrequency: 'monthly',
