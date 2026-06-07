@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server'
 import { findEventByToken } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
+import { SERVICES } from '@/lib/services'
 import { sql } from '@/lib/db'
 
 function parseCustomerField(description, field) {
@@ -73,8 +74,12 @@ export async function GET(_request, { params }) {
     }
   } catch { /* DB may not be available */ }
 
+  const serviceName = parseCustomerField(description, 'Service')
+  const serviceId = SERVICES.find((s) => s.name === serviceName)?.id || null
+
   return NextResponse.json({
-    service: parseCustomerField(description, 'Service'),
+    service: serviceName,
+    serviceId,
     name: parseCustomerField(description, 'Customer'),
     email: parseCustomerField(description, 'Email'),
     phone: parseCustomerField(description, 'Phone'),

@@ -48,6 +48,54 @@ export default function ManageClient() {
   const [cancelState, setCancelState] = useState('idle') // idle | confirming | cancelling | cancelled
   const [cancelError, setCancelError] = useState(null)
 
+  // Reschedule flow
+  const [mode, setMode] = useState('view') // view | reschedule | rescheduled
+  const [rsDate, setRsDate] = useState('')
+  const [rsSlots, setRsSlots] = useState([])
+  const [rsLoading, setRsLoading] = useState(false)
+  const [rsSelected, setRsSelected] = useState(null) // chosen slot's startISO
+  const [rsSubmitting, setRsSubmitting] = useState(false)
+  const [rsError, setRsError] = useState(null)
+
+  // Fetch available slots whenever the reschedule date changes.
+  useEffect(() => {
+    if (mode !== 'reschedule' || !rsDate || !booking?.serviceId) return
+    const controller = new AbortController()
+    setRsLoading(true)
+    setRsSlots([])
+    setRsSelected(null)
+    setRsError(null)
+    fetch(`/api/availability?date=${rsDate}&service=${booking.serviceId}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : res.json().then((d) => Promise.reject(d.error || 'Failed to load times.'))))
+      .then((data) => { setRsSlots(data.slots || []); setRsLoading(false) })
+      .catch((err) => { if (err !== 'AbortError' && err?.name !== 'AbortError') { setRsError(typeof err === 'string' ? err : 'Could not load available times.'); setRsLoading(false) } })
+    return () => controller.abort()
+  }, [mode, rsDate, booking?.serviceId])
+
+  async function handleReschedule() {
+    if (!rsSelected) return
+    setRsSubmitting(true)
+    setRsError(null)
+    try {
+      const res = await fetch('/api/booking/reschedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, startISO: rsSelected }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRsError(data.error || `Could not reschedule. Please call ${PHONE}.`)
+        setRsSubmitting(false)
+        return
+      }
+      setBooking((b) => ({ ...b, startISO: data.startISO, endISO: data.endISO }))
+      setMode('rescheduled')
+    } catch {
+      setRsError(`Network error. Please try again or call ${PHONE}.`)
+      setRsSubmitting(false)
+    }
+  }
+
   useEffect(() => {
     if (!token) {
       setError('No booking token provided. Check the link in your email.')
@@ -140,7 +188,23 @@ export default function ManageClient() {
             </div>
           )}
 
-          {booking && cancelState !== 'cancelled' && (
+          {booking && mode === 'rescheduled' && cancelState !== 'cancelled' && (
+            <div className="text-center bg-paper p-12 rounded-sm border border-line">
+              <div className="w-14 h-14 rounded-full bg-teal text-white flex items-center justify-center mx-auto mb-6 text-2xl">✓</div>
+              <h2 className="text-2xl mb-3 text-ink">Inspection <em className="italic text-teal">rescheduled.</em></h2>
+              <p className="text-charcoal mb-2">Your new appointment is set for:</p>
+              <p className="text-ink font-semibold mb-6">
+                {formatDateLong(booking.startISO)}<br />
+                {formatTime(booking.startISO)} – {formatTime(booking.endISO)}
+              </p>
+              <p className="text-sm text-charcoal/70 mb-8">
+                We&apos;ve emailed you a confirmation with an updated calendar invite.
+              </p>
+              <Button href="/" variant="teal" withArrow>Done</Button>
+            </div>
+          )}
+
+          {booking && mode !== 'rescheduled' && cancelState !== 'cancelled' && (
             <div className="bg-paper p-8 sm:p-10 rounded-sm border border-line">
               <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-3">Appointment Details</div>
               <div className="space-y-4 mb-8">
@@ -227,9 +291,9 @@ export default function ManageClient() {
                 </div>
               )}
 
-              {cancelState === 'idle' && (
+              {cancelState === 'idle' && mode === 'view' && (
                 <div className="space-y-4">
-                  <Button variant="teal" href="/schedule" withArrow fullWidth>
+                  <Button variant="teal" onClick={() => { setMode('reschedule'); setRsError(null) }} withArrow fullWidth>
                     Reschedule This Inspection
                   </Button>
                   <button
@@ -240,11 +304,73 @@ export default function ManageClient() {
                     Cancel this appointment
                   </button>
                   <p className="text-xs text-charcoal/50 text-center mt-3">
-                    Wrong date, phone, or address? Please cancel and rebook your appointment.
+                    Wrong phone or address? Please call us at {PHONE} — we&apos;ll fix it for you.
                   </p>
                   <p className="text-[0.65rem] text-charcoal/40 text-center mt-4 pt-3 border-t border-line">
                     Cancellation policy: Please provide at least 24 hours notice. Same-day cancellations may be subject to a fee.
                   </p>
+                </div>
+              )}
+
+              {cancelState === 'idle' && mode === 'reschedule' && (
+                <div className="bg-cream p-6 rounded-sm border border-line">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-ink font-medium">Pick a new date and time</p>
+                    <button type="button" onClick={() => setMode('view')} className="text-xs text-charcoal/60 hover:text-teal cursor-pointer bg-transparent border-0">← Back</button>
+                  </div>
+
+                  <label className="block text-[0.7rem] uppercase tracking-[0.18em] text-charcoal/60 font-semibold mb-1.5">Date</label>
+                  <input
+                    type="date"
+                    value={rsDate}
+                    min={new Date().toISOString().slice(0, 10)}
+                    max={new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}
+                    onChange={(e) => setRsDate(e.target.value)}
+                    className="w-full bg-paper border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none mb-4"
+                  />
+
+                  {rsLoading && (
+                    <div className="flex items-center gap-2 py-4 text-charcoal/60 text-sm">
+                      <div className="w-4 h-4 border-2 border-teal/30 border-t-teal rounded-full animate-spin" />
+                      Loading available times...
+                    </div>
+                  )}
+
+                  {!rsLoading && rsDate && rsSlots.length === 0 && !rsError && (
+                    <p className="text-sm text-charcoal/60 py-2">No openings that day — try another date.</p>
+                  )}
+
+                  {!rsLoading && rsSlots.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+                      {rsSlots.map((s) => (
+                        <button
+                          key={s.startISO}
+                          type="button"
+                          onClick={() => setRsSelected(s.startISO)}
+                          className={`py-2.5 text-sm rounded-sm border cursor-pointer transition-colors ${
+                            rsSelected === s.startISO
+                              ? 'bg-teal text-white border-teal font-semibold'
+                              : 'bg-paper text-ink border-line hover:border-teal'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {rsError && (
+                    <div className="bg-amber/10 border border-amber text-ink rounded-sm p-3 mb-4 text-sm">{rsError}</div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleReschedule}
+                    disabled={!rsSelected || rsSubmitting}
+                    className="w-full py-3 bg-teal text-white rounded-sm font-semibold text-sm cursor-pointer border-0 hover:bg-teal-deep transition-colors disabled:opacity-40 disabled:cursor-default"
+                  >
+                    {rsSubmitting ? 'Rescheduling...' : 'Confirm New Time'}
+                  </button>
                 </div>
               )}
 
