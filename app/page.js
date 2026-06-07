@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Button from '@/components/Button'
 import CTABanner from '@/components/CTABanner'
+import { TESTIMONIALS, GOOGLE_REVIEWS_URL } from '@/lib/testimonials'
 
 // Page-specific metadata extends the defaults from layout.js
 export const metadata = {
@@ -124,49 +125,6 @@ const HIGHLIGHT_STEP = {
   title: 'A Friend on Your Side',
   body: "Harry's not just your inspector — he's your neighbor down the street. Call anytime to chat about any aspect of the home you're buying, selling, or just curious about. Foundations, roofs, radon, systems — he'll talk your ear off. That's not a service add-on. That's just Harry.",
 }
-
-// ---- Testimonials ----
-const GOOGLE_REVIEWS_URL =
-  'https://www.google.com/maps/place/?q=place_id:ChIJXa9tHz2ea4cRMNSWwUIwbLk'
-
-const TESTIMONIALS = [
-  {
-    quote:
-      "We first worked with Harry for the inspection on a mountain home we were under contract with and were so impressed by his thoroughness, knowledge, and professionalism.",
-    author: 'Chanelle Nelson',
-    stars: 5,
-  },
-  {
-    quote:
-      "Very knowledgeable, kind, and professional. Harry was thorough, and had great judgement on the significance of each item found during the inspection.",
-    author: 'Patrick Milito',
-    stars: 5,
-  },
-  {
-    quote:
-      "If I were to sum up my experience with Harry the one word I would choose is \"Wow\". Quality, thoroughness, and professionalism at every step.",
-    author: 'Charles Guttilla',
-    stars: 5,
-  },
-  {
-    quote:
-      "I'm buying a home and Harry did the home and radon inspections. He was thorough, efficient, quick with the results, and a really nice guy. A pleasure to work with — would recommend highly to anyone.",
-    author: 'Kate Dougherty',
-    stars: 5,
-  },
-  {
-    quote:
-      "Quality service requires quality people and Harry delivers on all counts. Careful inspection with thorough explanation and an excellent follow up report. Inspectrum should be your go-to for a quality home inspection.",
-    author: 'Nick',
-    stars: 5,
-  },
-  {
-    quote:
-      "I am a Real Estate agent at RE/MAX of Boulder and Harry is my go-to-guy. We've worked together all along the Front Range and he is always thorough, professional, and knowledgeable.",
-    author: 'John Hampshire',
-    stars: 5,
-  },
-]
 
 // ---- Trust bar item subcomponent ----
 function TrustItem({ title, body, iconPath, iconElement, isLast }) {

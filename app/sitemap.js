@@ -60,6 +60,18 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
+      url: `${BASE}/reviews`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${BASE}/sample-report`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${BASE}/about/harry`,
       lastModified,
       changeFrequency: 'monthly',
