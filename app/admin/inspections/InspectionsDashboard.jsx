@@ -15,6 +15,7 @@ const RANGE_OPTIONS = [
   { value: '3m', label: '3 Months' },
   { value: 'year', label: 'This Year' },
   { value: 'lastyear', label: 'Last Year' },
+  { value: 'all', label: 'All Time' },
 ]
 
 const SOURCE_FILTERS = ['all', 'web', 'acc', 'admin', 'unknown']

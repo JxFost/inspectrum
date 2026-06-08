@@ -24,6 +24,10 @@ function windowFromRange(range) {
   const now = new Date()
   const year = now.getFullYear()
 
+  if (range === 'all') {
+    // Full history — early floor through ~1 year out
+    return { from: '2018-01-01', to: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10) }
+  }
   if (range === 'year') {
     return { from: `${year}-01-01`, to: `${year}-12-31` }
   }
@@ -42,6 +46,10 @@ function prevWindowFromRange(range) {
   const now = new Date()
   const year = now.getFullYear()
 
+  if (range === 'all') {
+    // No meaningful "previous period" for all-time — empty window
+    return { from: '2017-12-31', to: '2017-12-31' }
+  }
   if (range === 'year') {
     return { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` }
   }
