@@ -17,12 +17,17 @@
 
 import { NextResponse } from 'next/server'
 import { parseACCEmail, isValidACCSender } from '@/lib/acc-email-parser'
-import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber, parseEventDescription, mergeEventDescriptions } from '@/lib/booking'
+import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber, parseEventDescription, mergeEventDescriptions, buildGCalUrl } from '@/lib/booking'
 import { computeDistance } from '@/lib/mileage'
 import { insertEvent, findEventsBetween, deleteEvent, patchEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
+import { createAgreement, getAgreementByInspectionId } from '@/lib/db-agreements'
+import { buildManageUrl } from '@/lib/booking-tokens'
+import { buildICS } from '@/lib/ics'
+import { sendEmail } from '@/lib/email/send'
+import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 
 function log(action, detail) {
   // Privacy-safe logging: first name only, no full PII
@@ -137,6 +142,68 @@ function buildACCExtraLines(parsed) {
   if (parsed.orderedBy) lines.push(`Ordered By: ${parsed.orderedBy}`)
   if (parsed.cancelReason) lines.push(`Cancel Reason: ${parsed.cancelReason}`)
   return lines.join('\n')
+}
+
+/**
+ * Create the digital agreement and send the booking confirmation email —
+ * the same post-booking flow the website uses. Failures are logged, never
+ * thrown: the calendar event already exists and the webhook should still
+ * return success to CloudMailin.
+ */
+async function sendBookingConfirmation({ inspectionId, eventId, clientName, clientEmail, address, serviceName, durationHours, startISO, endISO, token, radonAddOn }) {
+  const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
+  const confirmationCode = extractConfirmationCode(eventId)
+  const firstName = clientName?.split(' ')[0] || 'client'
+
+  let agreementUrl = null
+  try {
+    const agToken = await createAgreement({
+      inspectionId,
+      customerName: clientName,
+      customerEmail: clientEmail,
+      propertyAddress: address,
+      radonAddendum: radonAddOn,
+    })
+    agreementUrl = `${siteUrl}/agreement/${agToken}`
+    log('agreement', `created for ${firstName}`)
+  } catch (err) {
+    console.error('[db] ACC agreement create failed:', err.message)
+  }
+
+  try {
+    const icsContent = buildICS({
+      title: `Inspectrum Inspection — ${serviceName}`,
+      startISO,
+      endISO,
+      location: address || 'Evergreen, CO',
+      description: `${serviceName} with Inspectrum Inspections.\nConfirmation: ${confirmationCode}\nQuestions: (303) 697-0990`,
+      uid: confirmationCode,
+    })
+
+    await sendEmail({
+      to: clientEmail,
+      subject: `Your inspection is booked — ${serviceName}`,
+      html: bookingReceiptHtml({
+        customerName: clientName || 'Customer',
+        service: serviceName,
+        startISO,
+        endISO,
+        durationHours,
+        address,
+        confirmationCode,
+        manageUrl: buildManageUrl(token),
+        gcalUrl: buildGCalUrl({ service: serviceName, startISO, endISO, address }),
+        agreementUrl,
+        radonAddOn,
+      }),
+      attachments: [{ filename: 'inspection.ics', content: Buffer.from(icsContent, 'utf-8') }],
+      inspectionId,
+      template: 'booking-receipt',
+    })
+    log('emailed', `booking confirmation to ${firstName}`)
+  } catch (err) {
+    console.error('[acc-inbound] booking receipt email failed:', err.message)
+  }
 }
 
 export async function POST(request) {
@@ -257,18 +324,48 @@ export async function POST(request) {
             .catch((err) => console.error('[db] customer upsert failed:', err.message))
         }
 
-        upsertInspection({
-          googleEventId: existing.id,
-          customerName: parsed.clientName || null,
-          email: parsed.clientEmail || null,
-          phone: parsed.clientPhone || null,
-          address: fullAddress || null,
-          service: service.name,
-          startAt: startISO,
-          endAt: endISO,
-          source: 'acc',
-          rawDescription: merged,
-        }).catch((err) => console.error('[db] ACC merge update failed:', err.message))
+        let dbRow = null
+        try {
+          dbRow = await upsertInspection({
+            googleEventId: existing.id,
+            customerName: parsed.clientName || null,
+            email: parsed.clientEmail || null,
+            phone: parsed.clientPhone || null,
+            address: fullAddress || null,
+            service: service.name,
+            startAt: startISO,
+            endAt: endISO,
+            source: 'acc',
+            rawDescription: merged,
+          })
+        } catch (err) {
+          console.error('[db] ACC merge update failed:', err.message)
+        }
+
+        // The amendment may add the client email the original lacked — if no
+        // agreement exists yet, run the confirmation flow now.
+        if (dbRow && parsed.clientEmail) {
+          try {
+            const agreement = await getAgreementByInspectionId(dbRow.id)
+            if (!agreement) {
+              await sendBookingConfirmation({
+                inspectionId: dbRow.id,
+                eventId: existing.id,
+                clientName: parsed.clientName || prev.customerName,
+                clientEmail: parsed.clientEmail,
+                address: fullAddress || prev.address,
+                serviceName: service.name,
+                durationHours: service.durationHours,
+                startISO,
+                endISO,
+                token: prev.token,
+                radonAddOn: parsed.radon === 'Yes',
+              })
+            }
+          } catch (err) {
+            console.error('[acc-inbound] agreement check failed:', err.message)
+          }
+        }
 
         return NextResponse.json({ ok: true, action: 'merged', eventId: existing.id })
       } catch (err) {
@@ -313,24 +410,47 @@ export async function POST(request) {
           .catch((err) => console.error('[db] customer upsert failed:', err.message))
       }
 
-      upsertInspection({
-        googleEventId: event.id,
-        inspectionNumber,
-        customerName: parsed.clientName || 'ACC Client',
-        email: parsed.clientEmail || null,
-        phone: parsed.clientPhone || null,
-        address: fullAddress,
-        service: service.name,
-        startAt: startISO,
-        endAt: endISO,
-        source: 'acc',
-        distanceMiles: dist?.miles || null,
-        tripChargeCents: dist?.tripChargeCents || null,
-        geoLat: dist?.geoLat || null,
-        geoLng: dist?.geoLng || null,
-        token,
-        rawDescription: description,
-      }).catch((err) => console.error('[db] ACC insert failed:', err.message))
+      let dbRow = null
+      try {
+        dbRow = await upsertInspection({
+          googleEventId: event.id,
+          inspectionNumber,
+          customerName: parsed.clientName || 'ACC Client',
+          email: parsed.clientEmail || null,
+          phone: parsed.clientPhone || null,
+          address: fullAddress,
+          service: service.name,
+          startAt: startISO,
+          endAt: endISO,
+          source: 'acc',
+          distanceMiles: dist?.miles || null,
+          tripChargeCents: dist?.tripChargeCents || null,
+          geoLat: dist?.geoLat || null,
+          geoLng: dist?.geoLng || null,
+          token,
+          rawDescription: description,
+        })
+      } catch (err) {
+        console.error('[db] ACC insert failed:', err.message)
+      }
+
+      // Agreement + confirmation email, mirroring the web booking flow.
+      // Only possible when ACC captured the client's email address.
+      if (dbRow && parsed.clientEmail) {
+        await sendBookingConfirmation({
+          inspectionId: dbRow.id,
+          eventId: event.id,
+          clientName: parsed.clientName,
+          clientEmail: parsed.clientEmail,
+          address: fullAddress,
+          serviceName: service.name,
+          durationHours: service.durationHours,
+          startISO,
+          endISO,
+          token,
+          radonAddOn: parsed.radon === 'Yes',
+        })
+      }
 
       return NextResponse.json({
         ok: true,

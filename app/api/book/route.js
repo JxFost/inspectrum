@@ -14,7 +14,7 @@ import { SERVICES } from '@/lib/services'
 import { getBusyRanges, insertEvent } from '@/lib/google-calendar'
 import { computeSlots } from '@/lib/slots'
 import { buildManageUrl } from '@/lib/booking-tokens'
-import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber } from '@/lib/booking'
+import { buildEventDescription, extractConfirmationCode, getNextInspectionNumber, buildGCalUrl } from '@/lib/booking'
 import { computeDistance } from '@/lib/mileage'
 import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
@@ -43,18 +43,6 @@ function hasColoradoZip(address) {
   if (!match) return false
   const num = parseInt(match[1], 10)
   return num >= 80001 && num <= 81658
-}
-
-function buildGCalUrl({ service, startISO, endISO, address }) {
-  const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: `Inspectrum Inspection — ${service}`,
-    dates: `${fmt(startISO)}/${fmt(endISO)}`,
-    details: `${service} with Inspectrum Inspections.\n\nAddress: ${address || 'TBD'}\n\nQuestions: (303) 697-0990`,
-    location: address || 'Evergreen, CO',
-  })
-  return `https://calendar.google.com/calendar/render?${params}`
 }
 
 export async function POST(request) {
