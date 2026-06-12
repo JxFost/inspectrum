@@ -68,6 +68,8 @@ export default function InspectionDetail({ inspection, extraFields = [], reports
   const [deleteError, setDeleteError] = useState(null)
   const [resendState, setResendState] = useState('idle') // idle | sending | sent | error
   const [resendError, setResendError] = useState(null)
+  const [resendReportState, setResendReportState] = useState('idle') // idle | sending | sent
+  const [resendReportError, setResendReportError] = useState(null)
 
   async function handleUpload() {
     const file = fileRef.current?.files?.[0]
@@ -349,10 +351,11 @@ export default function InspectionDetail({ inspection, extraFields = [], reports
         )}
 
         {inspection.email && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              disabled={resendState === 'sending'}
+              disabled={inspection.isPast || resendState === 'sending'}
+              title={inspection.isPast ? 'Inspection date has passed' : undefined}
               onClick={async () => {
                 setResendState('sending')
                 setResendError(null)
@@ -375,11 +378,48 @@ export default function InspectionDetail({ inspection, extraFields = [], reports
                   setResendState('idle')
                 }
               }}
-              className="text-sm text-teal hover:text-amber cursor-pointer bg-transparent border border-teal rounded-sm px-3 py-1.5 font-semibold transition-colors disabled:opacity-50"
+              className={`text-sm rounded-sm px-3 py-1.5 font-semibold transition-colors bg-transparent border ${
+                inspection.isPast
+                  ? 'text-charcoal/40 border-charcoal/20 cursor-not-allowed'
+                  : 'text-teal hover:text-amber cursor-pointer border-teal disabled:opacity-50'
+              }`}
             >
               {resendState === 'sending' ? 'Sending...' : resendState === 'sent' ? 'Sent ✓' : 'Resend Confirmation Email'}
             </button>
             {resendError && <span className="text-xs text-red-600">{resendError}</span>}
+
+            {currentReports.length > 0 && inspection.inspectionId && (
+              <button
+                type="button"
+                disabled={resendReportState === 'sending'}
+                onClick={async () => {
+                  setResendReportState('sending')
+                  setResendReportError(null)
+                  try {
+                    const res = await fetch('/api/admin/resend-report', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ inspectionId: inspection.inspectionId }),
+                    })
+                    if (!res.ok) {
+                      const d = await res.json()
+                      setResendReportError(d.error || 'Failed to send.')
+                      setResendReportState('idle')
+                      return
+                    }
+                    setResendReportState('sent')
+                    setTimeout(() => setResendReportState('idle'), 3000)
+                  } catch {
+                    setResendReportError('Network error.')
+                    setResendReportState('idle')
+                  }
+                }}
+                className="text-sm text-teal hover:text-amber cursor-pointer bg-transparent border border-teal rounded-sm px-3 py-1.5 font-semibold transition-colors disabled:opacity-50"
+              >
+                {resendReportState === 'sending' ? 'Sending...' : resendReportState === 'sent' ? 'Sent ✓' : 'Resend Report Email'}
+              </button>
+            )}
+            {resendReportError && <span className="text-xs text-red-600">{resendReportError}</span>}
           </div>
         )}
       </div>

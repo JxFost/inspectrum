@@ -92,6 +92,7 @@ export default async function InspectionDetailPage({ params }) {
     service: parsed.service || dbRecord?.service,
     startISO,
     endISO,
+    isPast: (endISO || startISO) ? new Date(endISO || startISO) < new Date() : false,
     paymentStatus: parsed.paymentStatus || dbRecord?.payment_status,
     source: parsed.source || dbRecord?.source,
     radonAddOn: (event?.description || '').includes('Radon Add-On: Yes'),
