@@ -13,6 +13,7 @@ import { NextResponse } from 'next/server'
 import { findEventsBetween } from '@/lib/google-calendar'
 import { parseEventDescription } from '@/lib/booking'
 import { upsertInspection } from '@/lib/db-inspections'
+import { upsertCustomer } from '@/lib/db-customers'
 import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 
@@ -73,6 +74,17 @@ export async function GET(request) {
         feedbackRating: parsed.feedbackRating ? parseInt(parsed.feedbackRating, 10) : null,
         rawDescription: event.description || null,
       })
+
+      // Make sure the customer exists in the customers list too — catches
+      // inspections that reached the DB outside the booking endpoints.
+      if (parsed.email) {
+        await upsertCustomer({
+          email: parsed.email,
+          name: parsed.customerName || null,
+          phone: parsed.phone || null,
+        }).catch((err) => console.error('[db-sync] customer upsert failed:', err.message))
+      }
+
       synced++
     } catch (err) {
       errors++
