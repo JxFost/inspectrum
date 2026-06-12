@@ -266,7 +266,7 @@ export default function InspectionsDashboard({
           <div className="flex items-center gap-3">
             <select
               value={range}
-              onChange={(e) => router.push(e.target.value === '2w' ? '/admin/inspections' : `/admin/inspections?range=${e.target.value}`)}
+              onChange={(e) => router.push(e.target.value === 'year' ? '/admin/inspections' : `/admin/inspections?range=${e.target.value}`)}
               className="bg-white border border-line px-3 py-1.5 text-sm text-ink rounded-sm outline-none focus:border-teal cursor-pointer shadow-sm"
             >
               {RANGE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
