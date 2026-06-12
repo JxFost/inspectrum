@@ -435,6 +435,15 @@ export default function InspectionsDashboard({
           <div className="bg-paper border border-line rounded-sm p-12 text-center">
             <p className="text-charcoal/60 mb-2">{search ? 'No matching inspections.' : 'No inspections in this window.'}</p>
             {!search && <p className="text-sm text-charcoal/40">Try a wider date range or different filters.</p>}
+            {range !== 'all' && (
+              <button
+                type="button"
+                onClick={() => router.push(`/admin/inspections?range=all${search.trim() ? `&search=${encodeURIComponent(search.trim())}` : ''}`)}
+                className="mt-4 text-sm text-teal font-semibold cursor-pointer bg-transparent border border-teal rounded-sm px-4 py-2 hover:text-amber hover:border-amber transition-colors"
+              >
+                {search.trim() ? `Search all time for "${search.trim()}"` : 'View all time'}
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
