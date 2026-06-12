@@ -37,12 +37,18 @@ function InspectionCard({ insp }) {
   return (
     <Link
       href={`/admin/inspections/${insp.eventId}`}
-      className={`block bg-white rounded-sm border shadow-sm no-underline transition-all hover:shadow-md hover:-translate-y-0.5 ${
+      className={`group relative block bg-white rounded-sm border shadow-sm no-underline transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-teal/50 ${
         alerts.some((a) => a.type === 'warning' || a.type === 'error')
           ? 'border-amber/40'
           : 'border-line/30'
       }`}
     >
+      {/* Hover affordance — pointer-events-none keeps tel/mailto/maps links clickable */}
+      <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <span className="bg-teal text-white text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-full shadow-lg scale-95 group-hover:scale-100 transition-transform duration-150">
+          View details →
+        </span>
+      </span>
       <div className="p-5 sm:p-6">
         {/* Time + Service */}
         <div className="flex items-center justify-between mb-3">
