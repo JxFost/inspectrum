@@ -35,8 +35,10 @@ function formatBytes(bytes) {
 
 function DetailRow({ label, value }) {
   if (!value) return null
+  // Long values (notes, comments) read better stacked than right-aligned
+  const long = typeof value === 'string' && value.length > 64
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 pb-3 border-b border-line last:border-0 last:pb-0">
+    <div className={`flex flex-col ${long ? '' : 'sm:flex-row sm:justify-between sm:items-baseline'} gap-1 pb-3 border-b border-line last:border-0 last:pb-0`}>
       <div className="text-[0.7rem] uppercase tracking-[0.2em] text-charcoal/60 font-semibold">{label}</div>
       <div className="text-ink font-medium text-sm">{value}</div>
     </div>
@@ -53,7 +55,7 @@ const REPORT_TYPES = [
 
 const REPORT_TYPE_LABELS = Object.fromEntries(REPORT_TYPES.map((t) => [t.value, t.label]))
 
-export default function InspectionDetail({ inspection, reports, agreement, emailLog = [] }) {
+export default function InspectionDetail({ inspection, extraFields = [], reports, agreement, emailLog = [] }) {
   const [uploadState, setUploadState] = useState('idle')
   const [reportType, setReportType] = useState('inspection')
   const [summary, setSummary] = useState('')
@@ -138,6 +140,16 @@ export default function InspectionDetail({ inspection, reports, agreement, email
           <DetailRow label="Source" value={inspection.source} />
         </div>
       </div>
+
+      {/* Everything else captured at booking — property details, add-ons, notes, ACC fields */}
+      {extraFields.length > 0 && (
+        <div className="bg-paper p-8 rounded-sm border border-line mb-8">
+          <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Property & Booking Info</div>
+          <div className="space-y-3">
+            {extraFields.map((f) => <DetailRow key={f.label} label={f.label} value={f.value} />)}
+          </div>
+        </div>
+      )}
 
       {/* Listing Agent */}
       {(inspection.listingAgentName || inspection.orderedBy) && (

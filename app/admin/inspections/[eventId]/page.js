@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getEvent } from '@/lib/google-calendar'
@@ -8,6 +9,33 @@ import InspectionDetail from './InspectionDetail'
 export const metadata = {
   title: 'Inspection Detail — Admin',
   robots: 'noindex, nofollow',
+}
+
+// Labels already rendered as dedicated rows elsewhere on the page.
+const SHOWN_LABELS = new Set([
+  'service', 'customer', 'phone', 'email', 'address',
+  'ordered by', 'listing agent', 'listing agent phone', 'listing agent email',
+])
+
+/**
+ * Pull every human-labeled line out of the event description so all booking
+ * info shows on the page regardless of source (web, admin, ACC). System
+ * markers use snake_case keys and footer lines have no "Label: value" shape,
+ * so requiring an uppercase first letter filters both out.
+ */
+function extractExtraFields(description) {
+  const fields = []
+  const seen = new Set()
+  for (const line of (description || '').split('\n')) {
+    const match = line.match(/^([A-Z][A-Za-z'() /-]*):\s+(.+)$/)
+    if (!match) continue
+    const label = match[1].trim()
+    const key = label.toLowerCase()
+    if (SHOWN_LABELS.has(key) || seen.has(key)) continue
+    seen.add(key)
+    fields.push({ label, value: match[2].trim() })
+  }
+  return fields
 }
 
 export default async function InspectionDetailPage({ params }) {
@@ -42,13 +70,14 @@ export default async function InspectionDetailPage({ params }) {
       <section className="bg-cream py-16 px-5 lg:px-8 min-h-[50vh]">
         <div className="max-w-[600px] mx-auto text-center">
           <h1 className="text-2xl mb-4">Inspection not found.</h1>
-          <a href="/admin/inspections" className="text-teal hover:text-amber">Back to dashboard</a>
+          <Link href="/admin/inspections" className="text-teal hover:text-amber">Back to dashboard</Link>
         </div>
       </section>
     )
   }
 
   const parsed = event ? parseEventDescription(event.description) : {}
+  const extraFields = extractExtraFields(event?.description || dbRecord?.raw_description)
   const startISO = event?.start?.dateTime || dbRecord?.start_at?.toISOString?.() || dbRecord?.start_at
   const endISO = event?.end?.dateTime || dbRecord?.end_at?.toISOString?.() || dbRecord?.end_at
 
@@ -143,7 +172,7 @@ export default async function InspectionDetailPage({ params }) {
 
       <section className="bg-cream py-16 px-5 lg:px-8 min-h-[50vh]">
         <div className="max-w-[600px] mx-auto">
-          <InspectionDetail inspection={inspection} reports={serializedReports} agreement={agreement} emailLog={emailLog} />
+          <InspectionDetail inspection={inspection} extraFields={extraFields} reports={serializedReports} agreement={agreement} emailLog={emailLog} />
         </div>
       </section>
     </>
