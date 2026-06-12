@@ -13,6 +13,7 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 import { reportReadyHtml } from '@/lib/email/templates/report-ready'
+import { classifyReportType } from '@/lib/report-type'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -57,8 +58,8 @@ export async function POST(request) {
 
   // Create the inspection_reports record
   await db`
-    INSERT INTO inspection_reports (inspection_id, customer_email, file_url, file_name, file_size_bytes, uploaded_via)
-    VALUES (${inspectionId}, ${inspection.email || null}, ${pending[0].file_url}, ${pending[0].file_name}, ${pending[0].file_size_bytes}, 'auto-import')
+    INSERT INTO inspection_reports (inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, uploaded_via)
+    VALUES (${inspectionId}, ${inspection.email || null}, ${pending[0].file_url}, ${pending[0].file_name}, ${pending[0].file_size_bytes}, ${classifyReportType(pending[0].file_name)}, 'auto-import')
   `
 
   // Mark pending report as resolved

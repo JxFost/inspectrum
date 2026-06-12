@@ -16,6 +16,7 @@ import { sql } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
 import { reportReadyHtml } from '@/lib/email/templates/report-ready'
 import { parseEventDescription } from '@/lib/booking'
+import { classifyReportType } from '@/lib/report-type'
 
 export async function GET(request) {
   const authHeader = request.headers.get('authorization')
@@ -195,13 +196,14 @@ export async function GET(request) {
       // Create DB record
       await db`
         INSERT INTO inspection_reports (
-          inspection_id, customer_email, file_url, file_name, file_size_bytes, uploaded_via
+          inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, uploaded_via
         ) VALUES (
           ${matchedInspection.id},
           ${matchedInspection.email},
           ${blob.url},
           ${attachment.filename},
           ${attachment.size},
+          ${classifyReportType(attachment.filename)},
           'auto-import'
         )
       `

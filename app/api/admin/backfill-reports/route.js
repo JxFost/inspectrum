@@ -15,6 +15,7 @@ import { searchEmails, downloadAttachment } from '@/lib/gmail'
 import { put } from '@vercel/blob'
 import { sql } from '@/lib/db'
 import { parseBackfillFrom } from '@/lib/backfill-window'
+import { classifyReportType } from '@/lib/report-type'
 
 function verifyAdminSession(request) {
   const cookie = request.cookies.get('admin_session')?.value
@@ -128,8 +129,8 @@ export async function GET(request) {
         const blob = await put(blobPath, pdfBuffer, { access: 'public', contentType: 'application/pdf' })
 
         await db`
-          INSERT INTO inspection_reports (inspection_id, customer_email, file_url, file_name, file_size_bytes, uploaded_via)
-          VALUES (${matchedInspection.id}, ${matchedInspection.email}, ${blob.url}, ${attachment.filename}, ${attachment.size}, 'backfill')
+          INSERT INTO inspection_reports (inspection_id, customer_email, file_url, file_name, file_size_bytes, report_type, uploaded_via)
+          VALUES (${matchedInspection.id}, ${matchedInspection.email}, ${blob.url}, ${attachment.filename}, ${attachment.size}, ${classifyReportType(attachment.filename)}, 'backfill')
         `
 
         record.status = 'imported'
