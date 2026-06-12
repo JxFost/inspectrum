@@ -17,9 +17,9 @@
 
 import { NextResponse } from 'next/server'
 import { parseACCEmail, isValidACCSender } from '@/lib/acc-email-parser'
-import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber } from '@/lib/booking'
+import { buildEventDescription, extractConfirmationCode, mapACCServiceType, getNextInspectionNumber, parseEventDescription, mergeEventDescriptions } from '@/lib/booking'
 import { computeDistance } from '@/lib/mileage'
-import { insertEvent, findEventsBetween, deleteEvent } from '@/lib/google-calendar'
+import { insertEvent, findEventsBetween, deleteEvent, patchEvent } from '@/lib/google-calendar'
 import { TIMEZONE } from '@/lib/working-hours'
 import { upsertInspection } from '@/lib/db-inspections'
 import { upsertCustomer } from '@/lib/db-customers'
@@ -54,9 +54,10 @@ function verifyWebhookSecret(request) {
 
 /**
  * Find an existing calendar event matching client name + address.
- * Used for reschedule and cancel operations.
+ * Used for reschedule and cancel operations, and (with requireAddress +
+ * upcomingOnly) to detect amended re-sends of appointment emails.
  */
-async function findMatchingEvent(clientName, address) {
+async function findMatchingEvent(clientName, address, { requireAddress = false, upcomingOnly = false } = {}) {
   if (!clientName) return null
 
   // Search a wide window: 30 days past to 90 days future
@@ -69,11 +70,26 @@ async function findMatchingEvent(clientName, address) {
   const normalizedName = clientName.toLowerCase().trim()
   const normalizedAddr = address?.toLowerCase().trim() || ''
 
+  if (requireAddress && !normalizedAddr) return null
+
   // Find events that match by name in the description
-  const matches = events.filter((e) => {
+  let matches = events.filter((e) => {
     const desc = (e.description || '').toLowerCase()
     return desc.includes(`customer: ${normalizedName}`)
   })
+
+  if (requireAddress) {
+    matches = matches.filter((e) => {
+      const haystack = `${e.location || ''}\n${e.description || ''}`.toLowerCase()
+      return haystack.includes(normalizedAddr)
+    })
+  }
+
+  if (upcomingOnly) {
+    // Skip events that already happened (with a same-day grace window)
+    const cutoff = now.getTime() - 24 * 60 * 60 * 1000
+    matches = matches.filter((e) => new Date(e.start?.dateTime || 0).getTime() >= cutoff)
+  }
 
   if (matches.length === 0) return null
   if (matches.length === 1) return matches[0]
@@ -184,6 +200,82 @@ export async function POST(request) {
     const service = mapACCServiceType(parsed.inspectionType)
     const endDate = new Date(new Date(startISO).getTime() + service.durationHours * 60 * 60 * 1000)
     const endISO = endDate.toISOString()
+
+    // ACC sometimes re-sends an appointment email for the same job with
+    // amended or added fields. If an upcoming event already matches this
+    // client + address, merge the new details into it instead of duplicating.
+    let existing = null
+    try {
+      existing = await findMatchingEvent(parsed.clientName, parsed.address || fullAddress, {
+        requireAddress: true,
+        upcomingOnly: true,
+      })
+    } catch (err) {
+      log('warn', `duplicate check failed, proceeding to create: ${err.message}`)
+    }
+
+    if (existing) {
+      try {
+        const prev = parseEventDescription(existing.description)
+
+        const { description } = buildEventDescription({
+          inspectionNumber: prev.inspectionNumber,
+          token: prev.token,
+          distanceMiles: prev.distanceMiles,
+          tripChargeCents: prev.tripChargeCents,
+          geoLat: prev.geoLat,
+          geoLng: prev.geoLng,
+          serviceName: service.name,
+          customerName: parsed.clientName || prev.customerName || 'ACC Client',
+          phone: parsed.clientPhone || prev.phone || '',
+          email: parsed.clientEmail || prev.email || '',
+          address: fullAddress || prev.address || '',
+          sqft: parsed.squareFeet || prev.sqft,
+          source: 'acc',
+          accSubject: subject,
+          extra: buildACCExtraLines(parsed),
+        })
+
+        const merged = mergeEventDescriptions(existing.description, description)
+
+        const patch = {
+          summary: `Inspectrum: ${service.name} — ${parsed.clientName || prev.customerName || 'ACC Client'}`,
+          description: merged,
+          location: fullAddress || existing.location,
+        }
+        const prevStart = existing.start?.dateTime
+        if (prevStart && new Date(prevStart).getTime() !== new Date(startISO).getTime()) {
+          patch.start = { dateTime: startISO }
+          patch.end = { dateTime: endISO }
+        }
+        await patchEvent(existing.id, patch)
+
+        log('merged', `amended appointment for ${firstName} into event ${existing.id}`)
+
+        if (parsed.clientEmail) {
+          upsertCustomer({ email: parsed.clientEmail, name: parsed.clientName, phone: parsed.clientPhone })
+            .catch((err) => console.error('[db] customer upsert failed:', err.message))
+        }
+
+        upsertInspection({
+          googleEventId: existing.id,
+          customerName: parsed.clientName || null,
+          email: parsed.clientEmail || null,
+          phone: parsed.clientPhone || null,
+          address: fullAddress || null,
+          service: service.name,
+          startAt: startISO,
+          endAt: endISO,
+          source: 'acc',
+          rawDescription: merged,
+        }).catch((err) => console.error('[db] ACC merge update failed:', err.message))
+
+        return NextResponse.json({ ok: true, action: 'merged', eventId: existing.id })
+      } catch (err) {
+        log('error', `failed to merge amended appointment: ${err.message}`)
+        return NextResponse.json({ error: 'Failed to merge appointment update' }, { status: 500 })
+      }
+    }
 
     const inspectionNumber = await getNextInspectionNumber()
     const dist = await computeDistance(fullAddress)
