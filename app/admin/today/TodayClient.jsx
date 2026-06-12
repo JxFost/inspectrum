@@ -70,8 +70,9 @@ function InspectionCard({ insp }) {
           <div className="text-sm text-charcoal/60">{insp.service || 'Inspection'}</div>
         </div>
 
-        {/* Contact */}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-sm" onClick={(e) => e.preventDefault()}>
+        {/* Contact — stopPropagation (not preventDefault) so the inner links still
+            fire while the outer card Link doesn't */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-sm" onClick={(e) => e.stopPropagation()}>
           {insp.phone && (
             <a href={`tel:${insp.phone.replace(/[^+\d]/g, '')}`} className="text-teal hover:text-amber no-underline">{insp.phone}</a>
           )}
@@ -81,7 +82,7 @@ function InspectionCard({ insp }) {
         </div>
 
         {/* Address + Distance */}
-        <div className="flex items-center justify-between mb-3" onClick={(e) => e.preventDefault()}>
+        <div className="flex items-center justify-between mb-3" onClick={(e) => e.stopPropagation()}>
           <a
             href={`https://maps.apple.com/?daddr=${encodeURIComponent(insp.address || '')}`}
             target="_blank"
@@ -97,6 +98,22 @@ function InspectionCard({ insp }) {
           )}
         </div>
 
+        {/* Get Directions — mobile only, opens the map app with the route */}
+        {insp.address && (
+          <a
+            href={`https://maps.apple.com/?daddr=${encodeURIComponent(insp.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="sm:hidden flex items-center justify-center gap-2 w-full bg-teal/10 text-teal border border-teal/30 rounded-sm py-2.5 mb-3 text-sm font-semibold no-underline"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <polygon points="3 11 22 2 13 21 11 13 3 11" />
+            </svg>
+            Get Directions
+          </a>
+        )}
+
         {/* Property details */}
         {(insp.sqft || insp.yearBuilt || insp.accessInfo) && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal/50 mb-3">
@@ -108,7 +125,7 @@ function InspectionCard({ insp }) {
 
         {/* Listing agent */}
         {insp.listingAgent && (
-          <div className="text-xs text-charcoal/50 mb-3" onClick={(e) => e.preventDefault()}>
+          <div className="text-xs text-charcoal/50 mb-3" onClick={(e) => e.stopPropagation()}>
             Listing Agent: {insp.listingAgent}
             {insp.listingAgentPhone && (
               <> · <a href={`tel:${insp.listingAgentPhone.replace(/[^+\d]/g, '')}`} className="text-teal hover:text-amber no-underline">{insp.listingAgentPhone}</a></>
