@@ -87,6 +87,8 @@ export async function POST(request) {
   const listingAgentEmail = trim(body.listingAgentEmail, 100)
   const clientAttending = trim(body.clientAttending, 10)
   const accessProvidedBy = trim(body.accessProvidedBy, 200)
+  // Free-form notes — collapse newlines so the line-based event description stays parseable.
+  const notes = trim(body.notes, 1000).replace(/\s+/g, ' ')
   // The client's own agent (buyer's side) — copied on confirmation + report.
   // Distinct from the listing agent (seller's side), which we never CC on reports.
   const clientAgentEmailRaw = trim(body.clientAgentEmail, 100)
@@ -193,6 +195,7 @@ export async function POST(request) {
     radonPickupDate,
     sewerScope,
     pets,
+    notes,
     orderedBy: isAgent ? agentType : null,
     clientAttending,
     accessProvidedBy,

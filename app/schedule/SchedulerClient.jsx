@@ -152,7 +152,7 @@ export default function SchedulerClient() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [viewMonth, setViewMonth] = useState(new Date())
-  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '' })
+  const [details, setDetails] = useState({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '', notes: '' })
   const [knowsExactSqft, setKnowsExactSqft] = useState(false)
 
   // API state
@@ -263,6 +263,7 @@ export default function SchedulerClient() {
           accessProvidedBy: (details.accessProvidedBy === 'Other' || details.accessProvidedBy === 'Lockbox')
             ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
             : details.accessProvidedBy,
+          notes: details.notes.trim(),
           referrer: typeof document !== 'undefined' ? document.referrer || 'direct' : 'direct',
           utmSource: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
         }),
@@ -305,7 +306,7 @@ export default function SchedulerClient() {
 
   const reset = () => {
     setStep(1); setService(null); setSelectedDate(null); setSelectedSlot(null)
-    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '' })
+    setDetails({ name: '', email: '', phone: '', street: '', city: '', zip: '', sqftRange: '', sqftExact: '', yearBuilt: '', waterType: '', garageType: '', occupied: '', outbuilding: '', radonAddOn: false, sewerScope: false, pets: false, isAgent: false, agentType: '', listingAgentName: '', listingAgentPhone: '', listingAgentEmail: '', clientAttending: '', accessProvidedBy: '', accessNotes: '', clientAgentEmail: '', notes: '' })
     setKnowsExactSqft(false)
     setBooking(null); setBookingError(null); setSlots([]); setSlotsError(null)
   }
@@ -877,6 +878,18 @@ export default function SchedulerClient() {
                 </>
               )}
 
+              <div className="flex flex-col gap-1.5 mt-10">
+                <label className="text-[0.7rem] uppercase tracking-[0.18em] text-ink font-semibold opacity-70">Anything else we should know? <span className="opacity-60">(Optional)</span></label>
+                <textarea
+                  value={details.notes}
+                  onChange={(e) => setDetails({ ...details, notes: e.target.value })}
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Gate codes, pets, parking, scheduling constraints, specific concerns about the property…"
+                  className="bg-cream border border-line focus:border-teal px-4 py-3 text-base text-ink rounded-sm outline-none transition-all focus:shadow-[0_0_0_3px_rgba(43,126,140,0.15)] resize-y"
+                />
+              </div>
+
               <div className="flex justify-between mt-8">
                 <button type="button" onClick={() => goToStep(4)} className="text-charcoal hover:text-teal text-sm font-medium">← Back</button>
                 <Button variant="teal" onClick={() => { currentStepRef.current = 6; trackBookingStep(6); goToStep(6) }} withArrow>Review</Button>
@@ -961,6 +974,7 @@ export default function SchedulerClient() {
                 {details.pets && <SummaryRow label="Pets on Property" value="Yes" />}
                 {details.radonAddOn && <SummaryRow label="Radon Add-On" value="Yes — 48hr continuous monitor" />}
                 {details.sewerScope && <SummaryRow label="Sewer Scope" value="Yes — camera inspection of main sewer line" />}
+                {details.notes.trim() && <SummaryRow label="Notes" value={details.notes.trim()} />}
               </div>
 
               {bookingError && (
