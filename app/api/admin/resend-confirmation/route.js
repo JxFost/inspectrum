@@ -11,6 +11,7 @@ import { getEvent } from '@/lib/google-calendar'
 import { parseEventDescription, extractConfirmationCode } from '@/lib/booking'
 import { buildManageUrl } from '@/lib/booking-tokens'
 import { sendEmail } from '@/lib/email/send'
+import { createAgreement } from '@/lib/db-agreements'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { SERVICES } from '@/lib/services'
 import { sql } from '@/lib/db'
@@ -59,29 +60,44 @@ export async function POST(request) {
   const siteUrl = process.env.PUBLIC_SITE_URL || 'https://evergreeninspections.com'
   const radonAddOn = (event.description || '').includes('Radon Add-On: Yes')
 
-  // Find agreement URL
-  let agreementUrl = null
-  try {
-    const db = sql()
-    const rows = await db`
-      SELECT sa.token FROM signed_agreements sa
-      JOIN inspections i ON i.id = sa.inspection_id
-      WHERE i.google_event_id = ${eventId}
-    `
-    if (rows[0]) agreementUrl = `${siteUrl}/agreement/${rows[0].token}`
-  } catch { /* ignore */ }
-
   // Find service duration
   const service = SERVICES.find((s) => s.name === parsed.service)
   const durationHours = service?.durationHours || 4
 
-  // Get inspection DB id for logging
+  // Get inspection DB id (for the agreement lookup + email logging)
   let inspectionDbId = null
   try {
     const db = sql()
     const rows = await db`SELECT id FROM inspections WHERE google_event_id = ${eventId}`
     if (rows[0]) inspectionDbId = rows[0].id
   } catch { /* ignore */ }
+
+  // Include the sign-agreement block only when no signed agreement exists:
+  // already signed → omit, unsigned → link to it, missing → create one now.
+  let agreementUrl = null
+  if (inspectionDbId) {
+    try {
+      const db = sql()
+      const rows = await db`
+        SELECT token, signed_at FROM signed_agreements WHERE inspection_id = ${inspectionDbId}
+      `
+      if (rows[0]) {
+        if (!rows[0].signed_at) agreementUrl = `${siteUrl}/agreement/${rows[0].token}`
+      } else {
+        const agToken = await createAgreement({
+          inspectionId: inspectionDbId,
+          customerName: parsed.customerName,
+          customerEmail: parsed.email,
+          propertyAddress: parsed.address || event.location || null,
+          radonAddendum: radonAddOn,
+        })
+        agreementUrl = `${siteUrl}/agreement/${agToken}`
+        console.log(`[resend-confirmation] created missing agreement for inspection ${inspectionDbId}`)
+      }
+    } catch (err) {
+      console.error('[resend-confirmation] agreement lookup failed:', err.message)
+    }
+  }
 
   // Build gcal URL
   const fmt = (iso) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
