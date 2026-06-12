@@ -43,9 +43,10 @@ function InspectionCard({ insp }) {
           : 'border-line/30'
       }`}
     >
-      {/* Hover affordance — pointer-events-none keeps tel/mailto/maps links clickable */}
+      {/* Hover affordance — overlay passes clicks through so tel/mailto/maps links
+          stay clickable, but the pill itself is clickable and navigates via the Link */}
       <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-        <span className="bg-teal text-white text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-full shadow-lg scale-95 group-hover:scale-100 transition-transform duration-150">
+        <span className="pointer-events-auto cursor-pointer bg-teal text-white text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-full shadow-lg scale-95 group-hover:scale-100 transition-transform duration-150">
           View details →
         </span>
       </span>
