@@ -20,7 +20,7 @@ import { sendEmail } from '@/lib/email/send'
 import { bookingReceiptHtml } from '@/lib/email/templates/booking-receipt'
 import { buildICS } from '@/lib/ics'
 import { upsertInspection } from '@/lib/db-inspections'
-import { upsertCustomer } from '@/lib/db-customers'
+import { upsertCustomer, findCustomerByEmail } from '@/lib/db-customers'
 import { createAgreement } from '@/lib/db-agreements'
 
 const MAX_FIELD_LENGTH = 500
@@ -145,6 +145,16 @@ export async function POST(request) {
     )
   }
 
+  // Verify the repeat-client claim against the customers table — the portal's
+  // ?repeat=1 param is user-visible, so only record the discount for known customers.
+  let repeatClient = false
+  if (body.repeatClient === true) {
+    try {
+      repeatClient = !!(await findCustomerByEmail(email))
+      if (!repeatClient) console.log('[book] repeat-client claimed but email not found — discount not applied')
+    } catch { /* leave false */ }
+  }
+
   // Compute radon dates if radon add-on was selected
   let radonDropDate = null
   let radonPickupDate = null
@@ -189,6 +199,7 @@ export async function POST(request) {
     accessProvidedBy,
     clientAgentEmail,
     extra: [
+      repeatClient ? 'Repeat Client Discount: -$25' : null,
       listingAgentName ? `Listing Agent: ${listingAgentName}` : null,
       listingAgentPhone ? `Listing Agent Phone: ${listingAgentPhone}` : null,
       listingAgentEmail ? `Listing Agent Email: ${listingAgentEmail}` : null,

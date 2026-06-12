@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { validatePortalSession } from '@/lib/db-customers'
+import { CONTACT_PHONE } from '@/lib/constants'
 import { sql } from '@/lib/db'
 import PortalDashboard from './PortalDashboard'
 
@@ -116,7 +117,7 @@ export default async function DashboardPage() {
 
       <section className="bg-cream py-16 px-5 lg:px-8 min-h-[50vh]">
         <div className="max-w-[700px] mx-auto">
-          <PortalDashboard inspections={serialized} customerEmail={customer.email} />
+          <PortalDashboard inspections={serialized} customerEmail={customer.email} contactPhone={CONTACT_PHONE} />
         </div>
       </section>
     </>

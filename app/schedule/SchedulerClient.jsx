@@ -169,6 +169,12 @@ export default function SchedulerClient() {
   const funnelCompleted = useRef(false)
   const currentStepRef = useRef(1)
   const stepBarRef = useRef(null)
+  // Portal "book another" links carry ?repeat=1 for the repeat-client discount.
+  // Lazy init: only read on the client; isRepeat isn't rendered until step 6,
+  // so the server/client difference can't cause a hydration mismatch.
+  const [isRepeat] = useState(() =>
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('repeat') === '1'
+  )
 
   function goToStep(num) {
     setStep(num)
@@ -264,6 +270,7 @@ export default function SchedulerClient() {
             ? `${details.accessProvidedBy}${details.accessNotes ? ` — ${details.accessNotes}` : ''}`
             : details.accessProvidedBy,
           notes: details.notes.trim(),
+          repeatClient: isRepeat,
           referrer: typeof document !== 'undefined' ? document.referrer || 'direct' : 'direct',
           utmSource: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
         }),
@@ -295,7 +302,7 @@ export default function SchedulerClient() {
     } finally {
       setSubmitting(false)
     }
-  }, [service, selectedSlot, details, fullAddress])
+  }, [service, selectedSlot, details, fullAddress, isRepeat])
 
   const gcalUrl = confirmed && selectedSlot
     ? buildGCalUrl({ service: service.name, startISO: selectedSlot.startISO, endISO: selectedSlot.endISO, address: fullAddress })
@@ -916,6 +923,7 @@ export default function SchedulerClient() {
               radonAddOn: details.radonAddOn,
               sewerScope: details.sewerScope,
               features,
+              discount: isRepeat ? 'repeatClient' : undefined,
             })
             return (
             <div>

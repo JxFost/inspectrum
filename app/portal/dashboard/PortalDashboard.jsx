@@ -5,7 +5,6 @@ import Button from '@/components/Button'
 
 const TIMEZONE = 'America/Denver'
 const PHONE = '(303) 697-0990'
-const PHONE_DIGITS = '3036970990'
 
 const REPORT_TYPE_LABELS = {
   inspection: 'Inspection Report',
@@ -76,7 +75,7 @@ function AgreementBadge({ agreement }) {
   )
 }
 
-function InspectionCard({ insp, isUpcoming }) {
+function InspectionCard({ insp, isUpcoming, contactPhone = PHONE }) {
   return (
     <div className="bg-paper p-6 rounded-sm border border-line">
       <div className="flex items-start justify-between gap-4 mb-3">
@@ -157,7 +156,7 @@ function InspectionCard({ insp, isUpcoming }) {
             Manage appointment →
           </Link>
         )}
-        <a href={`tel:${PHONE_DIGITS}`} className="text-xs text-charcoal/50 hover:text-teal no-underline ml-auto">
+        <a href={`tel:${contactPhone.replace(/\D/g, '')}`} className="text-xs text-charcoal/50 hover:text-teal no-underline ml-auto">
           Questions? Call Harry
         </a>
       </div>
@@ -165,7 +164,7 @@ function InspectionCard({ insp, isUpcoming }) {
   )
 }
 
-export default function PortalDashboard({ inspections, customerEmail }) {
+export default function PortalDashboard({ inspections, customerEmail, contactPhone = PHONE }) {
   const upcoming = inspections.filter((i) => i.status === 'scheduled')
   const past = inspections.filter((i) => i.status === 'completed')
 
@@ -183,7 +182,7 @@ export default function PortalDashboard({ inspections, customerEmail }) {
         <>
           <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Upcoming</div>
           <div className="space-y-4 mb-10">
-            {upcoming.map((insp) => <InspectionCard key={insp.id} insp={insp} isUpcoming />)}
+            {upcoming.map((insp) => <InspectionCard key={insp.id} insp={insp} isUpcoming contactPhone={contactPhone} />)}
           </div>
         </>
       )}
@@ -192,7 +191,7 @@ export default function PortalDashboard({ inspections, customerEmail }) {
         <>
           <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-4">Past Inspections</div>
           <div className="space-y-3 mb-10">
-            {past.map((insp) => <InspectionCard key={insp.id} insp={insp} isUpcoming={false} />)}
+            {past.map((insp) => <InspectionCard key={insp.id} insp={insp} isUpcoming={false} contactPhone={contactPhone} />)}
           </div>
         </>
       )}
@@ -201,7 +200,8 @@ export default function PortalDashboard({ inspections, customerEmail }) {
       {inspections.length > 0 && (
         <div className="bg-teal/[0.06] border border-teal/20 rounded-sm p-6 text-center mb-8">
           <p className="text-sm text-charcoal mb-3">Need another inspection?</p>
-          <Button href="/schedule" variant="teal" withArrow>Book a New Inspection</Button>
+          <Button href="/schedule?repeat=1" variant="teal" withArrow>Book a New Inspection</Button>
+          <p className="text-xs text-charcoal/60 mt-3">Use this link for a repeat-client discount on your next booking.</p>
         </div>
       )}
 
@@ -210,7 +210,7 @@ export default function PortalDashboard({ inspections, customerEmail }) {
         <div className="text-xs uppercase tracking-[0.28em] text-amber font-semibold mb-3">Questions?</div>
         <p className="text-sm text-charcoal mb-3">Harry is happy to walk through any report or answer questions about your inspection.</p>
         <div className="flex flex-wrap gap-4">
-          <a href={`tel:${PHONE_DIGITS}`} className="text-sm text-teal font-semibold hover:text-amber no-underline">{PHONE}</a>
+          <a href={`tel:${contactPhone.replace(/\D/g, '')}`} className="text-sm text-teal font-semibold hover:text-amber no-underline">{contactPhone}</a>
           <a href="mailto:harry@evergreeninspections.com" className="text-sm text-teal font-semibold hover:text-amber no-underline">harry@evergreeninspections.com</a>
         </div>
       </div>
