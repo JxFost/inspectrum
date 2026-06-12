@@ -184,6 +184,7 @@ export default function InspectionsDashboard({
       items = items.filter((i) =>
         (i.customerName || '').toLowerCase().includes(q) ||
         (i.address || '').toLowerCase().includes(q) ||
+        (i.email || '').toLowerCase().includes(q) ||
         (i.inspectionNumber || '').toLowerCase().includes(q)
       )
     }

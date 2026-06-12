@@ -80,7 +80,7 @@ export default function CustomersClient({ customers }) {
                 </td>
                 <td className="px-4 py-3 text-xs hidden sm:table-cell">
                   <a
-                    href={`/admin/inspections?search=${encodeURIComponent(c.email)}&range=all`}
+                    href={`/admin/customers/${c.id}`}
                     className="text-teal hover:text-amber no-underline font-semibold"
                   >
                     Inspections
